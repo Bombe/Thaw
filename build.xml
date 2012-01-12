@@ -51,13 +51,17 @@
 		<copy todir="${bin.dir}">
 		        <fileset dir="licenses" />
 			<fileset file="readme.txt" />
-		        <fileset dir="${images.dir}" />
 
 			<fileset dir="${src.dir}">
 				<include name="**/*.properties" />
 				<include name="**/*.png" /><!-- for the liquid lnf -->
 			</fileset>
 		</copy>
+
+		<copy todir="${bin.dir}/images">
+			<fileset dir="${images.dir}" />
+		</copy>
+
 	</target>
 
 
