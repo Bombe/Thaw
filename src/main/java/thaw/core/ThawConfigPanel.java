@@ -80,7 +80,7 @@ public class ThawConfigPanel implements Observer, ActionListener {
 
 		/* lang */
 		langLabel = new JLabel(I18n.getMessage("thaw.common.language"));
-		langBox = new JComboBox(I18n.supportedLocales);
+		langBox = new JComboBox(I18n.supportedLocales.toArray());
 
 		setLang();
 
@@ -101,9 +101,10 @@ public class ThawConfigPanel implements Observer, ActionListener {
 	}
 
 	private void setLang() {
-		for (int i = 0; i < I18n.supportedLocales.length; i++) {
-			if (I18n.supportedLocales[i].getLanguage().equals(I18n.getLocale().getLanguage()))
-				langBox.setSelectedItem(I18n.supportedLocales[i]);
+		for (Locale supportedLocale : I18n.supportedLocales) {
+			if (supportedLocale.getLanguage().equals(I18n.getLocale().getLanguage())) {
+				langBox.setSelectedItem(supportedLocale);
+			}
 		}
 	}
 

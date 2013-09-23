@@ -25,6 +25,9 @@
 
 package thaw.core;
 
+import static java.util.Arrays.asList;
+
+import java.util.Collection;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -34,10 +37,10 @@ import java.util.ResourceBundle;
  */
 public class I18n {
 
-	public final static Locale[] supportedLocales = {
+	public final static Collection<Locale> supportedLocales = asList(
 			Locale.ENGLISH,
 			Locale.FRENCH
-	};
+	);
 
 	private static Locale currentLocale;
 
