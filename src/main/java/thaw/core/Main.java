@@ -1,16 +1,8 @@
 package thaw.core;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import javax.swing.UIManager;
 
 /**
@@ -22,11 +14,6 @@ public class Main {
 
 	/** Thaw version. */
 	private static final Version VERSION = new Version(0, 8, 5);
-
-	private final static String[] DEPS = new String[] {
-			"hsqldb.jar",
-			"BouncyCastle.jar",
-	};
 
 	/** Look &amp; feel use by GUI front end */
 	private static String lookAndFeel = null;
@@ -54,8 +41,6 @@ public class Main {
 	 */
 	public static void main(final String[] args) {
 		Core core;
-
-		Main.extractDeps();
 
 		Main.parseCommandLine(args);
 
@@ -134,57 +119,6 @@ public class Main {
 		System.out.println("        for the complete list");
 
 		System.exit(0);
-	}
-
-	/** need a non-static context */
-	private void extractFileFromJar(String src, String dst) {
-		try {
-			String realHome = this.getClass().getProtectionDomain().
-					getCodeSource().getLocation().toString();
-
-			String home = java.net.URLDecoder.decode(realHome.substring(5), "UTF-8");
-
-			Logger.info(this, "Extracting : " + realHome + " ; " + src + " ; " + dst);
-
-			ZipFile jar = new ZipFile(home);
-			ZipEntry entry = jar.getEntry(src);
-
-			File jarFile = new File(dst);
-
-			InputStream in = new BufferedInputStream(jar.getInputStream(entry));
-			OutputStream out = new BufferedOutputStream(new FileOutputStream(jarFile));
-
-			byte[] buffer = new byte[2048];
-
-			int nBytes;
-
-			while ((nBytes = in.read(buffer)) > 0) {
-				out.write(buffer, 0, nBytes);
-			}
-
-			out.flush();
-			out.close();
-			in.close();
-
-			return;
-		} catch (java.io.IOException e) {
-			Logger.warning(this, "Can't extract '" + src + "' because : " + e.toString());
-			if (e.getCause() != null)
-				Logger.warning(this, "Cause : " + e.getCause().toString());
-			e.printStackTrace();
-		}
-
-		Logger.warning(this, "Will try to continue anyway");
-		//System.exit(1);
-	}
-
-	private static void extractDeps() {
-		Main main = new Main();
-
-		/* we erase each time the files to be sure that they are always up to date */
-		for (int i = 0; i < DEPS.length; i++) {
-			main.extractFileFromJar("lib/" + DEPS[i], DEPS[i]);
-		}
 	}
 
 }
