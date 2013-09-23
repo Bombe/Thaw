@@ -2,7 +2,7 @@ package thaw.core;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Vector;
+import java.util.List;
 
 /** Manages plugins :) */
 public class PluginManager {
@@ -75,7 +75,7 @@ public class PluginManager {
 
 			/* we duplicate the vector to avoid collisions */
 			/* (remember : plugins can load other plugins */
-			Vector<String> pluginNames;
+			List<String> pluginNames;
 			pluginNames = core.getConfig().getPluginNames();
 
 			final Iterator pluginIt = pluginNames.iterator();

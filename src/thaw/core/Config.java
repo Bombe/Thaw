@@ -1,10 +1,12 @@
 package thaw.core;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -32,24 +34,20 @@ public class Config {
 
 	private final File configFile;
 
-	private final HashMap<String, String> parameters; /* String (param) -> String (value) */
+	private final Map<String, String> parameters = new HashMap<String, String>();
 
-	private final HashMap<String, Vector<Plugin>> listeners;  /* String (param) -> Vector -> Plugin */
+	private final Map<String, List<Plugin>> listeners = new HashMap<String, List<Plugin>>();
 
-	private final Vector<String> pluginNames;        /* String (plugin names) */
+	private final List<String> pluginNames = new ArrayList<String>();
 
 	private boolean listenChanges = false;
 
-	private Vector<Plugin> pluginsToReload = null;
+	private final List<Plugin> pluginsToReload = null;
 
 	public Config(Core core, final String filename) {
 		this.core = core;
 
 		configFile = new File(filename);
-
-		parameters = new HashMap<String, String>();
-		pluginNames = new Vector<String>();
-		listeners = new HashMap<String, Vector<Plugin>>();
 	}
 
 	/** @return null if the value doesn't exit in the config. */
@@ -63,7 +61,7 @@ public class Config {
 	 */
 	public void startChanges() {
 		listenChanges = true;
-		pluginsToReload = new Vector<Plugin>();
+		pluginsToReload.clear();
 	}
 
 	/** Set the value in the config. */
@@ -77,13 +75,13 @@ public class Config {
 				|| (currentValue != null && value == null)) {
 
 			/* we get the plugin list to reload */
-			Vector<Plugin> pluginList = listeners.get(key);
+			List<Plugin> pluginList = listeners.get(key);
 
 			if (listenChanges && pluginList != null) {
 				for (Plugin plugin : pluginList) {
 					/* if the plugin is not already in the plugin list to
 					 * reload, we add it */
-					if (pluginsToReload.indexOf(plugin) < 0) {
+					if (!pluginsToReload.contains(plugin)) {
 						Logger.notice(this, "Will have to reload '" + plugin.getClass().getName() + "' " +
 								"because '" + key + "' was changed from '" + currentValue + "' to '" + value + "'");
 						pluginsToReload.add(plugin);
@@ -119,7 +117,7 @@ public class Config {
 	 */
 	public void cancelChanges() {
 		listenChanges = false;
-		pluginsToReload = null;
+		pluginsToReload.clear();
 	}
 
 	/** Add the plugin at the end of the plugin list. */
@@ -136,8 +134,8 @@ public class Config {
 	}
 
 	/** Give a vector containing the whole list of plugins. */
-	public Vector<String> getPluginNames() {
-		return new Vector<String>(pluginNames);
+	public List<String> getPluginNames() {
+		return new ArrayList<String>(pluginNames);
 	}
 
 	/** Remove the given plugin. */
@@ -342,10 +340,10 @@ public class Config {
 
 	public void addListener(String name, Plugin plugin) {
 
-		Vector<Plugin> pluginList = listeners.get(name);
+		List<Plugin> pluginList = listeners.get(name);
 
 		if (pluginList == null) {
-			pluginList = new Vector<Plugin>();
+			pluginList = new ArrayList<Plugin>();
 			listeners.put(name, pluginList);
 		}
 
