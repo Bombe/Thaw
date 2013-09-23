@@ -42,19 +42,19 @@ public class Main {
 	public static void main(final String[] args) {
 		Core core;
 
-		Main.parseCommandLine(args);
+		parseCommandLine(args);
 
-		if (Main.locale != null)
-			I18n.setLocale(new Locale(Main.locale));
+		if (locale != null)
+			I18n.setLocale(new Locale(locale));
 
 		core = new Core();
 
 		/* we specify to the core what lnf to use */
-		core.setLookAndFeel(Main.lookAndFeel);
+		core.setLookAndFeel(lookAndFeel);
 
 		/* and we force it to refresh change it right now */
-		if (Main.lookAndFeel != null)
-			core.setTheme(Main.lookAndFeel);
+		if (lookAndFeel != null)
+			core.setTheme(lookAndFeel);
 
 		core.initAll();
 	}
@@ -75,20 +75,20 @@ public class Main {
 						|| "--help".equals(args[count])
 						|| "/?".equals(args[count])
 						|| "/help".equals(args[count])) {
-					Main.showHelp();
+					showHelp();
 					count++;
 				} else if ("-lf".equals(args[count])) {
-					Main.lookAndFeel = args[count + 1];
+					lookAndFeel = args[count + 1];
 					count = count + 2;
 				} else if ("-lc".equals(args[count])) {
-					Main.locale = args[count + 1];
+					locale = args[count + 1];
 					count = count + 2;
 				} else {
-					Main.showHelp();
+					showHelp();
 				}
 			}
 		} catch (final ArrayIndexOutOfBoundsException exception) {
-			Main.showHelp();
+			showHelp();
 		}
 
 	}
