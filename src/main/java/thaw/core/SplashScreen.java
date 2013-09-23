@@ -1,11 +1,14 @@
 package thaw.core;
 
+import static javax.swing.SwingUtilities.updateComponentTreeUI;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -14,34 +17,27 @@ import javax.swing.JProgressBar;
 
 public class SplashScreen {
 
-	public final static int SIZE_X = 500;
+	private static final int SIZE_X = 500;
 
-	public final static int SIZE_Y = 150;
+	private static final int SIZE_Y = 150;
 
-	public final static int NMB_ICONS = 13;
+	private static final int NMB_ICONS = 13;
 
-	public JDialog splashScreen;
+	private final JDialog splashScreen = new JDialog();
 
-	public JProgressBar progressBar;
+	private final JProgressBar progressBar = new JProgressBar(0, 100);
 
-	public JPanel iconPanel;
+	private final JPanel iconPanel = new JPanel();
 
-	public int nmbIcon = 0;
+	private int nmbIcon = 0;
 
-	public Vector emptyLabels;
+	private final List<JLabel> emptyLabels = new ArrayList<JLabel>();
 
-	public Vector iconLabels;
-
-	public SplashScreen() {
-
-	}
+	private final List<JLabel> iconLabels = new ArrayList<JLabel>();
 
 	public void display() {
 		final JPanel panel = new JPanel();
 		JPanel subPanel = new JPanel();
-		iconPanel = new JPanel();
-
-		splashScreen = new JDialog();
 
 		splashScreen.setUndecorated(true);
 		splashScreen.setResizable(false);
@@ -49,9 +45,6 @@ public class SplashScreen {
 		panel.setLayout(new BorderLayout(10, 10));
 		subPanel.setLayout(new GridLayout(2, 1));
 		iconPanel.setLayout(new GridLayout(1, NMB_ICONS));
-
-		emptyLabels = new Vector();
-		iconLabels = new Vector();
 
 		/* it's a dirty method to keep the NMB_ICONS parts of the panel at the same size */
 		for (int i = 0; i < NMB_ICONS; i++) {
@@ -70,7 +63,6 @@ public class SplashScreen {
 
 		panel.add(subPanel, BorderLayout.CENTER);
 
-		progressBar = new JProgressBar(0, 100);
 		progressBar.setStringPainted(true);
 		progressBar.setString("Wake up Neo ...");
 
@@ -102,28 +94,23 @@ public class SplashScreen {
 	 * 		In percent
 	 */
 	public void setProgression(final int progress) {
-		if (progressBar != null && splashScreen != null) {
-			progressBar.setValue(progress);
-			splashScreen.getContentPane().validate();
-		}
+		progressBar.setValue(progress);
+		splashScreen.getContentPane().validate();
 	}
 
 	public void addIcon(ImageIcon icon) {
-		if (splashScreen == null)
-			return;
-
 		JLabel lb = new JLabel(icon);
 
 		lb.setHorizontalAlignment(JLabel.CENTER);
 		lb.setVerticalAlignment(JLabel.CENTER);
 
 		if (emptyLabels.size() > 0)
-			iconPanel.remove((java.awt.Component) emptyLabels.get(0));
+			iconPanel.remove(emptyLabels.get(0));
 
 		iconPanel.add(lb, nmbIcon);
 
 		if (emptyLabels.size() > 0)
-			emptyLabels.removeElementAt(0);
+			emptyLabels.remove(0);
 
 		nmbIcon++;
 
@@ -135,17 +122,12 @@ public class SplashScreen {
 	/* TODO : removeIcon() */
 
 	public int getProgression() {
-		if (progressBar != null)
-			return progressBar.getValue();
-		else
-			return -1;
+		return progressBar.getValue();
 	}
 
 	public void setStatus(final String status) {
-		if (progressBar != null && splashScreen != null) {
-			progressBar.setString(status);
-			splashScreen.getContentPane().validate();
-		}
+		progressBar.setString(status);
+		splashScreen.getContentPane().validate();
 	}
 
 	public void setProgressionAndStatus(final int progress, final String status) {
@@ -156,12 +138,9 @@ public class SplashScreen {
 	public void hide() {
 		splashScreen.setVisible(false);
 		splashScreen.dispose();
-		splashScreen = null;
-		progressBar = null;
 	}
 
 	public void rebuild() {
-		if (splashScreen != null)
-			javax.swing.SwingUtilities.updateComponentTreeUI(splashScreen);
+		updateComponentTreeUI(splashScreen);
 	}
 }
