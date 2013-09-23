@@ -42,18 +42,9 @@ public class I18n {
 			Locale.FRENCH
 	);
 
-	private static Locale currentLocale;
+	private static Locale currentLocale = Locale.ENGLISH;
 
-	private static ResourceBundle currentResourceBundle;
-
-	static {
-		currentLocale = Locale.ENGLISH;
-		currentResourceBundle = ResourceBundle.getBundle("thaw.i18n.thaw", currentLocale);
-	}
-
-	public I18n() {
-		I18n.setLocale(Locale.getDefault());
-	}
+	private static ResourceBundle currentResourceBundle = ResourceBundle.getBundle("thaw.i18n.thaw", currentLocale);
 
 	public static Locale getLocale() {
 		return currentLocale;
@@ -69,7 +60,7 @@ public class I18n {
 		try {
 			return currentResourceBundle.getString(key);
 		} catch (final Exception e) {
-			Logger.warning(new I18n(),
+			Logger.warning(null,
 					"Unable to find translation for '" + key + "'");
 			e.printStackTrace();
 			return key;
