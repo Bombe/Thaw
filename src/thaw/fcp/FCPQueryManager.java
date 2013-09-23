@@ -3,19 +3,20 @@ package thaw.fcp;
 import java.util.Observable;
 
 import thaw.core.Logger;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
-
+import thaw.core.ThawThread;
 
 /**
  * Manage all fcp messages (see corresponding object of each kind of query).
- * Call observers each type a new message is received. The given object is
- * the message.
+ * Call observers each type a new message is received. The given object is the
+ * message.
  */
 public class FCPQueryManager extends Observable implements ThawRunnable {
+
 	private Thread me;
 
 	private FCPConnection connection;
+
 	private boolean running;
 
 	public FCPQueryManager(final FCPConnection connection) {
@@ -32,9 +33,7 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 		this.connection = connection;
 	}
 
-	/**
-	 * Try to not directly call functions from FCPConnection.
-	 */
+	/** Try to not directly call functions from FCPConnection. */
 	public FCPConnection getConnection() {
 		return connection;
 	}
@@ -49,8 +48,8 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 	}
 
 	/**
-	 * Blocking until a message is received.
-	 * More exactly, read until "Data\n" or "EndMessage\n" is read.
+	 * Blocking until a message is received. More exactly, read until "Data\n" or
+	 * "EndMessage\n" is read.
 	 */
 	public FCPMessage readMessage() {
 		String whatsUp = new String("");
@@ -59,23 +58,23 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 
 		withData = false;
 
-		while(true) {
+		while (true) {
 
 			String read = new String("");
 
 			read = connection.readLine();
 
-			if(read == null) {
+			if (read == null) {
 				Logger.notice(this, "readLine() returned null => disconnected ?");
 				return null;
 			}
 
-			if("Data".equals( read )) {
+			if ("Data".equals(read)) {
 				withData = true;
 				break;
 			}
 
-			if("EndMessage".equals( read )) {
+			if ("EndMessage".equals(read)) {
 				break;
 			}
 
@@ -86,17 +85,17 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 
 		result.loadFromRawMessage(whatsUp);
 
-		if(withData && result.getValue("DataLength") != null) {
+		if (withData && result.getValue("DataLength") != null) {
 			final long dataWaiting = (new Long(result.getValue("DataLength"))).longValue();
 			connection.setRawDataWaiting(dataWaiting);
-			Logger.info(this, "Achtung data: "+(new Long(dataWaiting)).toString());
+			Logger.info(this, "Achtung data: " + (new Long(dataWaiting)).toString());
 		}
 
 		return result;
 	}
 
-
 	public class Notifier implements ThawRunnable {
+
 		FCPMessage msg;
 
 		public Notifier(FCPMessage msg) {
@@ -107,10 +106,10 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 			try {
 				setChanged();
 				notifyObservers(msg);
-			} catch(final Exception e) {
+			} catch (final Exception e) {
 				/* it's really bad ... because if data are waiting on the socket ... */
-				Logger.error(this, "EXCEPTION FROM ONE OF LISTENER : "+e.toString());
-				Logger.error(this, "ERROR : "+e.getMessage());
+				Logger.error(this, "EXCEPTION FROM ONE OF LISTENER : " + e.toString());
+				Logger.error(this, "ERROR : " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
@@ -120,9 +119,8 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 		}
 	}
 
-
-
 	public class WatchDog implements ThawRunnable {
+
 		public final static int TIMEOUT = 10000;
 
 		ThawRunnable runnable;
@@ -139,17 +137,19 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 			Thread th = new Thread(new ThawThread(runnable, "FCP message processing", this));
 			th.start();
 
-			for (int i = 0 ; i < TIMEOUT && isRunning(th) ; i += 300) {
+			for (int i = 0; i < TIMEOUT && isRunning(th); i += 300) {
 				try {
 					Thread.sleep(100);
-				} catch(InterruptedException e) {
+				} catch (InterruptedException e) {
 					/* \_o< */
 				}
 			}
 
 			while (isRunning(th)) {
-				Logger.warning(this, "Notifier thread ('"+th.toString()+"') seems to be blocked !!");
-				try { Thread.sleep(TIMEOUT); } catch(InterruptedException e) { /* \_o< */ }
+				Logger.warning(this, "Notifier thread ('" + th.toString() + "') seems to be blocked !!");
+				try {
+					Thread.sleep(TIMEOUT);
+				} catch (InterruptedException e) { /* \_o< */ }
 			}
 		}
 
@@ -160,20 +160,18 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 	}
 
 	/**
-	 * Multithreading allow the use of a watchdog. It's useful to debug,
-	 * but I recommand to desactivate it for a normal use.
+	 * Multithreading allow the use of a watchdog. It's useful to debug, but I
+	 * recommand to desactivate it for a normal use.
 	 */
 	public final static boolean MULTITHREADED = false;
 
-	/**
-	 * Will listen in loop for new incoming messages.
-	 */
+	/** Will listen in loop for new incoming messages. */
 	public void run() {
-		while(running) {
+		while (running) {
 			FCPMessage latestMessage;
 
 			/* note : if multithreaded, stop reading when a thread is writing,
-			 *        else reading, parsing and answering messages while a thread is 
+			 *        else reading, parsing and answering messages while a thread is
 			 *        sending a big file may generate a lot of threads (and warnings because
 			 *        of a possible freeze)
 			 */
@@ -185,7 +183,7 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 
 			Logger.verbose(this, "Message received. Notifying observers");
 
-			if(latestMessage != null) {
+			if (latestMessage != null) {
 				/*
 				 * can't multithread if data are waiting
 				 */
@@ -198,10 +196,10 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 					try {
 						setChanged();
 						notifyObservers(latestMessage);
-					} catch(final Exception e) {
+					} catch (final Exception e) {
 						/* it's really bad ... because if data are waiting on the socket ... */
-						Logger.error(this, "EXCEPTION FROM ONE OF LISTENER : "+e.toString());
-						Logger.error(this, "ERROR : "+e.getMessage());
+						Logger.error(this, "EXCEPTION FROM ONE OF LISTENER : " + e.toString());
+						Logger.error(this, "ERROR : " + e.getMessage());
 						e.printStackTrace();
 					}
 
@@ -214,18 +212,14 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 
 	}
 
-
 	public void stop() {
 		Logger.info(this, "stop() : Stopping listening");
 		running = false;
 	}
 
-
-	/**
-	 * Create the thread listening for incoming message.
-	 */
+	/** Create the thread listening for incoming message. */
 	public void startListening() {
-		if(connection.isConnected()) {
+		if (connection.isConnected()) {
 			me = new Thread(new ThawThread(this, "FCP socket listener", this));
 			me.start();
 		} else {
@@ -233,11 +227,12 @@ public class FCPQueryManager extends Observable implements ThawRunnable {
 		}
 	}
 
-
 	/**
-	 * This function is mainly used by FCPClientGet to have a separate socket to transfer the files.
-	 * If FCPConnection is allowed to duplicate itself, then it will duplicate it and create a dedicated FCPQueryManager for.
-	 * A FCPClientHello is sent with the given id.
+	 * This function is mainly used by FCPClientGet to have a separate socket to
+	 * transfer the files. If FCPConnection is allowed to duplicate itself, then it
+	 * will duplicate it and create a dedicated FCPQueryManager for. A
+	 * FCPClientHello is sent with the given id.
+	 *
 	 * @return This object if it cannot duplicate FCPConnection
 	 */
 	public FCPQueryManager duplicate(final String connectionId) {

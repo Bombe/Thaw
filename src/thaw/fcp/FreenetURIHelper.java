@@ -1,13 +1,11 @@
 package thaw.fcp;
 
-import thaw.core.Logger;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * would be better called "FreenetKeyHelper" ... but too late :p
- */
+import thaw.core.Logger;
+
+/** would be better called "FreenetKeyHelper" ... but too late :p */
 public class FreenetURIHelper {
 
 	private FreenetURIHelper() {
@@ -15,17 +13,16 @@ public class FreenetURIHelper {
 	}
 
 	/**
-	 * Quick test to see if the string could be a key
-	 * only check the head, not the content (this property is used in FetchPlugin,
-	 * please keep it)
+	 * Quick test to see if the string could be a key only check the head, not the
+	 * content (this property is used in FetchPlugin, please keep it)
 	 */
 	public static boolean isAKey(String key) {
 		if (key == null)
-		    return false;
+			return false;
 
 		if (key.startsWith("CHK@")
-		    || key.startsWith("SSK@")
-		    || key.startsWith("USK@")) {
+				|| key.startsWith("SSK@")
+				|| key.startsWith("USK@")) {
 			return (key.length() > 20);
 		}
 
@@ -39,32 +36,32 @@ public class FreenetURIHelper {
 	 *    KSK just begins with "KSK@" followed by a name.
 	 */
 	private static final Pattern FREENET_KEY_REGEX
-		= Pattern.compile("(?i)((CHK|SSK|USK)@[a-z0-9~-]{43},[a-z0-9~-]{43},[a-z0-9~-]{7}.*)|(KSK@.+)");
+			= Pattern.compile("(?i)((CHK|SSK|USK)@[a-z0-9~-]{43},[a-z0-9~-]{43},[a-z0-9~-]{7}.*)|(KSK@.+)");
 
 	public static String cleanURI(String uri) {
 		if (uri == null) {
 			return uri;
-        }
+		}
 
 		try {
 			uri = java.net.URLDecoder.decode(uri, "UTF-8");
 		} catch (final java.io.UnsupportedEncodingException e) {
-			Logger.warning(new FreenetURIHelper(), "UnsupportedEncodingException (UTF-8): "+e.toString());
+			Logger.warning(new FreenetURIHelper(), "UnsupportedEncodingException (UTF-8): " + e.toString());
 		}
 
-        Matcher regexMatcher = FREENET_KEY_REGEX.matcher(uri);
-        if (regexMatcher.find()) {
-            uri = regexMatcher.group();
-            if (isAKey(uri)) {
-                return uri;
-            } else {
-                Logger.notice(new FreenetURIHelper(), "Not a valid key: "+uri);
-                return null;
-		    }
-        } else {
-			Logger.notice(new FreenetURIHelper(), "Not a valid key: "+uri);
+		Matcher regexMatcher = FREENET_KEY_REGEX.matcher(uri);
+		if (regexMatcher.find()) {
+			uri = regexMatcher.group();
+			if (isAKey(uri)) {
+				return uri;
+			} else {
+				Logger.notice(new FreenetURIHelper(), "Not a valid key: " + uri);
+				return null;
+			}
+		} else {
+			Logger.notice(new FreenetURIHelper(), "Not a valid key: " + uri);
 			return null;
-        }
+		}
 	}
 
 	public static String getFilenameFromKey(final String key) {
@@ -73,7 +70,6 @@ public class FreenetURIHelper {
 
 		if (key == null)
 			return null;
-
 
 		if (key.startsWith("KSK")) {
 			filename = key.substring(4);
@@ -87,24 +83,23 @@ public class FreenetURIHelper {
 
 			} else if (key.startsWith("SSK")) {
 
-				filename = cutcut[cutcut.length-1];
+				filename = cutcut[cutcut.length - 1];
 
 			} else if (key.startsWith("USK")) {
 
 				if (cutcut.length >= 4 || cutcut.length == 2)
-					filename = cutcut[cutcut.length-1];
+					filename = cutcut[cutcut.length - 1];
 				else if (cutcut.length == 3)
-					filename = cutcut[cutcut.length-2];
+					filename = cutcut[cutcut.length - 2];
 			}
 
 		}
-
 
 		if (filename != null) {
 			try {
 				filename = java.net.URLDecoder.decode(filename, "UTF-8");
 			} catch (final java.io.UnsupportedEncodingException e) {
-				Logger.warning(filename, "UnsupportedEncodingException (UTF-8): "+e.toString());
+				Logger.warning(filename, "UnsupportedEncodingException (UTF-8): " + e.toString());
 			} catch (final java.lang.IllegalArgumentException e) {
 				Logger.warning(filename, "IllegalArgumentException: " + e.toString());
 			}
@@ -123,28 +118,28 @@ public class FreenetURIHelper {
 
 		SSK = "";
 
-		for (int i = 0 ; i < split.length ; i++) {
+		for (int i = 0; i < split.length; i++) {
 			switch (i) {
-			case(0):
-				SSK = split[i];
-				break;
-			case(1):
-				final String subsplit[] = split[i].split("-");
+				case (0):
+					SSK = split[i];
+					break;
+				case (1):
+					final String subsplit[] = split[i].split("-");
 
-				SSK = SSK + "/";
+					SSK = SSK + "/";
 
-				for (int j = 0 ; j < subsplit.length-1 ; j++) {
-					if (j == 0)
-						SSK = SSK + subsplit[j];
-					else
-						SSK = SSK + "-" + subsplit[j];
-				}
+					for (int j = 0; j < subsplit.length - 1; j++) {
+						if (j == 0)
+							SSK = SSK + subsplit[j];
+						else
+							SSK = SSK + "-" + subsplit[j];
+					}
 
-				SSK = SSK + "/" + subsplit[subsplit.length-1];
+					SSK = SSK + "/" + subsplit[subsplit.length - 1];
 
-				break;
-			default:
-				SSK = SSK + "/" + split[i];
+					break;
+				default:
+					SSK = SSK + "/" + split[i];
 			}
 		}
 
@@ -155,8 +150,8 @@ public class FreenetURIHelper {
 		try {
 			final java.math.BigDecimal bd = new java.math.BigDecimal(val);
 			return bd.abs().toString();
-		} catch(final java.lang.NumberFormatException e) {
-			Logger.warning(new FreenetURIHelper(), "NumberFormatException while parsing '"+val+"'");
+		} catch (final java.lang.NumberFormatException e) {
+			Logger.warning(new FreenetURIHelper(), "NumberFormatException while parsing '" + val + "'");
 			return "0";
 		}
 	}
@@ -171,17 +166,17 @@ public class FreenetURIHelper {
 
 		USK = "";
 
-		for (int i = 0 ; i < split.length ; i++) {
+		for (int i = 0; i < split.length; i++) {
 			switch (i) {
-			case(0):
-				USK = split[i];
-				break;
-			case(2):
-				USK += "-" + FreenetURIHelper.abs(split[i]);
-				break;
-			default:
-				USK += "/" + split[i];
-				break;
+				case (0):
+					USK = split[i];
+					break;
+				case (2):
+					USK += "-" + FreenetURIHelper.abs(split[i]);
+					break;
+				default:
+					USK += "/" + split[i];
+					break;
 			}
 		}
 
@@ -195,7 +190,7 @@ public class FreenetURIHelper {
 
 		key = "";
 
-		for (int i = 0 ; i < split.length-1 ; i++) {
+		for (int i = 0; i < split.length - 1; i++) {
 			if (i == 0)
 				key = key + split[i];
 			else
@@ -205,7 +200,6 @@ public class FreenetURIHelper {
 		return key;
 	}
 
-
 	private static String changeRev(final String revStr, final int rev, final int offset) {
 		if (offset == 0)
 			return Integer.toString(rev);
@@ -214,7 +208,8 @@ public class FreenetURIHelper {
 	}
 
 	/**
-	 * @param offset if == 0, then rev is changed according to the given offset
+	 * @param offset
+	 * 		if == 0, then rev is changed according to the given offset
 	 */
 	public static String changeSSKRevision(String key, final int rev, final int offset) {
 
@@ -225,25 +220,25 @@ public class FreenetURIHelper {
 
 		key = "";
 
-		for (int i = 0 ; i < split.length ; i++) {
-			switch(i) {
-			case(0):
-				key = key + split[i];
-				break;
-			case(1):
-				final String[] subsplit = split[i].split("-");
+		for (int i = 0; i < split.length; i++) {
+			switch (i) {
+				case (0):
+					key = key + split[i];
+					break;
+				case (1):
+					final String[] subsplit = split[i].split("-");
 
-				for (int j = 0 ; j < subsplit.length-1 ; j++) {
-					if (j == 0)
-						key = key + "/" + subsplit[j];
-					else
-						key = key + "-" + subsplit[j];
-				}
+					for (int j = 0; j < subsplit.length - 1; j++) {
+						if (j == 0)
+							key = key + "/" + subsplit[j];
+						else
+							key = key + "-" + subsplit[j];
+					}
 
-				key = key + "-" + FreenetURIHelper.changeRev(subsplit[subsplit.length-1], rev, offset);
-				break;
-			default:
-				key = key + "/" + split[i];
+					key = key + "-" + FreenetURIHelper.changeRev(subsplit[subsplit.length - 1], rev, offset);
+					break;
+				default:
+					key = key + "/" + split[i];
 			}
 		}
 
@@ -258,16 +253,16 @@ public class FreenetURIHelper {
 
 		key = "";
 
-		for (int i = 0 ; i < split.length ; i++) {
-			switch(i) {
-			case(0):
-				key = key + split[i];
-				break;
-			case(2):
-				key = key + "/" + FreenetURIHelper.changeRev(split[2], rev, offset);
-				break;
-			default:
-				key = key + "/" + split[i];
+		for (int i = 0; i < split.length; i++) {
+			switch (i) {
+				case (0):
+					key = key + split[i];
+					break;
+				case (2):
+					key = key + "/" + FreenetURIHelper.changeRev(split[2], rev, offset);
+					break;
+				default:
+					key = key + "/" + split[i];
 			}
 		}
 
@@ -288,16 +283,13 @@ public class FreenetURIHelper {
 
 		try {
 			return Integer.parseInt(split[2]);
-		} catch(NumberFormatException e) {
-			Logger.warning(new FreenetURIHelper(), "Unable to parse '"+key +"'");
+		} catch (NumberFormatException e) {
+			Logger.warning(new FreenetURIHelper(), "Unable to parse '" + key + "'");
 			return -1;
 		}
 	}
 
-	/**
-	 * will lower the case !
-	 * will return the begining of the key.
-	 */
+	/** will lower the case ! will return the begining of the key. */
 	public static String getComparablePart(String key) {
 		if (key == null)
 			return null;
@@ -313,8 +305,8 @@ public class FreenetURIHelper {
 	}
 
 	/**
-	 * this process is not costless.
-	 * Ignore the revisions
+	 * this process is not costless. Ignore the revisions
+	 *
 	 * @return true if they match
 	 */
 	public static boolean compareKeys(String keyA, String keyB) {
@@ -336,8 +328,8 @@ public class FreenetURIHelper {
 			keyB = convertUSKtoSSK(keyB);
 
 		if (!keyA.substring(0, 3).equals(keyB.substring(0, 3))) {
-			Logger.notice(new FreenetURIHelper(), "Not the same kind of key : "+
-				      keyA.substring(0, 3) + " vs " + keyB.substring(0, 3));
+			Logger.notice(new FreenetURIHelper(), "Not the same kind of key : " +
+					keyA.substring(0, 3) + " vs " + keyB.substring(0, 3));
 			return false;
 		}
 
@@ -354,15 +346,15 @@ public class FreenetURIHelper {
 
 			if (splitA.length != splitB.length) {
 				/* we shorten the keys because one has less elements than the other */
-				keyA = splitA[0]+splitA[1];
-				keyB = splitB[0]+splitB[1];
+				keyA = splitA[0] + splitA[1];
+				keyB = splitB[0] + splitB[1];
 			}
 
 			keyA = keyA.replaceAll(".frdx", ".xml"); /* we consider .frdx equivalent to .xml */
 			keyB = keyB.replaceAll(".frdx", ".xml"); /* we consider .frdx equivalent to .xml */
 		}
 
-		if ( keyA.equals(keyB) )
+		if (keyA.equals(keyB))
 			return true;
 
 		return false;

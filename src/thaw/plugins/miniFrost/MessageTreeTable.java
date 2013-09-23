@@ -1,126 +1,109 @@
 package thaw.plugins.miniFrost;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
-
-import java.util.Observer;
-import java.util.Observable;
-
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.JScrollPane;
-import javax.swing.JButton;
-
 import java.awt.Color;
-
-import javax.swing.event.TableModelEvent;
-
-
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.Enumeration;
-
 import java.awt.Component;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-
-import javax.swing.JCheckBox;
-
 import java.awt.Font;
-
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Vector;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.event.TableModelEvent;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 
-import java.util.Hashtable;
-
-
-import thaw.gui.Table;
-import thaw.gui.CheckBox;
-import thaw.gui.IconBox;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.gui.CheckBox;
+import thaw.gui.IconBox;
+import thaw.gui.Table;
 import thaw.plugins.MiniFrost;
-import thaw.plugins.signatures.Identity;
-
 import thaw.plugins.miniFrost.interfaces.Author;
 import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.BoardFactory;
-import thaw.plugins.miniFrost.interfaces.Message;
 import thaw.plugins.miniFrost.interfaces.Draft;
-
+import thaw.plugins.miniFrost.interfaces.Message;
+import thaw.plugins.signatures.Identity;
 
 public class MessageTreeTable implements Observer,
-					 MouseListener,
-					 ActionListener
-{
-	/**
-	 * Just here to avoid an infinite recursion
-	 */
+		MouseListener,
+		ActionListener {
+
+	/** Just here to avoid an infinite recursion */
 	public final static int MAX_DEPTH = 30;
 
-
 	public final static String[] COLUMNS = {
-		"", /* checkboxes */
-		I18n.getMessage("thaw.plugin.miniFrost.subject"),
-		I18n.getMessage("thaw.plugin.miniFrost.author"),
-		I18n.getMessage("thaw.plugin.miniFrost.status"), /* author status */
-		I18n.getMessage("thaw.plugin.miniFrost.date"),
+			"", /* checkboxes */
+			I18n.getMessage("thaw.plugin.miniFrost.subject"),
+			I18n.getMessage("thaw.plugin.miniFrost.author"),
+			I18n.getMessage("thaw.plugin.miniFrost.status"), /* author status */
+			I18n.getMessage("thaw.plugin.miniFrost.date"),
 	};
 
-
 	public final static String[] GMAIL_ACTIONS = new String[] {
-		I18n.getMessage("thaw.plugin.miniFrost.actions"),
-		I18n.getMessage("thaw.plugin.miniFrost.selectAll"),
-		I18n.getMessage("thaw.plugin.miniFrost.selectNone"),
-		I18n.getMessage("thaw.plugin.miniFrost.markAsRead"),
-		I18n.getMessage("thaw.plugin.miniFrost.markAsNonRead"),
-		I18n.getMessage("thaw.plugin.miniFrost.newMessage"),
-		I18n.getMessage("thaw.plugin.miniFrost.archivate"),
-		I18n.getMessage("thaw.plugin.miniFrost.unarchivate")
+			I18n.getMessage("thaw.plugin.miniFrost.actions"),
+			I18n.getMessage("thaw.plugin.miniFrost.selectAll"),
+			I18n.getMessage("thaw.plugin.miniFrost.selectNone"),
+			I18n.getMessage("thaw.plugin.miniFrost.markAsRead"),
+			I18n.getMessage("thaw.plugin.miniFrost.markAsNonRead"),
+			I18n.getMessage("thaw.plugin.miniFrost.newMessage"),
+			I18n.getMessage("thaw.plugin.miniFrost.archivate"),
+			I18n.getMessage("thaw.plugin.miniFrost.unarchivate")
 	};
 
 	public final static String[] OUTLOOK_ACTIONS = new String[] {
-		I18n.getMessage("thaw.plugin.miniFrost.actions"),
-		I18n.getMessage("thaw.plugin.miniFrost.reply"),
-		I18n.getMessage("thaw.plugin.miniFrost.selectAll"),
-		I18n.getMessage("thaw.plugin.miniFrost.selectNone"),
-		I18n.getMessage("thaw.plugin.miniFrost.markAsRead"),
-		I18n.getMessage("thaw.plugin.miniFrost.markAsNonRead"),
-		I18n.getMessage("thaw.plugin.miniFrost.newMessage"),
-		I18n.getMessage("thaw.plugin.miniFrost.archivate"),
-		I18n.getMessage("thaw.plugin.miniFrost.unarchivate")
+			I18n.getMessage("thaw.plugin.miniFrost.actions"),
+			I18n.getMessage("thaw.plugin.miniFrost.reply"),
+			I18n.getMessage("thaw.plugin.miniFrost.selectAll"),
+			I18n.getMessage("thaw.plugin.miniFrost.selectNone"),
+			I18n.getMessage("thaw.plugin.miniFrost.markAsRead"),
+			I18n.getMessage("thaw.plugin.miniFrost.markAsNonRead"),
+			I18n.getMessage("thaw.plugin.miniFrost.newMessage"),
+			I18n.getMessage("thaw.plugin.miniFrost.archivate"),
+			I18n.getMessage("thaw.plugin.miniFrost.unarchivate")
 	};
 
-
 	public final static int FIRST_COLUMN_SIZE = 25;
+
 	public final static int DEFAULT_ROW_HEIGHT = 20;
 
-
 	private MiniFrostPanel mainPanel;
+
 	private JPanel panel;
 
 	private Board targetBoard;
 
-
 	private MessageTableModel model;
+
 	private Table table;
 
-
 	private JTextField searchField;
+
 	private JCheckBox everywhereBox;
+
 	private JButton searchButton;
+
 	private JButton nextUnread;
 
 	private CheckBox seeRead;
+
 	private CheckBox seeArchived;
 
 	private JComboBox actions;
@@ -128,22 +111,27 @@ public class MessageTreeTable implements Observer,
 	private JScrollPane tableScrollPane;
 
 	private String[] keywords;
+
 	private int orderBy;
+
 	private boolean desc;
 
 	private boolean tree;
+
 	private CheckBox seeUnsigned;
+
 	private JComboBox minTrustLevel;
+
 	private int minTrustLevelInt;
 
 	private boolean advancedMode;
+
 	private boolean gmailView;
 
-	/** for the thread tree **/
+	/** for the thread tree * */
 	private MessageNodeTree messageNodeTree;
-	
-	private final static String trustLevelNoneStr = I18n.getMessage("thaw.plugin.signature.trustLevel.none");
 
+	private final static String trustLevelNoneStr = I18n.getMessage("thaw.plugin.signature.trustLevel.none");
 
 	public MessageTreeTable(MiniFrostPanel mainPanel) {
 		this.mainPanel = mainPanel;
@@ -169,7 +157,6 @@ public class MessageTreeTable implements Observer,
 		searchButton.addActionListener(this);
 		searchField.addActionListener(this);
 
-
 		nextUnread = new JButton("", IconBox.minNextUnread);
 		nextUnread.setToolTipText(I18n.getMessage("thaw.plugin.miniFrost.nextUnread"));
 		nextUnread.addActionListener(this);
@@ -183,7 +170,6 @@ public class MessageTreeTable implements Observer,
 
 		searchPanel.add(nextUnread, BorderLayout.WEST);
 		searchPanel.add(boxAndButtonPanel, BorderLayout.EAST);
-
 
 		northPanel.add(searchPanel, BorderLayout.CENTER);
 
@@ -201,8 +187,8 @@ public class MessageTreeTable implements Observer,
 
 		model = new MessageTableModel();
 		table = new Table(mainPanel.getConfig(),
-				  "table_minifrost_message_table",
-				  model);
+				"table_minifrost_message_table",
+				model);
 		table.setDefaultRenderer(table.getColumnClass(0), new MessageTableRenderer());
 		//table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
@@ -223,23 +209,22 @@ public class MessageTreeTable implements Observer,
 		panel.add(northPanel, BorderLayout.NORTH);
 		panel.add(tableScrollPane, BorderLayout.CENTER);
 
-
 		/** some filters **/
 
 		/* read */
 
 		seeRead = new CheckBox(mainPanel.getConfig(),
-				       "miniFrost_seeRead",
-				       I18n.getMessage("thaw.plugin.miniFrost.seeRead"),
-				       true);
+				"miniFrost_seeRead",
+				I18n.getMessage("thaw.plugin.miniFrost.seeRead"),
+				true);
 		seeRead.addActionListener(this);
 
 		/* archived */
 
 		seeArchived = new CheckBox(mainPanel.getConfig(),
-					   "miniFrost_seeArchived",
-					   I18n.getMessage("thaw.plugin.miniFrost.seeArchived"),
-					   false);
+				"miniFrost_seeArchived",
+				I18n.getMessage("thaw.plugin.miniFrost.seeArchived"),
+				false);
 		seeArchived.addActionListener(this);
 
 		/* trust level */
@@ -250,7 +235,6 @@ public class MessageTreeTable implements Observer,
 		if (minTrustLvlStr != null)
 			minTrustLevelInt = Integer.parseInt(minTrustLvlStr);
 
-
 		JPanel minTrustLevelPanel = new JPanel(new BorderLayout(5, 5));
 		minTrustLevelPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.hideStatusBelow")), BorderLayout.WEST);
 		minTrustLevel = new JComboBox(Identity.trustLevelUserStr);
@@ -259,24 +243,22 @@ public class MessageTreeTable implements Observer,
 		minTrustLevelPanel.add(minTrustLevel, BorderLayout.CENTER);
 
 		seeUnsigned = new CheckBox(mainPanel.getConfig(),
-					   "miniFrost_seeUnsigned",
-					   I18n.getMessage("thaw.plugin.miniFrost.seeUnsigned"),
-					   true);
+				"miniFrost_seeUnsigned",
+				I18n.getMessage("thaw.plugin.miniFrost.seeUnsigned"),
+				true);
 		seeUnsigned.addActionListener(this);
 
 		tree = MiniFrost.DISPLAY_AS_TREE;
-		
+
 		if (mainPanel.getConfig().getValue("checkbox_miniFrost_seeTree") != null) {
 			tree = Boolean.valueOf(mainPanel.getConfig().getValue("checkbox_miniFrost_seeTree")).booleanValue();
 		}
-
 
 		JPanel southWestPanel = new JPanel(new GridLayout(1, 3, 5, 5));
 		//southEastPanelTop.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.seeMessages")));
 		southWestPanel.add(seeUnsigned);
 		southWestPanel.add(seeArchived);
 		southWestPanel.add(seeRead);
-
 
 		JPanel southPanel = new JPanel(new BorderLayout(5, 5));
 
@@ -289,15 +271,12 @@ public class MessageTreeTable implements Observer,
 		refresh();
 	}
 
-
 	public void hided() {
 		if (gmailView)
 			nextUnread.setMnemonic(KeyEvent.VK_Z);
 	}
 
-	/**
-	 * will revalidate
-	 */
+	/** will revalidate */
 	public void redisplayed() {
 		/**
 		 * due to a swing bug ?
@@ -316,25 +295,25 @@ public class MessageTreeTable implements Observer,
 		return panel;
 	}
 
-
-
-
 	protected class MessageNodeTree extends JTree {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 6110558336513763649L;
+
 		private DefaultTreeCellRenderer cellRenderer;
 
 		public MessageNodeTree(TreeNode root) {
 			super(root);
 
-			cellRenderer = (DefaultTreeCellRenderer)getCellRenderer();
+			cellRenderer = (DefaultTreeCellRenderer) getCellRenderer();
 			cellRenderer.setOpenIcon(cellRenderer.getDefaultLeafIcon());
 			cellRenderer.setClosedIcon(cellRenderer.getDefaultLeafIcon());
 		}
 
 		protected int visibleRow;
+
 		protected int rowHeight;
 
 		public void setBounds(int x, int y, int w, int h) {
@@ -342,25 +321,24 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public void paint(java.awt.Graphics g) {
-			g.translate(0, (-(visibleRow+1) * rowHeight));
+			g.translate(0, (-(visibleRow + 1) * rowHeight));
 			super.paint(g);
 		}
 
 		public Component getTableCellRendererComponent(JTable table,
-							       Object value,
-							       boolean isSelected,
-							       boolean hasFocus,
-							       int row, int column) {
+													   Object value,
+													   boolean isSelected,
+													   boolean hasFocus,
+													   int row, int column) {
 			if (isSelected)
-				setSelectionRow(row+1); /* don't forget the root :) */
+				setSelectionRow(row + 1); /* don't forget the root :) */
 
 			Color background = thaw.gui.Table.DefaultRenderer.setBackground(this, row, isSelected);
-
 
 			setRowHeight(table.getRowHeight());
 			rowHeight = table.getRowHeight();
 
-			Message msg = ((MessageNode)value).getMessage();
+			Message msg = ((MessageNode) value).getMessage();
 
 			int mod = Font.PLAIN;
 
@@ -406,8 +384,8 @@ public class MessageTreeTable implements Observer,
 		}
 	}
 
-
 	protected static class RootMessageNode implements TreeNode {
+
 		private Vector children;
 
 		public RootMessageNode(Vector nodes) {
@@ -415,7 +393,7 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public Enumeration children() {
-			synchronized(children) { /* yep, quite useless */
+			synchronized (children) { /* yep, quite useless */
 				return children.elements();
 			}
 		}
@@ -425,19 +403,19 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public TreeNode getChildAt(int childIndex) {
-			synchronized(children) {
-				return (MessageNode)children.get(childIndex);
+			synchronized (children) {
+				return (MessageNode) children.get(childIndex);
 			}
 		}
 
 		public int getChildCount() {
-			synchronized(children) {
+			synchronized (children) {
 				return children.size();
 			}
 		}
 
 		public int getIndex(TreeNode node) {
-			synchronized(children) {
+			synchronized (children) {
 				return children.indexOf(node);
 			}
 		}
@@ -447,17 +425,18 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public boolean isLeaf() {
-			synchronized(children) {
+			synchronized (children) {
 				return (children.size() == 0);
 			}
 		}
 	}
 
-
 	protected static class MessageNode implements TreeNode {
+
 		private Vector children;
 
 		private boolean hasParent;
+
 		private TreeNode parent;
 
 		private Message msg;
@@ -476,16 +455,14 @@ public class MessageTreeTable implements Observer,
 			parent = node;
 		}
 
-		/**
-		 * will register
-		 */
+		/** will register */
 		public void setParent(Hashtable messageNodes) {
 			String inReplyTo;
 
 			if (msg != null && (inReplyTo = msg.getInReplyToId()) != null) {
 				hasParent = true;
 
-				MessageNode node = (MessageNode)messageNodes.get(inReplyTo);
+				MessageNode node = (MessageNode) messageNodes.get(inReplyTo);
 
 				if (node != null) {
 					setParent(node);
@@ -499,13 +476,13 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public void registerChild(MessageNode node) {
-			synchronized(children) {
+			synchronized (children) {
 				children.insertElementAt(node, 0);
 			}
 		}
 
 		public Enumeration children() {
-			synchronized(children) {
+			synchronized (children) {
 				return children.elements();
 			}
 		}
@@ -515,19 +492,19 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public TreeNode getChildAt(int childIndex) {
-			synchronized(children) {
-				return (MessageNode)children.get(childIndex);
+			synchronized (children) {
+				return (MessageNode) children.get(childIndex);
 			}
 		}
 
 		public int getChildCount() {
-			synchronized(children) {
+			synchronized (children) {
 				return children.size();
 			}
 		}
 
 		public int getIndex(TreeNode node) {
-			synchronized(children) {
+			synchronized (children) {
 				return children.indexOf(node);
 			}
 		}
@@ -537,7 +514,7 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public boolean isLeaf() {
-			synchronized(children) {
+			synchronized (children) {
 				return (children.size() == 0);
 			}
 		}
@@ -550,13 +527,13 @@ public class MessageTreeTable implements Observer,
 		}
 	}
 
-
-
 	protected class MessageTableRenderer extends Table.DefaultRenderer {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = -2689945423474352988L;
+
 		private JCheckBox checkBoxRenderer;
 
 		public MessageTableRenderer() {
@@ -565,8 +542,8 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public Component getTableCellRendererComponent(final JTable table, Object value,
-							       final boolean isSelected, final boolean hasFocus,
-							       final int row, final int column) {
+													   final boolean isSelected, final boolean hasFocus,
+													   final int row, final int column) {
 			Component c;
 
 			Message msg = model.getMsg(row);
@@ -577,7 +554,7 @@ public class MessageTreeTable implements Observer,
 				checkBoxRenderer.setEnabled(msg != null);
 
 				if (msg != null)
-					checkBoxRenderer.setSelected(((Boolean)value).booleanValue());
+					checkBoxRenderer.setSelected(((Boolean) value).booleanValue());
 				else
 					checkBoxRenderer.setSelected(false);
 
@@ -586,15 +563,14 @@ public class MessageTreeTable implements Observer,
 
 			if (value instanceof MessageNode && tree) {
 				return messageNodeTree.getTableCellRendererComponent(table,
-										     value,
-										     isSelected,
-										     hasFocus,
-										     row,
-										     column);
+						value,
+						isSelected,
+						hasFocus,
+						row,
+						column);
 			}
 
 			Color color = Color.BLACK;
-
 
 			if (column == 2) {
 				value = ((author != null) ? author.toString() : "(?)");
@@ -606,14 +582,14 @@ public class MessageTreeTable implements Observer,
 			}
 
 			if (value instanceof java.util.Date) {
-				value = java.text.DateFormat.getDateTimeInstance().format((java.util.Date)value);
+				value = java.text.DateFormat.getDateTimeInstance().format((java.util.Date) value);
 
 				if (advancedMode) {
 					int rev = msg.getRev();
 
 					if (rev >= 0) {
-						value = ("("+Integer.toString(rev)+") "+
-							 ((String)value));
+						value = ("(" + Integer.toString(rev) + ") " +
+								((String) value));
 					}
 				}
 			}
@@ -622,7 +598,7 @@ public class MessageTreeTable implements Observer,
 				color = author.getIdentity().getTrustLevelColor();
 
 			c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
-								row, column);
+					row, column);
 
 			c.setForeground(color);
 
@@ -639,8 +615,7 @@ public class MessageTreeTable implements Observer,
 					else
 						mod = Font.ITALIC;
 				}
-			}
-			else
+			} else
 				mod = Font.ITALIC;
 
 			c.setFont(c.getFont().deriveFont(mod));
@@ -649,16 +624,16 @@ public class MessageTreeTable implements Observer,
 		}
 	}
 
-
 	protected class MessageTableModel
-		extends javax.swing.table.AbstractTableModel {
-
+			extends javax.swing.table.AbstractTableModel {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 6796753954357075844L;
+
 		private Vector msgs;
+
 		private boolean[] selection;
 
 		public MessageTableModel() {
@@ -667,8 +642,9 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public int getRowCount() {
-			if (msgs == null) return 0;
-			synchronized(msgs) {
+			if (msgs == null)
+				return 0;
+			synchronized (msgs) {
 				return msgs.size();
 			}
 		}
@@ -682,8 +658,8 @@ public class MessageTreeTable implements Observer,
 		}
 
 		public Message getMsg(int row) {
-			synchronized(msgs) {
-				return ((MessageNode)msgs.get(row)).getMessage();
+			synchronized (msgs) {
+				return ((MessageNode) msgs.get(row)).getMessage();
 			}
 		}
 
@@ -693,15 +669,15 @@ public class MessageTreeTable implements Observer,
 			}
 
 			if (column == 1) {
-				synchronized(msgs) {
-					return (MessageNode)msgs.get(row);
+				synchronized (msgs) {
+					return (MessageNode) msgs.get(row);
 				}
 			}
 
 			Message msg;
 
-			synchronized(msgs) {
-				msg = ((MessageNode)msgs.get(row)).getMessage();
+			synchronized (msgs) {
+				msg = ((MessageNode) msgs.get(row)).getMessage();
 			}
 
 			if (msg == null)
@@ -731,34 +707,33 @@ public class MessageTreeTable implements Observer,
 
 			int lng = 0;
 
-			synchronized(msgs) {
+			synchronized (msgs) {
 				lng = msgs.size();
 			}
 
 			selection = new boolean[lng];
 
-			for (int i = 0 ; i < lng ; i++)
+			for (int i = 0; i < lng; i++)
 				selection[i] = false;
 		}
-
 
 		public MessageNode getNode(Message msg) {
 			int i;
 
-			if ( (i = getRow(msg)) < 0 )
+			if ((i = getRow(msg)) < 0)
 				return null;
 
-			return (MessageNode)msgs.get(i);
+			return (MessageNode) msgs.get(i);
 		}
 
 		public int getRow(Message msg) {
 			boolean found = false;
 			int i = 0;
 
-			synchronized(msgs) {
+			synchronized (msgs) {
 				for (Iterator it = msgs.iterator();
-				     it.hasNext(); i++) {
-					MessageNode sNode = (MessageNode)it.next();
+					 it.hasNext(); i++) {
+					MessageNode sNode = (MessageNode) it.next();
 
 					if (sNode.getMessage() != null && sNode.getMessage().equals(msg)) {
 						found = true;
@@ -775,11 +750,10 @@ public class MessageTreeTable implements Observer,
 			return i;
 		}
 
-
 		public void setSelectedAll(boolean s) {
-			synchronized(msgs) {
-				for (int i = 0 ; i < selection.length ; i++) {
-					Message msg = ((MessageNode)msgs.get(i)).getMessage();
+			synchronized (msgs) {
+				for (int i = 0; i < selection.length; i++) {
+					Message msg = ((MessageNode) msgs.get(i)).getMessage();
 
 					if (msg != null)
 						selection[i] = s;
@@ -787,17 +761,15 @@ public class MessageTreeTable implements Observer,
 			}
 		}
 
-
 		public boolean[] getSelection() {
 			return selection;
 		}
 
-
 		public void switchSelection(int row) {
 			Message msg = null;
 
-			synchronized(msgs) {
-				msg = ((MessageNode)msgs.get(row)).getMessage();
+			synchronized (msgs) {
+				msg = ((MessageNode) msgs.get(row)).getMessage();
 			}
 
 			if (msg != null)
@@ -811,8 +783,8 @@ public class MessageTreeTable implements Observer,
 		public void switchSelection(int row, boolean val) {
 			Message msg = null;
 
-			synchronized(msgs) {
-				msg = ((MessageNode)msgs.get(row)).getMessage();
+			synchronized (msgs) {
+				msg = ((MessageNode) msgs.get(row)).getMessage();
 			}
 
 			if (msg != null)
@@ -851,14 +823,12 @@ public class MessageTreeTable implements Observer,
 		}
 	}
 
-
 	public int getRow(Message msg) {
 		if (msg == null)
 			return -1;
 
 		return model.getRow(msg);
 	}
-
 
 	public void setBoard(Board board) {
 		this.targetBoard = board;
@@ -876,7 +846,6 @@ public class MessageTreeTable implements Observer,
 		refresh(keywords, orderBy, desc, everywhereBox.isSelected());
 	}
 
-
 	private boolean rebuildMsgList(Vector msgs, TreeNode node, int depth) {
 		if (node instanceof MessageNode)
 			msgs.add(node);
@@ -886,33 +855,31 @@ public class MessageTreeTable implements Observer,
 			return false;
 		}
 
-		for(Enumeration e = node.children();
-		    e.hasMoreElements();) {
-			TreeNode sub = (TreeNode)e.nextElement();
-			if (!rebuildMsgList(msgs, sub, depth+1))
+		for (Enumeration e = node.children();
+			 e.hasMoreElements(); ) {
+			TreeNode sub = (TreeNode) e.nextElement();
+			if (!rebuildMsgList(msgs, sub, depth + 1))
 				return false;
 		}
 
 		return true;
 	}
 
-
-
 	public void refresh(String[] keywords, int orderBy, boolean desc, boolean allBoards) {
 		Vector msgs = null;
 
 		if ((!allBoards) && targetBoard != null) {
 			Vector rawMsgs = targetBoard.getMessages(keywords, orderBy,
-								 desc, seeArchived.isSelected(),
-								 seeRead.isSelected(),
-								 seeUnsigned.isSelected(),
-								 minTrustLevelInt);
+					desc, seeArchived.isSelected(),
+					seeRead.isSelected(),
+					seeUnsigned.isSelected(),
+					minTrustLevelInt);
 
 			msgs = new Vector(rawMsgs.size());
 
-			for(Iterator it = rawMsgs.iterator();
-			    it.hasNext();) {
-				msgs.add(new MessageNode((Message)it.next()));
+			for (Iterator it = rawMsgs.iterator();
+				 it.hasNext(); ) {
+				msgs.add(new MessageNode((Message) it.next()));
 			}
 		}
 
@@ -921,15 +888,15 @@ public class MessageTreeTable implements Observer,
 
 			BoardFactory[] factories = mainPanel.getPluginCore().getFactories();
 
-			for (int i = 0 ; i < factories.length ; i++) {
+			for (int i = 0; i < factories.length; i++) {
 				Vector boardMsgs = factories[i].getAllMessages(keywords, orderBy, desc,
-									       seeArchived.isSelected(),
-									       seeRead.isSelected(),
-									       seeUnsigned.isSelected(),
-									       minTrustLevelInt);
+						seeArchived.isSelected(),
+						seeRead.isSelected(),
+						seeUnsigned.isSelected(),
+						minTrustLevelInt);
 				for (Iterator it = boardMsgs.iterator();
-				     it.hasNext();) {
-					msgs.add(new MessageNode((Message)it.next()));
+					 it.hasNext(); ) {
+					msgs.add(new MessageNode((Message) it.next()));
 				}
 			}
 		}
@@ -938,7 +905,7 @@ public class MessageTreeTable implements Observer,
 			msgs = new Vector();
 		}
 
-		Logger.info(this, "Nmb msgs in the tree (before) : "+Integer.toString(msgs.size()));
+		Logger.info(this, "Nmb msgs in the tree (before) : " + Integer.toString(msgs.size()));
 
 		Vector rootNodes;
 
@@ -947,25 +914,24 @@ public class MessageTreeTable implements Observer,
 			/** Filling in messageNodeHashtable **/
 			Hashtable messageNodeHashtable = new Hashtable(msgs.size());
 
-			synchronized(messageNodeHashtable) {
+			synchronized (messageNodeHashtable) {
 				for (Iterator it = msgs.iterator();
-				     it.hasNext();) {
-					MessageNode node = (MessageNode)it.next();
+					 it.hasNext(); ) {
+					MessageNode node = (MessageNode) it.next();
 					messageNodeHashtable.put(node.getMessage().getMsgId(), node);
 				}
 
-
 				/** Building the tree **/
 				for (Iterator it = msgs.iterator();
-				     it.hasNext();) {
-					((MessageNode)it.next()).setParent(messageNodeHashtable);
+					 it.hasNext(); ) {
+					((MessageNode) it.next()).setParent(messageNodeHashtable);
 				}
 			}
 
 			/** we search the nodes who should have a parent but haven't **/
 			/* we don't use an iterator to avoid the collisions */
-			for (int i = 0 ; i < msgs.size(); i++) {
-				MessageNode node = (MessageNode)msgs.get(i);
+			for (int i = 0; i < msgs.size(); i++) {
+				MessageNode node = (MessageNode) msgs.get(i);
 
 				if (node.getParent() == null && node.hasParent()) {
 					MessageNode newEmptyNode = new MessageNode(null);
@@ -984,8 +950,8 @@ public class MessageTreeTable implements Observer,
 			/* Building the root tree */
 
 			for (Iterator it = msgs.iterator();
-			     it.hasNext();) {
-				MessageNode node = (MessageNode)it.next();
+				 it.hasNext(); ) {
+				MessageNode node = (MessageNode) it.next();
 
 				if (node.getParent() == null)
 					rootNodes.add(node);
@@ -998,15 +964,14 @@ public class MessageTreeTable implements Observer,
 		RootMessageNode rootNode = new RootMessageNode(rootNodes);
 
 		for (Iterator it = rootNodes.iterator();
-		     it.hasNext();) {
-			((MessageNode)it.next()).setParent(rootNode);
+			 it.hasNext(); ) {
+			((MessageNode) it.next()).setParent(rootNode);
 		}
-
 
 		/** and to finish, the tree itself **/
 		messageNodeTree = new MessageNodeTree(rootNode);
 
-		for (int i = 0 ; i < messageNodeTree.getRowCount() ; i++) {
+		for (int i = 0; i < messageNodeTree.getRowCount(); i++) {
 			messageNodeTree.expandRow(i);
 		}
 
@@ -1016,7 +981,7 @@ public class MessageTreeTable implements Observer,
 
 		rebuildMsgList(msgs, rootNode, 0);
 
-		Logger.info(this, "Nmb msgs in the tree (after) : "+Integer.toString(msgs.size()));
+		Logger.info(this, "Nmb msgs in the tree (after) : " + Integer.toString(msgs.size()));
 
 		model.setMessages(msgs);
 
@@ -1031,16 +996,15 @@ public class MessageTreeTable implements Observer,
 		model.refresh(row);
 	}
 
-
 	public void update(Observable o, Object param) {
 		if (o == mainPanel.getBoardTree()) {
-			setBoard((Board)param);
+			setBoard((Board) param);
 			refresh();
 		}
 	}
 
-
 	public class LineSelecter implements Runnable {
+
 		private int line;
 
 		public LineSelecter(int line) {
@@ -1049,12 +1013,12 @@ public class MessageTreeTable implements Observer,
 
 		public void run() {
 			table.setRowSelectionInterval(line, line);
-			table.setColumnSelectionInterval(0, COLUMNS.length-1);
+			table.setColumnSelectionInterval(0, COLUMNS.length - 1);
 			model.refresh(line);
 
 			int max = tableScrollPane.getVerticalScrollBar().getMaximum();
 			int min = tableScrollPane.getVerticalScrollBar().getMinimum();
-			int value = (((max-min) * (line-5)) / model.getRowCount()) + min;
+			int value = (((max - min) * (line - 5)) / model.getRowCount()) + min;
 
 			if (value < min)
 				value = min;
@@ -1067,7 +1031,6 @@ public class MessageTreeTable implements Observer,
 		}
 	}
 
-
 	public Message getNextMessageInThread(Message currentMsg) {
 		MessageNode node = model.getNode(currentMsg);
 
@@ -1079,8 +1042,8 @@ public class MessageTreeTable implements Observer,
 		/* we first check if it has an unread child */
 
 		for (Enumeration e = node.children();
-		     e.hasMoreElements();) {
-			MessageNode child = (MessageNode)e.nextElement();
+			 e.hasMoreElements(); ) {
+			MessageNode child = (MessageNode) e.nextElement();
 			if (!child.getMessage().isRead())
 				return child.getMessage();
 		}
@@ -1090,10 +1053,10 @@ public class MessageTreeTable implements Observer,
 		 * have brothers, etc)
 		 */
 		for (;
-		     node != null;
-		     node = (MessageNode)node.getParent()) {
+			 node != null;
+			 node = (MessageNode) node.getParent()) {
 
-			TreeNode treeParent = (TreeNode)node.getParent();
+			TreeNode treeParent = (TreeNode) node.getParent();
 
 			/* if it has no parent, we return null to let the calling function
 			 * search a new thread in the database (ORDER BY date, etc)
@@ -1101,12 +1064,12 @@ public class MessageTreeTable implements Observer,
 			if (treeParent == null || treeParent instanceof RootMessageNode)
 				return null;
 
-			MessageNode parent = (MessageNode)treeParent;
+			MessageNode parent = (MessageNode) treeParent;
 
 			int i = parent.getIndex(node);
 
-			for (i++ ; i < parent.getChildCount() ; i++) {
-				MessageNode child = (MessageNode)parent.getChildAt(i);
+			for (i++; i < parent.getChildCount(); i++) {
+				MessageNode child = (MessageNode) parent.getChildAt(i);
 
 				if (!child.getMessage().isRead())
 					return child.getMessage();
@@ -1115,7 +1078,6 @@ public class MessageTreeTable implements Observer,
 
 		return null;
 	}
-
 
 	public boolean nextUnread() {
 
@@ -1131,14 +1093,14 @@ public class MessageTreeTable implements Observer,
 
 		if (newMsg == null)
 			newMsg = targetBoard.getNextUnreadMessage(seeUnsigned.isSelected(),
-								  seeArchived.isSelected(),
-								  minTrustLevelInt);
+					seeArchived.isSelected(),
+					minTrustLevelInt);
 
 		if (newMsg != null) {
 			int line = getRow(newMsg);
 
 			if (line >= 0) {
-				Logger.info(this, "Line: "+Integer.toString(line));
+				Logger.info(this, "Line: " + Integer.toString(line));
 				model.setSelectedAll(false);
 				model.switchSelection(line, true);
 				javax.swing.SwingUtilities.invokeLater(new LineSelecter(line));
@@ -1163,7 +1125,6 @@ public class MessageTreeTable implements Observer,
 		return false;
 	}
 
-
 	public int getMinTrustLevel() {
 		return minTrustLevelInt;
 	}
@@ -1178,17 +1139,17 @@ public class MessageTreeTable implements Observer,
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == seeUnsigned
-		    || e.getSource() == minTrustLevel
-		    || e.getSource() == seeArchived
-		    || e.getSource() == seeRead) {
+				|| e.getSource() == minTrustLevel
+				|| e.getSource() == seeArchived
+				|| e.getSource() == seeRead) {
 
-			minTrustLevelInt = Identity.getTrustLevel((String)(minTrustLevel.getSelectedItem()));
+			minTrustLevelInt = Identity.getTrustLevel((String) (minTrustLevel.getSelectedItem()));
 			refresh();
 
 			mainPanel.getBoardTree().refresh();
 
 		} else if (e.getSource() == searchButton
-		    || e.getSource() == searchField) {
+				|| e.getSource() == searchField) {
 
 			keywords = searchField.getText().split(" ");
 
@@ -1204,7 +1165,7 @@ public class MessageTreeTable implements Observer,
 			int sel = actions.getSelectedIndex();
 			boolean[] selected = model.getSelection();
 
-			Logger.info(this, "Applying action : "+Integer.toString(sel));
+			Logger.info(this, "Applying action : " + Integer.toString(sel));
 
 			if (sel <= 0)
 				return;
@@ -1219,7 +1180,7 @@ public class MessageTreeTable implements Observer,
 			} else if (sel == 4 || sel == 5) { /* mark as (non-)read */
 				boolean markAsRead = (sel == 4);
 
-				for (int i = 0 ; i < selected.length ; i++) {
+				for (int i = 0; i < selected.length; i++) {
 					if (selected[i]) {
 						model.getMsg(i).setRead(markAsRead);
 						model.refresh(i);
@@ -1230,7 +1191,7 @@ public class MessageTreeTable implements Observer,
 			} else if (sel == 7 || sel == 8) { /* (un)archive */
 				boolean archive = (sel == 7);
 
-				for (int i = 0 ; i < selected.length ; i++) {
+				for (int i = 0; i < selected.length; i++) {
 					if (selected[i])
 						model.getMsg(i).setArchived(archive);
 				}
@@ -1253,13 +1214,12 @@ public class MessageTreeTable implements Observer,
 		}
 	}
 
-
 	public int startRow = -1;
+
 	public int endRow = -1;
 
-
-	public void mouseClicked(MouseEvent e)  {
-		int row    = table.rowAtPoint(e.getPoint());
+	public void mouseClicked(MouseEvent e) {
+		int row = table.rowAtPoint(e.getPoint());
 		int column = table.columnAtPoint(e.getPoint());
 
 		Logger.info(this, "Mouse clicked");
@@ -1271,7 +1231,7 @@ public class MessageTreeTable implements Observer,
 			if (endRow < 0)
 				endRow = row;
 
-			if ( (startRow < 0 || endRow >= 0 || startRow == endRow) ) {
+			if ((startRow < 0 || endRow >= 0 || startRow == endRow)) {
 				/* only one selection */
 
 				Message msg = model.getMsg(row);
@@ -1289,10 +1249,13 @@ public class MessageTreeTable implements Observer,
 		endRow = -1;
 	}
 
-	public void mouseEntered(MouseEvent e)  { }
-	public void mouseExited(MouseEvent e)   { }
+	public void mouseEntered(MouseEvent e) {
+	}
 
-	public void mousePressed(MouseEvent e)  {
+	public void mouseExited(MouseEvent e) {
+	}
+
+	public void mousePressed(MouseEvent e) {
 		int column = table.columnAtPoint(e.getPoint());
 
 		Logger.info(this, "mouse pressed");
@@ -1313,10 +1276,10 @@ public class MessageTreeTable implements Observer,
 		endRow = table.rowAtPoint(e.getPoint());
 
 		if (startRow >= 0 && endRow >= 0
-		    && startRow != endRow) {
+				&& startRow != endRow) {
 			/* many selections */
 
-			for (int i = startRow ; i <= endRow ; i++) {
+			for (int i = startRow; i <= endRow; i++) {
 				model.switchSelection(i);
 			}
 

@@ -1,25 +1,24 @@
 package thaw.plugins.indexWebGrapher;
 
-import javax.swing.JComponent;
-import java.awt.Graphics;
 import java.awt.Dimension;
-
-import java.awt.event.MouseListener;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
-
+import java.awt.event.MouseListener;
 import java.util.Hashtable;
-import java.util.Vector;
 import java.util.Iterator;
+import java.util.Vector;
+import javax.swing.JComponent;
 
 import thaw.plugins.IndexWebGrapher;
 
-
 public class GraphPanel extends JComponent implements MouseListener {
+
 	private static final long serialVersionUID = 5478870004197620690L;
 
 	public final static int BORDER = 50;
 
 	private Hashtable nodeHashtable;
+
 	private Vector nodeList;
 
 	private int lastId;
@@ -49,7 +48,7 @@ public class GraphPanel extends JComponent implements MouseListener {
 
 	public void registerNode(Node node) {
 		nodeHashtable.put(node.getIndexKey().substring(4, 40),
-				  node);
+				node);
 		nodeList.add(node);
 
 		if (node.getId() > lastId)
@@ -57,7 +56,7 @@ public class GraphPanel extends JComponent implements MouseListener {
 	}
 
 	public Node getNode(String key) {
-		return (Node)nodeHashtable.get(key.substring(4, 40));
+		return (Node) nodeHashtable.get(key.substring(4, 40));
 	}
 
 	public Vector getNodeList() {
@@ -68,16 +67,17 @@ public class GraphPanel extends JComponent implements MouseListener {
 		return lastId;
 	}
 
-
 	public void setZoom(double zoom) {
 		this.zoom = zoom;
 	}
 
 	private double minX = 0;
-	private double maxX = 0;
-	private double minY = 0;
-	private double maxY = 0;
 
+	private double maxX = 0;
+
+	private double minY = 0;
+
+	private double maxY = 0;
 
 	public void recomputeMinMax() {
 		minX = 0;
@@ -86,13 +86,17 @@ public class GraphPanel extends JComponent implements MouseListener {
 		maxY = 0;
 
 		for (Iterator it = nodeList.iterator();
-		     it.hasNext();) {
-			Node node = (Node)it.next();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 
-			if (node.getX() < minX) minX = node.getX();
-			if (node.getX() > maxX) maxX = node.getX();
-			if (node.getY() < minY) minY = node.getY();
-			if (node.getY() > maxY) maxY = node.getY();
+			if (node.getX() < minX)
+				minX = node.getX();
+			if (node.getX() > maxX)
+				maxX = node.getX();
+			if (node.getY() < minY)
+				minY = node.getY();
+			if (node.getY() > maxY)
+				maxY = node.getY();
 		}
 	}
 
@@ -101,8 +105,8 @@ public class GraphPanel extends JComponent implements MouseListener {
 
 		Dimension size = plugin.getScrollPane().getSize();
 
-		double zoomX = (size.getWidth()-(2*BORDER)) / (maxX - minX);
-		double zoomY = (size.getHeight()-(2*BORDER)) / (maxY - minY);
+		double zoomX = (size.getWidth() - (2 * BORDER)) / (maxX - minX);
+		double zoomY = (size.getHeight() - (2 * BORDER)) / (maxY - minY);
 
 		zoom = ((zoomX > zoomY) ? zoomY : zoomX);
 	}
@@ -118,44 +122,42 @@ public class GraphPanel extends JComponent implements MouseListener {
 	}
 
 	public void refresh() {
-		Dimension dim = new Dimension((int)((maxX - minX) * zoom) + (2*BORDER),
-					      (int)((maxY - minY) * zoom) + (2*BORDER));
+		Dimension dim = new Dimension((int) ((maxX - minX) * zoom) + (2 * BORDER),
+				(int) ((maxY - minY) * zoom) + (2 * BORDER));
 
 		this.setPreferredSize(dim);
-		this.setSize((int)((maxX - minX) * zoom) + (2*BORDER),
-			     (int)((maxY - minY) * zoom) + (2*BORDER));
+		this.setSize((int) ((maxX - minX) * zoom) + (2 * BORDER),
+				(int) ((maxY - minY) * zoom) + (2 * BORDER));
 		plugin.getScrollPane().revalidate();
 		repaint();
 	}
-
 
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
 		Dimension d = getSize();
 		g.setColor(java.awt.Color.WHITE);
-		g.fillRect(0, 0, (int)d.getWidth(), (int)d.getHeight());
+		g.fillRect(0, 0, (int) d.getWidth(), (int) d.getHeight());
 
 		if (nodeList == null)
 			return;
 
-		int zeroX = (-1 * (int)(minX * zoom)) + BORDER;
-		int zeroY = (-1 * (int)(minY * zoom)) + BORDER;
+		int zeroX = (-1 * (int) (minX * zoom)) + BORDER;
+		int zeroY = (-1 * (int) (minY * zoom)) + BORDER;
 
 		g.setColor(java.awt.Color.GRAY);
-		g.drawLine(zeroX, 0, zeroX, (int)d.getHeight());
-		g.drawLine(0, zeroY, (int)d.getWidth(), zeroY);
+		g.drawLine(zeroX, 0, zeroX, (int) d.getHeight());
+		g.drawLine(0, zeroY, (int) d.getWidth(), zeroY);
 
 		for (Iterator it = nodeList.iterator();
-		     it.hasNext();) {
-			((Node)it.next()).paintTaNodeFaceDeNoeud(g, zoom, zeroX, zeroY);
+			 it.hasNext(); ) {
+			((Node) it.next()).paintTaNodeFaceDeNoeud(g, zoom, zeroX, zeroY);
 		}
 	}
 
-
 	public void clicked(int x, int y) {
-		int zeroX = (-1 * (int)(minX * zoom)) + BORDER;
-		int zeroY = (-1 * (int)(minY * zoom)) + BORDER;
+		int zeroX = (-1 * (int) (minX * zoom)) + BORDER;
+		int zeroY = (-1 * (int) (minY * zoom)) + BORDER;
 
 		if (lastSelectedNode != null)
 			lastSelectedNode.setSelected(false);
@@ -164,18 +166,18 @@ public class GraphPanel extends JComponent implements MouseListener {
 		double bestDist = 0.0;
 
 		for (Iterator it = nodeList.iterator();
-		     it.hasNext();) {
-			Node node = (Node)it.next();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 
 			if (bestPlaced == null) {
 				bestPlaced = node;
-				double diffBestX = Math.abs(bestPlaced.getXPixel(zoom, zeroX)-x);
-				double diffBestY = Math.abs(bestPlaced.getYPixel(zoom, zeroY)-y);
+				double diffBestX = Math.abs(bestPlaced.getXPixel(zoom, zeroX) - x);
+				double diffBestY = Math.abs(bestPlaced.getYPixel(zoom, zeroY) - y);
 
-				bestDist = Math.sqrt(Math.pow(diffBestX, 2)+Math.pow(diffBestY, 2));
+				bestDist = Math.sqrt(Math.pow(diffBestX, 2) + Math.pow(diffBestY, 2));
 			} else {
-				double diffNodeX = Math.abs(node.getXPixel(zoom, zeroX)-x);
-				double diffNodeY = Math.abs(node.getYPixel(zoom, zeroY)-y);
+				double diffNodeX = Math.abs(node.getXPixel(zoom, zeroX) - x);
+				double diffNodeY = Math.abs(node.getYPixel(zoom, zeroY) - y);
 
 				double distNode = Math.sqrt(Math.pow(diffNodeX, 2) + Math.pow(diffNodeY, 2));
 
@@ -198,8 +200,11 @@ public class GraphPanel extends JComponent implements MouseListener {
 		clicked(e.getX(), e.getY());
 	}
 
-	public void mouseEntered(final MouseEvent e) { }
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseEntered(final MouseEvent e) {
+	}
+
+	public void mouseExited(final MouseEvent e) {
+	}
 
 	public void mousePressed(final MouseEvent e) {
 		clicked(e.getX(), e.getY());

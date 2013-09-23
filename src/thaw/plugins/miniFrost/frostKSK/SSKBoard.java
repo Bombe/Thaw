@@ -1,20 +1,22 @@
 package thaw.plugins.miniFrost.frostKSK;
 
-import java.sql.*;
-
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
+
 import thaw.core.Logger;
 import thaw.plugins.Hsqldb;
-
 
 public class SSKBoard extends KSKBoard {
 
 	private String publicKey;
+
 	private String privateKey;
 
 	public SSKBoard(SSKBoardFactory factory,
-			int id, String name, Date lastUpdate,
-			String publicKey, String privateKey) {
+					int id, String name, Date lastUpdate,
+					String publicKey, String privateKey) {
 
 		super(factory, id, name, lastUpdate);
 
@@ -27,16 +29,13 @@ public class SSKBoard extends KSKBoard {
 		this.privateKey = privateKey;
 	}
 
-
-	/**
-	 * called by KSKMessage.download();
-	 */
+	/** called by KSKMessage.download(); */
 	protected String getDownloadKey(Date date, int rev) {
 		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy.M.d");
 
 		StringBuffer keyBuf = new StringBuffer(publicKey);
 
-		keyBuf.append(getName()+"|");
+		keyBuf.append(getName() + "|");
 		keyBuf = formatter.format(date, keyBuf, new java.text.FieldPosition(0));
 		keyBuf.append("-");
 		keyBuf.append(Integer.toString(rev));
@@ -45,14 +44,11 @@ public class SSKBoard extends KSKBoard {
 		return keyBuf.toString();
 	}
 
-
 	protected int getKeyType() {
 		return thaw.fcp.FCPClientPut.KEY_TYPE_SSK;
 	}
 
-	/**
-	 * called by KSKDraft
-	 */
+	/** called by KSKDraft */
 	protected String getPrivateKey() {
 		return privateKey;
 	}
@@ -61,13 +57,11 @@ public class SSKBoard extends KSKBoard {
 		return publicKey;
 	}
 
-	/**
-	 * called by KSKDraft
-	 */
+	/** called by KSKDraft */
 	protected String getNameForInsertion(Date date, int rev) {
 		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy.M.d");
 
-		StringBuffer keyBuf = new StringBuffer(getName()+"|");
+		StringBuffer keyBuf = new StringBuffer(getName() + "|");
 
 		keyBuf = formatter.format(date, keyBuf, new java.text.FieldPosition(0));
 		keyBuf.append("-");
@@ -81,17 +75,17 @@ public class SSKBoard extends KSKBoard {
 		try {
 			Hsqldb db = getFactory().getDb();
 
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("DELETE FROM frostSSKBoards "+
-									 "WHERE kskBoardId = ?");
+				st = db.getConnection().prepareStatement("DELETE FROM frostSSKBoards " +
+						"WHERE kskBoardId = ?");
 				st.setInt(1, getId());
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Can't destroy the board because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Can't destroy the board because : " + e.toString());
 			return false;
 		}
 
@@ -104,12 +98,12 @@ public class SSKBoard extends KSKBoard {
 			try {
 				Hsqldb db = getFactory().getDb();
 
-				synchronized(db.dbLock) {
+				synchronized (db.dbLock) {
 					PreparedStatement st;
 
-					st = db.getConnection().prepareStatement("INSERT INTO frostSSKBoards "+
-										 "(publicKey, privateKey, kskBoardId) "+
-										 "VALUES (?, ?, ?)");
+					st = db.getConnection().prepareStatement("INSERT INTO frostSSKBoards " +
+							"(publicKey, privateKey, kskBoardId) " +
+							"VALUES (?, ?, ?)");
 					st.setString(1, publicKey);
 					if (privateKey != null)
 						st.setString(2, privateKey);
@@ -120,9 +114,9 @@ public class SSKBoard extends KSKBoard {
 					st.execute();
 					st.close();
 				}
-			} catch(SQLException e) {
+			} catch (SQLException e) {
 				Logger.error(this, "Oops ! Unable to delete the board, and I think that I've broken something :(");
-				Logger.error(this, "Reason : "+e.toString());
+				Logger.error(this, "Reason : " + e.toString());
 			}
 
 			return false;
@@ -130,7 +124,6 @@ public class SSKBoard extends KSKBoard {
 
 		return true;
 	}
-
 
 	public thaw.plugins.miniFrost.interfaces.Draft getDraft(thaw.plugins.miniFrost.interfaces.Message inReplyTo) {
 		if (privateKey == null) {
@@ -141,12 +134,11 @@ public class SSKBoard extends KSKBoard {
 		return super.getDraft(inReplyTo);
 	}
 
-
 	public String toString() {
 		if (privateKey == null)
-			return super.toString()+" (R)";
+			return super.toString() + " (R)";
 		else
-			return super.toString()+" (R/W)";
+			return super.toString() + " (R/W)";
 	}
 }
 

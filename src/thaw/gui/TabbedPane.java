@@ -1,22 +1,21 @@
 package thaw.gui;
 
-import javax.swing.JTabbedPane;
-import javax.swing.Icon;
 import java.awt.Component;
+import java.util.Vector;
+import javax.swing.Icon;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-
-import java.util.Vector;
-
 import thaw.core.Logger;
 
-
 public class TabbedPane extends JTabbedPane implements ChangeListener {
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8453293567552928389L;
+
 	private Vector<String> tabNames;
 
 	public TabbedPane() {
@@ -25,9 +24,8 @@ public class TabbedPane extends JTabbedPane implements ChangeListener {
 		super.addChangeListener(this);
 	}
 
-
 	public void addTab(final String tabName, final Icon icon,
-			   final java.awt.Component panel) {
+					   final java.awt.Component panel) {
 		tabNames.add(tabName);
 
 		if (tabNames.size() > 1)
@@ -39,7 +37,6 @@ public class TabbedPane extends JTabbedPane implements ChangeListener {
 
 		super.setToolTipTextAt(x, tabName);
 	}
-
 
 	public void remove(Component panel) {
 		int x = super.indexOfComponent(panel);
@@ -63,12 +60,11 @@ public class TabbedPane extends JTabbedPane implements ChangeListener {
 		return tabNames.indexOf(tabName);
 	}
 
-
 	public void stateChanged(final ChangeEvent e) {
 		int x = super.getSelectedIndex();
 		int tabCount = super.getTabCount();
 
-		for (int i = 0 ; i < tabCount ; i++) {
+		for (int i = 0; i < tabCount; i++) {
 			if (i == x)
 				super.setTitleAt(i, tabNames.get(i));
 			else

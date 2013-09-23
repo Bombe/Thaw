@@ -1,84 +1,77 @@
 package thaw.plugins.transferLogs;
 
-import javax.swing.event.TableModelEvent;
-
 import java.awt.BorderLayout;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JComboBox;
-import javax.swing.JTable;
-import javax.swing.JScrollPane;
-import javax.swing.JButton;
-import javax.swing.JTextArea;
-import javax.swing.ImageIcon;
-import javax.swing.JPopupMenu;
-import javax.swing.JMenuItem;
-
-import java.util.Vector;
-import java.util.Iterator;
-import java.text.DateFormat;
-
-import java.awt.Component;
 import java.awt.Color;
-import java.sql.*;
-
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.util.Iterator;
+import java.util.Vector;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 
-import thaw.gui.Table;
-import thaw.gui.IconBox;
-import thaw.core.I18n;
 import thaw.core.Config;
+import thaw.core.I18n;
 import thaw.core.Logger;
-
-import thaw.plugins.TransferLogs;
+import thaw.gui.IconBox;
+import thaw.gui.Table;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.TransferLogs;
 
 /**
- * Allow to see entry page per page.
- * columns : "dates" (start,end), transfer "type", "filename","key already seen?" .
- * A button "details" is added in each row of the column "filename".
- * Button "details" add in the column "filename" the following informations:
- * <ul>
- * <li>Key</li>
- * <li>Was finished ?</li>
- * <li>If finished : Average speed</li>
- * </ul>
- * <br/>
- * right click menu : copy key(s) to clipboard
+ * Allow to see entry page per page. columns : "dates" (start,end), transfer
+ * "type", "filename","key already seen?" . A button "details" is added in each
+ * row of the column "filename". Button "details" add in the column "filename"
+ * the following informations: <ul> <li>Key</li> <li>Was finished ?</li> <li>If
+ * finished : Average speed</li> </ul> <br/> right click menu : copy key(s) to
+ * clipboard
  */
 public class TransferTable implements MouseListener {
+
 	public final static int NMB_ELEMENTS_PER_PAGE = 100;
 
 	public final static int DEFAULT_LINE_HEIGHT = 18;
+
 	public final static int MAX_LINE_HEIGHT = 100;
 
 	public final static String[] COLUMN_NAMES = {
-		I18n.getMessage("thaw.plugin.transferLogs.dates"),
-		I18n.getMessage("thaw.plugin.transferLogs.type"),
-		I18n.getMessage("thaw.plugin.transferLogs.file"),
-		I18n.getMessage("thaw.plugin.transferLogs.isDup")
+			I18n.getMessage("thaw.plugin.transferLogs.dates"),
+			I18n.getMessage("thaw.plugin.transferLogs.type"),
+			I18n.getMessage("thaw.plugin.transferLogs.file"),
+			I18n.getMessage("thaw.plugin.transferLogs.isDup")
 	};
-
 
 	private JPanel panel;
 
 	private TransferTableModel model;
+
 	private PageSelecter pageSelecter;
+
 	private Table table;
 
 	private JPopupMenu rightClickMenu;
+
 	private Vector rightClickActions;
 
 	private TransferManagementHelper.TransferRemover remover;
 
 	private DateFormat dateFormat;
-
 
 	public TransferTable(Hsqldb db, Config config) {
 		this.dateFormat = DateFormat.getDateTimeInstance();
@@ -95,7 +88,6 @@ public class TransferTable implements MouseListener {
 		item = new JMenuItem(I18n.getMessage("thaw.common.copyKeysToClipboard"), IconBox.minCopy);
 		rightClickMenu.add(item);
 		rightClickActions.add(new TransferManagementHelper.TransferKeyCopier(item));
-
 
 		panel = new JPanel(new BorderLayout(5, 5));
 
@@ -117,25 +109,27 @@ public class TransferTable implements MouseListener {
 		refresh();
 	}
 
-
 	public JPanel getPanel() {
 		return panel;
 	}
 
-
 	protected class TransferTableRenderer extends DefaultTableCellRenderer {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 4227879912938245537L;
+
 		private Color softGray;
+
 		private Color lightBlue;
 
 		private JTextArea textAreaRenderer;
+
 		private JLabel labelRenderer;
 
 		public TransferTableRenderer() {
-			softGray = new Color(240,240,240);
+			softGray = new Color(240, 240, 240);
 			lightBlue = new Color(220, 220, 255);
 
 			labelRenderer = new JLabel("", JLabel.CENTER);
@@ -146,33 +140,33 @@ public class TransferTable implements MouseListener {
 		}
 
 		public Component getTableCellRendererComponent(final JTable table, Object value,
-							       final boolean isSelected, final boolean hasFocus,
-							       final int row, final int column) {
+													   final boolean isSelected, final boolean hasFocus,
+													   final int row, final int column) {
 			Component cell;
 
-			if (value instanceof String && ((String)value).indexOf("\n") >= 0) {
-				textAreaRenderer.setText((String)value);
+			if (value instanceof String && ((String) value).indexOf("\n") >= 0) {
+				textAreaRenderer.setText((String) value);
 				cell = textAreaRenderer;
 
-			} else if ((value instanceof String) && "X".equals((String)value) ) {
+			} else if ((value instanceof String) && "X".equals((String) value)) {
 				labelRenderer.setIcon(IconBox.minClose);
 				return labelRenderer;
 			} else if (value instanceof Integer) {
-				int val = ((Integer)value).intValue();
+				int val = ((Integer) value).intValue();
 
 				if (val == 0) {
 					value = TransferLogs.TRANSFER_TYPE_NAMES[val];
 					cell = super.getTableCellRendererComponent(table, value, isSelected,
-										   hasFocus, row, column);
+							hasFocus, row, column);
 				} else {
 					ImageIcon icon;
 
 					if (isSelected)
 						icon = (val == TransferLogs.TRANSFER_TYPE_DOWNLOAD) ?
-							IconBox.downloads : IconBox.insertions;
+								IconBox.downloads : IconBox.insertions;
 					else
 						icon = (val == TransferLogs.TRANSFER_TYPE_DOWNLOAD) ?
-							IconBox.minDownloads : IconBox.minInsertions;
+								IconBox.minDownloads : IconBox.minInsertions;
 
 					labelRenderer.setIcon(icon);
 
@@ -181,9 +175,8 @@ public class TransferTable implements MouseListener {
 
 			} else {
 				cell = super.getTableCellRendererComponent(table, value, isSelected,
-									   hasFocus, row, column);
+						hasFocus, row, column);
 			}
-
 
 			if (!isSelected) {
 				if (row % 2 == 0)
@@ -209,13 +202,11 @@ public class TransferTable implements MouseListener {
 
 	}
 
-
-
 	protected class TransferTableModel
-		extends javax.swing.table.AbstractTableModel {
+			extends javax.swing.table.AbstractTableModel {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = -4078889047070552383L;
 
@@ -263,12 +254,12 @@ public class TransferTable implements MouseListener {
 			if (row > transfers.size())
 				return null;
 
-			Transfer t = (Transfer)transfers.get(row);
+			Transfer t = (Transfer) transfers.get(row);
 
 			if (column == 0) { /* dates */
-				String dates = I18n.getMessage("thaw.plugin.transferLogs.dateStart")+" ";
-				dates += dateFormat.format(t.getDateStart())+"\n";
-				dates += I18n.getMessage("thaw.plugin.transferLogs.dateEnd")+" ";
+				String dates = I18n.getMessage("thaw.plugin.transferLogs.dateStart") + " ";
+				dates += dateFormat.format(t.getDateStart()) + "\n";
+				dates += I18n.getMessage("thaw.plugin.transferLogs.dateEnd") + " ";
 				if (t.getDateEnd() != null)
 					dates += dateFormat.format(t.getDateEnd());
 				else
@@ -277,21 +268,21 @@ public class TransferTable implements MouseListener {
 			}
 
 			if (column == 1) { /* type */
-				return new Integer((int)t.getTransferTypeByte());
+				return new Integer((int) t.getTransferTypeByte());
 			}
 
 			if (column == 2) { /* file */
-				String str = " "+t.getFilename()+"\n";
-				str += I18n.getMessage("thaw.plugin.transferLogs.key")+": ";
-				str += (t.getKey() != null ? t.getKey() : I18n.getMessage("thaw.common.unknown"))+"\n";
-				str += I18n.getMessage("thaw.plugin.transferLogs.fileSize")+": ";
-				str += thaw.gui.GUIHelper.getPrintableSize(t.getSize())+"\n";
-				str += I18n.getMessage("thaw.plugin.transferLogs.isSuccess")+": ";
+				String str = " " + t.getFilename() + "\n";
+				str += I18n.getMessage("thaw.plugin.transferLogs.key") + ": ";
+				str += (t.getKey() != null ? t.getKey() : I18n.getMessage("thaw.common.unknown")) + "\n";
+				str += I18n.getMessage("thaw.plugin.transferLogs.fileSize") + ": ";
+				str += thaw.gui.GUIHelper.getPrintableSize(t.getSize()) + "\n";
+				str += I18n.getMessage("thaw.plugin.transferLogs.isSuccess") + ": ";
 				if (t.getDateEnd() != null)
 					str += (t.isSuccess() ? I18n.getMessage("thaw.common.yes") : I18n.getMessage("thaw.common.no")) + "\n";
 				else
-					str += I18n.getMessage("thaw.common.unknown")+"\n";
-				str += I18n.getMessage("thaw.plugin.transferLogs.averageSpeed")+": ";
+					str += I18n.getMessage("thaw.common.unknown") + "\n";
+				str += I18n.getMessage("thaw.plugin.transferLogs.averageSpeed") + ": ";
 				str += getAverageSpeed(t);
 				return str;
 			}
@@ -300,14 +291,12 @@ public class TransferTable implements MouseListener {
 				return t.isDup() ? "X" : "";
 			}
 
-
 			return null;
 		}
 
 		public boolean isCellEditable(final int row, final int column) {
 			return false;
 		}
-
 
 		public void setPage(int page) {
 			this.page = page;
@@ -317,11 +306,9 @@ public class TransferTable implements MouseListener {
 			return page;
 		}
 
-
 		public void refresh(int row) {
 			fireTableChanged(new TableModelEvent(this, row));
 		}
-
 
 		public Vector getRows(int[] rows) {
 			if (transfers == null)
@@ -329,50 +316,49 @@ public class TransferTable implements MouseListener {
 
 			Vector v = new Vector();
 
-			for (int i = 0 ; i < rows.length ; i++) {
+			for (int i = 0; i < rows.length; i++) {
 				v.add(transfers.get(rows[i]));
 			}
 
 			return v;
 		}
 
-
 		public void refresh() {
 
 			try {
-				synchronized(db.dbLock) {
+				synchronized (db.dbLock) {
 					PreparedStatement st;
 
 					int offset = NMB_ELEMENTS_PER_PAGE * page;
 
-					st = db.getConnection().prepareStatement("SELECT id, dateStart, "+
-										 "dateEnd, transferType, "+
-										 "key, filename, size, "+
-										 "isDup, isSuccess "+
-										 "FROM transferLogs "+
-										 "ORDER BY dateStart DESC "+
-										 "LIMIT "+Integer.toString(NMB_ELEMENTS_PER_PAGE)+
-										 " OFFSET "+Integer.toString(offset));
+					st = db.getConnection().prepareStatement("SELECT id, dateStart, " +
+							"dateEnd, transferType, " +
+							"key, filename, size, " +
+							"isDup, isSuccess " +
+							"FROM transferLogs " +
+							"ORDER BY dateStart DESC " +
+							"LIMIT " + Integer.toString(NMB_ELEMENTS_PER_PAGE) +
+							" OFFSET " + Integer.toString(offset));
 					ResultSet res = st.executeQuery();
 
 					transfers = new Vector();
 
-					while(res.next()) {
+					while (res.next()) {
 						transfers.add(new Transfer(db, res.getInt("id"),
-									   res.getTimestamp("dateStart"),
-									   res.getTimestamp("dateEnd"),
-									   res.getByte("transferType"),
-									   res.getString("key"),
-									   res.getString("filename"),
-									   res.getLong("size"),
-									   res.getBoolean("isDup"),
-									   res.getBoolean("isSuccess")));
+								res.getTimestamp("dateStart"),
+								res.getTimestamp("dateEnd"),
+								res.getByte("transferType"),
+								res.getString("key"),
+								res.getString("filename"),
+								res.getLong("size"),
+								res.getBoolean("isDup"),
+								res.getBoolean("isSuccess")));
 					}
 
 					st.close();
 				}
-			} catch(SQLException e) {
-				Logger.error(this, "Error while reading transfer logs: "+e.toString());
+			} catch (SQLException e) {
+				Logger.error(this, "Error while reading transfer logs: " + e.toString());
 				return;
 			}
 
@@ -381,19 +367,21 @@ public class TransferTable implements MouseListener {
 
 	}
 
-
 	protected class PageSelecter implements ActionListener {
+
 		private JPanel panel;
 
 		private JButton leftButton;
+
 		private JComboBox pageSelecter;
+
 		private JButton rightButton;
 
 		private final Hsqldb db;
+
 		private TransferTableModel model;
 
 		private int pageMax;
-
 
 		public PageSelecter(Hsqldb db, TransferTableModel m) {
 			this.db = db;
@@ -413,23 +401,20 @@ public class TransferTable implements MouseListener {
 			centerPanel.add(new JLabel(I18n.getMessage("thaw.common.page")));
 			centerPanel.add(pageSelecter);
 
-
 			panel.add(leftButton, BorderLayout.WEST);
 			panel.add(centerPanel, BorderLayout.CENTER);
 			panel.add(rightButton, BorderLayout.EAST);
 		}
 
-
 		public JPanel getPanel() {
 			return panel;
 		}
-
 
 		public void refresh() {
 			int nmb_elements = -1;
 
 			try {
-				synchronized(db.dbLock) {
+				synchronized (db.dbLock) {
 					PreparedStatement st;
 
 					st = db.getConnection().prepareStatement("SELECT count(id) FROM transferLogs");
@@ -437,11 +422,11 @@ public class TransferTable implements MouseListener {
 					res.next();
 
 					nmb_elements = res.getInt(1);
-					
+
 					st.close();
 				}
-			} catch(SQLException e) {
-				Logger.error(this, "Unable to compute the number of pages in the logs because : "+e.toString());
+			} catch (SQLException e) {
+				Logger.error(this, "Unable to compute the number of pages in the logs because : " + e.toString());
 				return;
 			}
 
@@ -457,7 +442,7 @@ public class TransferTable implements MouseListener {
 
 			pageSelecter.removeAllItems();
 
-			for (int i = 0 ; i <= pageMax ; i++)
+			for (int i = 0; i <= pageMax; i++)
 				pageSelecter.addItem(Integer.toString(i));
 
 			/* should call actionPerformed() */
@@ -466,12 +451,10 @@ public class TransferTable implements MouseListener {
 			refreshButtonState();
 		}
 
-
 		private void refreshButtonState() {
 			leftButton.setEnabled(model.getPage() > 0);
 			rightButton.setEnabled(model.getPage() < pageMax);
 		}
-
 
 		public void actionPerformed(ActionEvent e) {
 			int targetPage = -1;
@@ -482,10 +465,10 @@ public class TransferTable implements MouseListener {
 				targetPage = model.getPage() + 1;
 			} else if (e.getSource() == pageSelecter) {
 				if (pageSelecter.getSelectedItem() == null
-				    || !(pageSelecter.getSelectedItem() instanceof String))
+						|| !(pageSelecter.getSelectedItem() instanceof String))
 					return;
 
-				targetPage = Integer.parseInt((String)pageSelecter.getSelectedItem());
+				targetPage = Integer.parseInt((String) pageSelecter.getSelectedItem());
 			}
 
 			if (targetPage < 0 || targetPage > pageMax)
@@ -502,12 +485,10 @@ public class TransferTable implements MouseListener {
 		}
 	}
 
-
 	public void refresh() {
 		model.refresh();
 		pageSelecter.refresh();
 	}
-
 
 	private void updateToolbar(Vector selection) {
 
@@ -516,23 +497,21 @@ public class TransferTable implements MouseListener {
 	private void updateRightClickMenu(Vector selection) {
 		TransferManagementHelper.TransferAction action;
 
-		for(final Iterator it = rightClickActions.iterator();
-		    it.hasNext();) {
-			action = (TransferManagementHelper.TransferAction)it.next();
+		for (final Iterator it = rightClickActions.iterator();
+			 it.hasNext(); ) {
+			action = (TransferManagementHelper.TransferAction) it.next();
 			action.setTarget(selection);
 		}
 	}
 
-
 	public void adjustRowHeights() {
-		for (int i = table.getRowCount()-1 ; i >= 0 ; i--) {
+		for (int i = table.getRowCount() - 1; i >= 0; i--) {
 			if (table.isRowSelected(i))
 				table.setRowHeight(i, MAX_LINE_HEIGHT);
 			else
 				table.setRowHeight(i, DEFAULT_LINE_HEIGHT);
 		}
 	}
-
 
 	public void mouseClicked(final MouseEvent e) {
 		Vector selection;
@@ -559,15 +538,17 @@ public class TransferTable implements MouseListener {
 		}
 	}
 
-	public void mouseEntered(final MouseEvent e) { }
+	public void mouseEntered(final MouseEvent e) {
+	}
 
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseExited(final MouseEvent e) {
+	}
 
-	public void mousePressed(final MouseEvent e) { }
+	public void mousePressed(final MouseEvent e) {
+	}
 
 	public void mouseReleased(final MouseEvent e) {
 		adjustRowHeights();
 	}
-
 
 }

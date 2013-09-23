@@ -9,9 +9,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.util.Iterator;
 import java.util.Vector;
-
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -25,59 +23,75 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableModel;
 
 import thaw.core.Core;
-import thaw.core.ThawThread;
-import thaw.core.ThawRunnable;
-import thaw.gui.FileChooser;
 import thaw.core.I18n;
-import thaw.gui.IconBox;
 import thaw.core.Logger;
+import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
 import thaw.fcp.FCPClientGet;
 import thaw.fcp.FCPTransferQuery;
+import thaw.gui.FileChooser;
+import thaw.gui.IconBox;
 import thaw.gui.Table;
-
-
 import thaw.plugins.QueueWatcher;
 
-
 public class QueuePanel implements MouseListener, ActionListener, KeyListener {
-	public final static int ACTION_REMOVE_FINISHED          = 0;
-	public final static int ACTION_DOWNLOAD_SELECTED        = 1; /* locally */
-	public final static int ACTION_REMOVE_SELECTED          = 2;
-	public final static int ACTION_CANCEL_SELECTED          = 3;
-	public final static int ACTION_DELAY_SELECTED           = 4;
-	public final static int ACTION_RESTART_SELECTED         = 5;
-	public final static int ACTION_COPY_KEYS_SELECTED       = 6;
+
+	public final static int ACTION_REMOVE_FINISHED = 0;
+
+	public final static int ACTION_DOWNLOAD_SELECTED = 1; /* locally */
+
+	public final static int ACTION_REMOVE_SELECTED = 2;
+
+	public final static int ACTION_CANCEL_SELECTED = 3;
+
+	public final static int ACTION_DELAY_SELECTED = 4;
+
+	public final static int ACTION_RESTART_SELECTED = 5;
+
+	public final static int ACTION_COPY_KEYS_SELECTED = 6;
+
 	public final static int ACTION_CHANGE_PRIORITY_SELECTED = 7;
 
-	public final static int FIRST_COLUMN_SIZE               = 20;
+	public final static int FIRST_COLUMN_SIZE = 20;
 
 	private Core core;
 
 	private JButton button;
 
 	private Table table = null;
+
 	private JScrollPane scrollPane = null;
 
 	private JPanel panel;
 
 	private QueueTableModel tableModel;
+
 	private DetailPanel detailPanel;
 
 	private JPopupMenu rightClickMenu;
+
 	private JMenuItem clearFinishedItem;
+
 	private JMenuItem removeItem;
+
 	private JMenuItem cancelItem;
+
 	private JMenuItem delayItem;
+
 	private JMenuItem downloadItem;
+
 	private JMenuItem forceRestartItem;
+
 	private JMenuItem copyKeysItem;
 
 	private JRadioButtonMenuItem[] priorityRadioButton;
+
 	private JRadioButtonMenuItem unknowPriority;
+
 	private ButtonGroup priorityGroup;
+
 	public final static int MIN_PRIORITY = 6;
 
 	private int[] selectedRows;
@@ -87,7 +101,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 	private QueueWatcher queueWatcher;
 
 	public QueuePanel(final Core core, final QueueWatcher queueWatcher,
-					final DetailPanel detailPanel, boolean isForInsertionQueue) {
+					  final DetailPanel detailPanel, boolean isForInsertionQueue) {
 
 		this.queueWatcher = queueWatcher;
 
@@ -97,12 +111,12 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		this.detailPanel = detailPanel;
 
 		tableModel = new QueueTableModel(isForInsertionQueue,
-						 core.getPluginManager(),
-						 core.getQueueManager());
+				core.getPluginManager(),
+				core.getQueueManager());
 
 		table = new Table(core.getConfig(),
-				  isForInsertionQueue ? "table_insertions" : "table_downloads",
-				  tableModel);
+				isForInsertionQueue ? "table_insertions" : "table_downloads",
+				tableModel);
 
 		table.setShowGrid(false);
 		table.setIntercellSpacing(new java.awt.Dimension(0, 0));
@@ -113,14 +127,14 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		header.addMouseListener(tableModel.new ColumnListener(table));
 		header.setReorderingAllowed(true);
 
-		if(isForInsertionQueue) {
+		if (isForInsertionQueue) {
 			button = new JButton(I18n.getMessage("thaw.common.insertions"));
 			button.setIcon(IconBox.insertions);
 		} else {
 			button = new JButton(I18n.getMessage("thaw.common.downloads"));
 			button.setIcon(IconBox.downloads);
 		}
-		
+
 		button.setEnabled(false);
 
 		button.setVerticalAlignment(SwingConstants.CENTER);
@@ -155,9 +169,9 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		final JMenu priorityMenu = new JMenu(I18n.getMessage("thaw.common.priority"));
 
 		priorityGroup = new ButtonGroup();
-		priorityRadioButton = new JRadioButtonMenuItem[MIN_PRIORITY+1];
-		for(int i =0 ; i <= MIN_PRIORITY ; i++) {
-			priorityRadioButton[i] = new JRadioButtonMenuItem(I18n.getMessage("thaw.plugin.priority.p"+Integer.toString(i)));
+		priorityRadioButton = new JRadioButtonMenuItem[MIN_PRIORITY + 1];
+		for (int i = 0; i <= MIN_PRIORITY; i++) {
+			priorityRadioButton[i] = new JRadioButtonMenuItem(I18n.getMessage("thaw.plugin.priority.p" + Integer.toString(i)));
 			priorityRadioButton[i].addActionListener(this);
 			priorityMenu.add(priorityRadioButton[i]);
 			priorityGroup.add(priorityRadioButton[i]);
@@ -168,22 +182,22 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		rightClickMenu.add(clearFinishedItem);
 		rightClickMenu.add(removeItem);
 
-		if( (Integer.parseInt(core.getConfig().getValue("maxSimultaneousDownloads")) >= 0)
-		   || (Integer.parseInt(core.getConfig().getValue("maxSimultaneousInsertions")) >= 0))
+		if ((Integer.parseInt(core.getConfig().getValue("maxSimultaneousDownloads")) >= 0)
+				|| (Integer.parseInt(core.getConfig().getValue("maxSimultaneousInsertions")) >= 0))
 			rightClickMenu.add(cancelItem);
 
-		if( (Integer.parseInt(core.getConfig().getValue("maxSimultaneousDownloads")) >= 0)
-		   || (Integer.parseInt(core.getConfig().getValue("maxSimultaneousInsertions")) >= 0))
+		if ((Integer.parseInt(core.getConfig().getValue("maxSimultaneousDownloads")) >= 0)
+				|| (Integer.parseInt(core.getConfig().getValue("maxSimultaneousInsertions")) >= 0))
 			rightClickMenu.add(delayItem);
 
 		/* this option can't work with localSocket == true */
-		if(!isForInsertionQueue && !Boolean.valueOf(core.getConfig().getValue("sameComputer")).booleanValue())
+		if (!isForInsertionQueue && !Boolean.valueOf(core.getConfig().getValue("sameComputer")).booleanValue())
 			rightClickMenu.add(downloadItem);
 
 		rightClickMenu.add(forceRestartItem);
 		rightClickMenu.add(copyKeysItem);
 
-		if( Boolean.valueOf(core.getConfig().getValue("advancedMode")).booleanValue() == true) {
+		if (Boolean.valueOf(core.getConfig().getValue("advancedMode")).booleanValue() == true) {
 			rightClickMenu.add(priorityMenu);
 		}
 
@@ -206,11 +220,11 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		table.getColumnModel().getColumn(0).setMaxWidth(FIRST_COLUMN_SIZE);
 
 		/* If a queue is already existing, we need to add it */
-		if(core.getQueueManager() != null) {
+		if (core.getQueueManager() != null) {
 			this.addToTable(core.getQueueManager().getRunningQueue());
 
 			final Vector<Vector<FCPTransferQuery>> pendingQueues = core.getQueueManager().getPendingQueues();
-			for(Vector<FCPTransferQuery> pendingQueue : pendingQueues) {
+			for (Vector<FCPTransferQuery> pendingQueue : pendingQueues) {
 				this.addToTable(pendingQueue);
 			}
 		}
@@ -224,10 +238,10 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		button.setEnabled(true);
 		button.addActionListener(a);
 	}
-	
+
 	public void removeActionListenerFromTheButton(ActionListener a) {
 		button.removeActionListener(a);
-		
+
 		if (button.getActionListeners() == null
 				|| button.getActionListeners().length == 0)
 			button.setEnabled(false);
@@ -236,7 +250,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 	public void reloadSelections() {
 		selectedRows = table.getSelectedRows();
 
-		if((selectedRows.length > 1) || (selectedRows.length < 1)) {
+		if ((selectedRows.length > 1) || (selectedRows.length < 1)) {
 			resetPriorityRadioButtons();
 		} else {
 			final FCPTransferQuery query = tableModel.getQuery(selectedRows[0]);
@@ -248,19 +262,16 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		}
 	}
 
-	/**
-	 * return a vector made of FCPTransferQueries.
-	 * Doesn't refresh the selection !
-	 */
+	/** return a vector made of FCPTransferQueries. Doesn't refresh the selection ! */
 	public Vector<FCPTransferQuery> getSelectedQueries() {
 		final Vector<FCPTransferQuery> queries = new Vector<FCPTransferQuery>();
 		final Vector<FCPTransferQuery> initialQueries = tableModel.getQueries();
 
-		if(selectedRows == null)
+		if (selectedRows == null)
 			return queries;
 
 		/* Create a separate vector to avoid collisions */
-		for(int selectedRow : selectedRows) {
+		for (int selectedRow : selectedRows) {
 			if (initialQueries.size() > selectedRow)
 				queries.add(initialQueries.get(selectedRow));
 		}
@@ -268,34 +279,31 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		return queries;
 	}
 
-
 	public void resetTable() {
 		tableModel.resetTable();
 	}
 
-
 	public void addToTable(final FCPTransferQuery query) {
-		if( (insertionQueue && (query.getQueryType() == 2))
-		    || (!insertionQueue && (query.getQueryType() == 1))) {
+		if ((insertionQueue && (query.getQueryType() == 2))
+				|| (!insertionQueue && (query.getQueryType() == 1))) {
 			tableModel.addQuery(query);
 		}
 	}
 
 	/**
-	 * @param queries Vector of FCPTransferQuery only
+	 * @param queries
+	 * 		Vector of FCPTransferQuery only
 	 */
 	public synchronized void addToTable(final Iterable<FCPTransferQuery> queries) {
-		for(FCPTransferQuery query : queries) {
+		for (FCPTransferQuery query : queries) {
 			this.addToTable(query);
 		}
 	}
 
-
 	public void refreshDetailPanel() {
 		final int selected = table.getSelectedRow();
 
-
-		if(selected != -1) {
+		if (selected != -1) {
 			final FCPTransferQuery query = tableModel.getQuery(selected);
 			detailPanel.setQuery(query);
 		}
@@ -309,21 +317,21 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		return panel;
 	}
 
-
 	public JTable getTable() {
 		return table;
 	}
-
 
 	public void unselectAll() {
 		table.clearSelection();
 		selectedRows = null;
 	}
 
-
 	public class ActionReplier implements ThawRunnable {
+
 		private int action;
+
 		private int new_priority;
+
 		private final Vector<FCPTransferQuery> queries;
 
 		public ActionReplier(final int action, final int new_priority) {
@@ -341,13 +349,13 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 			String keys = "";
 			File dir = null;
 
-			if(action == ACTION_REMOVE_FINISHED) {
+			if (action == ACTION_REMOVE_FINISHED) {
 				final Vector<FCPTransferQuery> qs = tableModel.getQueries();
 
-				for(final FCPTransferQuery query : qs) {
-					if(query.isFinished() && query.isSuccessful() &&
-					   (!(query instanceof FCPClientGet) || (!query.isSuccessful() || ((FCPClientGet)query).isWritingSuccessful()))) {
-						if(query.stop()) {
+				for (final FCPTransferQuery query : qs) {
+					if (query.isFinished() && query.isSuccessful() &&
+							(!(query instanceof FCPClientGet) || (!query.isSuccessful() || ((FCPClientGet) query).isWritingSuccessful()))) {
+						if (query.stop()) {
 							core.getQueueManager().remove(query);
 						}
 					}
@@ -356,47 +364,47 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 				return;
 			}
 
-			if(action == ACTION_DOWNLOAD_SELECTED) {
+			if (action == ACTION_DOWNLOAD_SELECTED) {
 				final FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle(I18n.getMessage("thaw.common.downloadLocally"));
 				fileChooser.setDirectoryOnly(true);
 				fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
 				dir = fileChooser.askOneFile();
 
-				if(dir == null)
+				if (dir == null)
 					return;
 			}
 
-			for(final FCPTransferQuery query : queries) {
-				if(query == null)
+			for (final FCPTransferQuery query : queries) {
+				if (query == null)
 					continue;
 
-				if(new_priority >= 0) {
-					if(query.isPersistent()) {
+				if (new_priority >= 0) {
+					if (query.isPersistent()) {
 						query.setFCPPriority(new_priority);
 						query.updatePersistentRequest(false);
 					}
 				}
 
-				if(action == ACTION_REMOVE_SELECTED) {
+				if (action == ACTION_REMOVE_SELECTED) {
 
-					if(query.stop()) {
+					if (query.stop()) {
 						core.getQueueManager().remove(query);
 					}
 				}
 
-				if(action == ACTION_CANCEL_SELECTED) {
+				if (action == ACTION_CANCEL_SELECTED) {
 					query.stop();
 				}
 
-				if(action == ACTION_DELAY_SELECTED) {
-					if(query.isRunning() && !query.isFinished()) {
+				if (action == ACTION_DELAY_SELECTED) {
+					if (query.isRunning() && !query.isFinished()) {
 						query.pause(core.getQueueManager());
 						core.getQueueManager().moveFromRunningToPendingQueue(query);
 					}
 				}
 
-				if(action == ACTION_RESTART_SELECTED) {
+				if (action == ACTION_RESTART_SELECTED) {
 					query.stop();
 
 					if ((query instanceof FCPClientGet) && query.getPath() != null) {
@@ -406,30 +414,29 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 							target.delete();
 					}
 
-					if(query.getMaxAttempt() >= 0)
+					if (query.getMaxAttempt() >= 0)
 						query.setAttempt(0);
 
 					query.start();
 				}
 
 				if (action == ACTION_COPY_KEYS_SELECTED) {
-					if((query.getFileKey() != null)
-					   && !"".equals( query.getFileKey() ))
+					if ((query.getFileKey() != null)
+							&& !"".equals(query.getFileKey()))
 						keys = keys + query.getFileKey() + "\n";
 				}
 
 				if (action == ACTION_DOWNLOAD_SELECTED
-				   && (dir != null)) {
-					if(query.isPersistent()) {
+						&& (dir != null)) {
+					if (query.isPersistent()) {
 
 						query.saveFileTo(dir.getPath());
-						if(query.getIdentifier().startsWith(core.getConfig().getValue("thawId")))
+						if (query.getIdentifier().startsWith(core.getConfig().getValue("thawId")))
 							query.updatePersistentRequest(true);
 					}
 				}
 
 			} /* for i in selectedRows */
-
 
 			if (action == ACTION_COPY_KEYS_SELECTED) {
 				thaw.gui.GUIHelper.copyToClipboard(keys);
@@ -437,12 +444,10 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 
 		}
 
-
 		public void stop() {
 			/* \_o< */
 		}
 	}
-
 
 	public void removeSelectedTransfers() {
 		reloadSelections();
@@ -458,31 +463,36 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		th.start();
 	}
 
-	/**
-	 * Manage it on a different thread to avoid UI freeze.
-	 */
+	/** Manage it on a different thread to avoid UI freeze. */
 	public void actionPerformed(final ActionEvent e) {
 		int prioritySelected = 0;
 		int action = ACTION_CHANGE_PRIORITY_SELECTED;
 
-		for(prioritySelected = 0;
-		    prioritySelected <= MIN_PRIORITY;
-		    prioritySelected++) {
-			if(priorityRadioButton[prioritySelected] == e.getSource()) {
+		for (prioritySelected = 0;
+			 prioritySelected <= MIN_PRIORITY;
+			 prioritySelected++) {
+			if (priorityRadioButton[prioritySelected] == e.getSource()) {
 				break;
 			}
 		}
 
-		if(prioritySelected > MIN_PRIORITY) {
+		if (prioritySelected > MIN_PRIORITY) {
 			prioritySelected = -1;
 
-			if      (e.getSource() == clearFinishedItem) action = ACTION_REMOVE_FINISHED;
-			else if (e.getSource() == removeItem)        action = ACTION_REMOVE_SELECTED;
-			else if (e.getSource() == cancelItem)        action = ACTION_CANCEL_SELECTED;
-			else if (e.getSource() == delayItem)         action = ACTION_DELAY_SELECTED;
-			else if (e.getSource() == downloadItem)      action = ACTION_DOWNLOAD_SELECTED;
-			else if (e.getSource() == forceRestartItem)  action = ACTION_RESTART_SELECTED;
-			else if (e.getSource() == copyKeysItem)      action = ACTION_COPY_KEYS_SELECTED;
+			if (e.getSource() == clearFinishedItem)
+				action = ACTION_REMOVE_FINISHED;
+			else if (e.getSource() == removeItem)
+				action = ACTION_REMOVE_SELECTED;
+			else if (e.getSource() == cancelItem)
+				action = ACTION_CANCEL_SELECTED;
+			else if (e.getSource() == delayItem)
+				action = ACTION_DELAY_SELECTED;
+			else if (e.getSource() == downloadItem)
+				action = ACTION_DOWNLOAD_SELECTED;
+			else if (e.getSource() == forceRestartItem)
+				action = ACTION_RESTART_SELECTED;
+			else if (e.getSource() == copyKeysItem)
+				action = ACTION_COPY_KEYS_SELECTED;
 			else {
 				Logger.error(this, "Unknow action ?!");
 				return;
@@ -496,26 +506,31 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 	}
 
 	public void mouseClicked(final MouseEvent e) {
-		if(e.getButton() == MouseEvent.BUTTON3) {
+		if (e.getButton() == MouseEvent.BUTTON3) {
 			reloadSelections();
 			rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 		}
 
-		if(e.getButton() == MouseEvent.BUTTON1) {
+		if (e.getButton() == MouseEvent.BUTTON1) {
 			queueWatcher.unselectAllExcept(insertionQueue ? QueueWatcher.INSERTION_PANEL : QueueWatcher.DOWNLOAD_PANEL);
 			refreshDetailPanel();
 		}
 	}
 
-	public void mouseEntered(final MouseEvent e) { }
+	public void mouseEntered(final MouseEvent e) {
+	}
 
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseExited(final MouseEvent e) {
+	}
 
-	public void mousePressed(final MouseEvent e) { }
+	public void mousePressed(final MouseEvent e) {
+	}
 
-	public void mouseReleased(final MouseEvent e) { }
+	public void mouseReleased(final MouseEvent e) {
+	}
 
-	public void keyPressed(final KeyEvent e) { }
+	public void keyPressed(final KeyEvent e) {
+	}
 
 	public void keyReleased(final KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_DELETE) {
@@ -524,6 +539,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		refreshDetailPanel();
 	}
 
-	public void keyTyped(final KeyEvent e) { }
+	public void keyTyped(final KeyEvent e) {
+	}
 }
 

@@ -1,44 +1,38 @@
 package thaw.plugins.miniFrost.frostKSK;
 
-import org.w3c.dom.Element;
 import java.util.Vector;
 
 import frost.util.XMLTools;
-
-import thaw.plugins.Hsqldb;
+import org.w3c.dom.Element;
 import thaw.core.Logger;
-
+import thaw.plugins.Hsqldb;
 
 public class KSKAttachmentFactory {
 
-	/**
-	 * one per message (not really used atm, but we never know)
-	 */
+	/** one per message (not really used atm, but we never know) */
 	public KSKAttachmentFactory() {
 
 	}
 
-
 	public static Vector getAttachments(KSKMessage msg,
-					    KSKBoardFactory boardFactory,
-					    Hsqldb db) {
+										KSKBoardFactory boardFactory,
+										Hsqldb db) {
 		Vector v = new Vector();
 
 		Vector sub;
 
-		if ((sub = KSKFileAttachment.select( msg, boardFactory,  db)) != null)
+		if ((sub = KSKFileAttachment.select(msg, boardFactory, db)) != null)
 			v.addAll(sub);
-		if ((sub = KSKBoardAttachment.select(msg, boardFactory,  db)) != null)
+		if ((sub = KSKBoardAttachment.select(msg, boardFactory, db)) != null)
 			v.addAll(sub);
 
 		return (v.size() > 0 ? v : null);
 	}
 
-
 	public KSKAttachment getAttachment(Element attachmentEl) {
 		if (attachmentEl.getAttribute("type").length() <= 0) {
-			Logger.notice(this, "No type specified in the attachment ("+
-				       attachmentEl.toString()+")");
+			Logger.notice(this, "No type specified in the attachment (" +
+					attachmentEl.toString() + ")");
 			return null;
 		}
 
@@ -51,19 +45,16 @@ public class KSKAttachmentFactory {
 
 		if (a == null) {
 			Logger.notice(this, "Unknown attachment type : "
-				       +attachmentEl.getAttribute("type"));
-		}
-		else
+					+ attachmentEl.getAttribute("type"));
+		} else
 			loadValues(a, attachmentEl);
 
 		return a;
 	}
 
-
-
 	public void loadValues(KSKAttachment a, Element rootEl) {
 		if (a.getContainer() != null)
-			rootEl = (Element)XMLTools.getChildElementsByTagName(rootEl, a.getContainer()).iterator().next();
+			rootEl = (Element) XMLTools.getChildElementsByTagName(rootEl, a.getContainer()).iterator().next();
 
 		if (rootEl == null) {
 			Logger.warning(this, "no container ?!");
@@ -72,12 +63,12 @@ public class KSKAttachmentFactory {
 
 		String[] properties = a.getProperties();
 
-		for (int i = 0 ; i < properties.length ; i++) {
+		for (int i = 0; i < properties.length; i++) {
 			String val;
 
 			try {
 				val = XMLTools.getChildElementsCDATAValue(rootEl, properties[i]);
-			} catch(java.lang.ClassCastException e) {
+			} catch (java.lang.ClassCastException e) {
 				/* Dirty */
 				val = XMLTools.getChildElementsTextValue(rootEl, properties[i]);
 			}

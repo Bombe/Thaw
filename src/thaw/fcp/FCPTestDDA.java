@@ -1,52 +1,52 @@
 package thaw.fcp;
 
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Observable;
 import java.util.Observer;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-
-
-
 import thaw.core.Logger;
 
-
 /**
- * FCPClientGet do it automagically when using DDA, so you shouldn't have to bother about it
+ * FCPClientGet do it automagically when using DDA, so you shouldn't have to
+ * bother about it
  */
 public class FCPTestDDA extends Observable implements FCPQuery, Observer {
+
 	private String dir;
+
 	private boolean wantRead;
+
 	private boolean wantWrite;
 
 	private String writeTestFile;
+
 	private String readTestFile;
 
 	private boolean nodeCanRead;
+
 	private boolean nodeCanWrite;
 
 	private final FCPQueryManager queryManager;
 
-
 	public FCPTestDDA(String directory,
-			  boolean wantTheNodeToRead,
-			  boolean wantTheNodeToWrite,
-			  FCPQueryManager queryManager) {
+					  boolean wantTheNodeToRead,
+					  boolean wantTheNodeToWrite,
+					  FCPQueryManager queryManager) {
 
 		try {
 			this.dir = new File(directory).getCanonicalPath();
-		} catch(java.io.IOException e) {
-			Logger.error(this, "IOException while doing a getCanonicalPath() on the directory : "+e.toString());
+		} catch (java.io.IOException e) {
+			Logger.error(this, "IOException while doing a getCanonicalPath() on the directory : " + e.toString());
 			this.dir = new File(directory).getAbsolutePath();
 		}
 
-		this.wantRead  = wantTheNodeToRead;
+		this.wantRead = wantTheNodeToRead;
 		this.wantWrite = wantTheNodeToWrite;
 		this.queryManager = queryManager;
 	}
-
 
 	public boolean start() {
 		FCPMessage msg = new FCPMessage();
@@ -65,7 +65,6 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 		return false;
 	}
 
-
 	protected boolean writeFile(String filename, String content) {
 		try {
 			File file = new File(filename);
@@ -75,8 +74,8 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 
 			try {
 				b = content.getBytes("UTF-8");
-			} catch(java.io.UnsupportedEncodingException e) {
-				Logger.warning(this, "UnsupportedEncodingException : "+e.toString());
+			} catch (java.io.UnsupportedEncodingException e) {
+				Logger.warning(this, "UnsupportedEncodingException : " + e.toString());
 				b = content.getBytes();
 			}
 
@@ -86,19 +85,17 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 
 			return true;
 
-		} catch(java.io.FileNotFoundException e) {
+		} catch (java.io.FileNotFoundException e) {
 
-			Logger.warning(this, "Unable to write file: "+e.toString());
+			Logger.warning(this, "Unable to write file: " + e.toString());
 			return false;
 
-		} catch(java.io.IOException e) {
+		} catch (java.io.IOException e) {
 
-			Logger.warning(this, "Unable to write file: "+e.toString());
+			Logger.warning(this, "Unable to write file: " + e.toString());
 			return false;
 		}
 	}
-
-
 
 	protected String readFile(String filename) {
 		String data = null;
@@ -113,17 +110,16 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 			dis.close();
 			stream.close();
 
-		} catch(java.io.FileNotFoundException e) {
-			Logger.warning(this, "Unable to read file : "+e.toString());
+		} catch (java.io.FileNotFoundException e) {
+			Logger.warning(this, "Unable to read file : " + e.toString());
 			return null;
-		} catch(java.io.IOException e) {
-			Logger.warning(this, "Unable to read file : "+e.toString());
+		} catch (java.io.IOException e) {
+			Logger.warning(this, "Unable to read file : " + e.toString());
 			return null;
 		}
 
 		return data;
 	}
-
 
 	protected boolean deleteFile(String filename) {
 		if (filename == null) {
@@ -134,12 +130,11 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 		return (new File(filename)).delete();
 	}
 
-
 	public void update(Observable o, Object param) {
 		if (param == null || !(param instanceof FCPMessage))
 			return;
 
-		FCPMessage msg = (FCPMessage)param;
+		FCPMessage msg = (FCPMessage) param;
 
 		/* TOREMOVE when all the node will be up-to-date */
 		if ("ProtocolError".equals(msg.getMessageName())) {
@@ -157,12 +152,10 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 			}
 		}
 
-
 		if (!dir.equals(msg.getValue("Directory"))) {
 			/* not for us */
 			return;
 		}
-
 
 		if ("TestDDAReply".equals(msg.getMessageName())) {
 			FCPMessage answer = new FCPMessage();
@@ -189,9 +182,6 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 			queryManager.writeMessage(answer);
 		}
 
-
-
-
 		if ("TestDDAComplete".equals(msg.getMessageName())) {
 			nodeCanRead = false;
 			nodeCanWrite = false;
@@ -202,8 +192,8 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 				nodeCanWrite = Boolean.valueOf(msg.getValue("WriteDirectoryAllowed")).booleanValue();
 
 			Logger.info(this,
-				    "TestDDA : R : " +Boolean.toString(wantRead)
-				    + " ; W : "+Boolean.toString(wantWrite));
+					"TestDDA : R : " + Boolean.toString(wantRead)
+							+ " ; W : " + Boolean.toString(wantWrite));
 
 			if (wantRead)
 				deleteFile(readTestFile);
@@ -217,7 +207,6 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 		}
 	}
 
-
 	public boolean mayTheNodeRead() {
 		return nodeCanRead;
 	}
@@ -225,7 +214,6 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 	public boolean mayTheNodeWrite() {
 		return nodeCanWrite;
 	}
-
 
 	public int getQueryType() {
 		return 0;

@@ -1,10 +1,13 @@
 package thaw.fcp;
 
 public class FCPModifyConfig implements FCPQuery {
+
 	private String name;
+
 	private String value;
+
 	private final FCPQueryManager queryManager;
-	
+
 	public FCPModifyConfig(String name, String newValue, FCPQueryManager queryManager) {
 		this.name = name;
 		this.value = newValue;
@@ -19,9 +22,9 @@ public class FCPModifyConfig implements FCPQuery {
 		FCPMessage msg = new FCPMessage();
 		msg.setMessageName("ModifyConfig");
 		msg.setValue(name, value);
-		
+
 		queryManager.writeMessage(msg);
-		
+
 		return true;
 	}
 

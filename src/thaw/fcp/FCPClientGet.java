@@ -8,45 +8,57 @@ import java.util.Observable;
 import java.util.Observer;
 
 import thaw.core.Logger;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
-
+import thaw.core.ThawThread;
 
 public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 	private int maxRetries = -1;
+
 	private final static int PACKET_SIZE = 65536;
 
 	private final FCPQueueManager queueManager;
+
 	private FCPQueryManager duplicatedQueryManager;           /* TODO: Necessary? */
 
 	private final FCPQueryManager queryManager;
+
 	private final int persistence;
+
 	private final boolean globalQueue;
+
 	private final long maxSize;
 
 	private String key;
+
 	private String filename; /* Extract from the key */
+
 	private int priority;
 
 	private String destinationDir;
+
 	private String finalPath;
 
 	private int attempt;
+
 	private String status;
 
 	private int fromTheNodeProgress;   /* -1 if the transfer hasn't started, else [0-100] */
 
 	private long fileSize;
+
 	private boolean gotExpectedFileSize = false;
 
 	private boolean writingSuccessful = true;
+
 	private boolean fatal = true;
+
 	private boolean isLockOwner = false;
 
 	private boolean alreadySaved = false;
 
 	private boolean noDDA;
+
 	private boolean noRedir = false;
 
 	private FCPTestDDA testDDA = null;
@@ -55,27 +67,43 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	private boolean restartIfFailed = false;
 
 	private int protocolErrorCode = -1;
+
 	private int getFailedCode = -1;
 
 	public static class Builder {
+
 		/* Required parameters */
 		private final FCPQueueManager queueManager;
 
 		/* Optional parameters */
 		private String key;
+
 		private int priority = DEFAULT_PRIORITY;
+
 		private int persistence = PERSISTENCE_FOREVER;
+
 		private boolean globalQueue = true;
+
 		private int maxRetries = -1;
+
 		private String destinationDir;
+
 		private long maxSize = 0;
+
 		private boolean noDDA = false;
+
 		private String status = "Waiting";
+
 		private String identifier;
+
 		private int attempt = -1;
+
 		private long fileSize;
+
 		private String filename;
+
 		private TransferStatus transferStatus = TransferStatus.NOT_RUNNING;
+
 		private boolean isNewRequest = true;
 
 		public Builder(FCPQueueManager queueManager) {
@@ -86,28 +114,28 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			return new FCPClientGet(this);
 		}
 
-		public Builder setParameters(HashMap<String,String> parameters) {
+		public Builder setParameters(HashMap<String, String> parameters) {
 			key = parameters.get("URI");
- 			Logger.debug(this, "Resuming key : "+key);
+			Logger.debug(this, "Resuming key : " + key);
 
-			filename       = parameters.get("Filename");
-			priority       = Integer.parseInt(parameters.get("Priority"));
-			persistence    = Integer.parseInt(parameters.get("Persistence"));
-			globalQueue    = Boolean.valueOf(parameters.get("Global"));
-			maxRetries     = Integer.parseInt(parameters.get("MaxRetries"));
+			filename = parameters.get("Filename");
+			priority = Integer.parseInt(parameters.get("Priority"));
+			persistence = Integer.parseInt(parameters.get("Persistence"));
+			globalQueue = Boolean.valueOf(parameters.get("Global"));
+			maxRetries = Integer.parseInt(parameters.get("MaxRetries"));
 			destinationDir = parameters.get("ClientToken");
-			attempt        = Integer.parseInt(parameters.get("Attempt"));
-			status         = parameters.get("Status");
-			identifier     = parameters.get("Identifier");
-			Logger.info(this, "Resuming id : "+identifier);
+			attempt = Integer.parseInt(parameters.get("Attempt"));
+			status = parameters.get("Status");
+			identifier = parameters.get("Identifier");
+			Logger.info(this, "Resuming id : " + identifier);
 
-			fileSize       = Long.parseLong(parameters.get("FileSize"));
+			fileSize = Long.parseLong(parameters.get("FileSize"));
 
-			boolean running        = Boolean.valueOf(parameters.get("Running"));
-			boolean successful     = Boolean.valueOf(parameters.get("Successful"));
+			boolean running = Boolean.valueOf(parameters.get("Running"));
+			boolean successful = Boolean.valueOf(parameters.get("Successful"));
 			transferStatus = TransferStatus.getTransferStatus(running, !running, successful);
 
-			if((persistence == PERSISTENCE_UNTIL_DISCONNECT) && !transferStatus.isFinished()) {
+			if ((persistence == PERSISTENCE_UNTIL_DISCONNECT) && !transferStatus.isFinished()) {
 				transferStatus = TransferStatus.NOT_RUNNING;
 				status = "Waiting";
 			}
@@ -177,7 +205,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	}
 
 	private FCPClientGet(final Builder builder) {
-        super(builder.identifier, false);
+		super(builder.identifier, false);
 		this.queueManager = builder.queueManager;
 		this.queryManager = queueManager.getQueryManager();
 		fromTheNodeProgress = -1;
@@ -194,7 +222,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		this.maxSize = builder.maxSize;
 		setStatus(builder.transferStatus);
 
-		if(builder.status == null) {
+		if (builder.status == null) {
 			this.status = "(null)";
 		} else {
 			this.status = builder.status;
@@ -206,7 +234,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			globalQueue = builder.globalQueue;
 		}
 
-		if(filename == null) {
+		if (filename == null) {
 			filename = FreenetURIHelper.getFilenameFromKey(key);
 		}
 
@@ -223,37 +251,33 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 			if (split.length >= 2) {
 				filename = "";
-				for (int i = 1 ; i < split.length; i++)
+				for (int i = 1; i < split.length; i++)
 					filename += split[i];
 			}
 		}
 		/* /FIX */
 
-		if(builder.isNewRequest) {
-			Logger.debug(this, "Query for getting "+key+" created");
+		if (builder.isNewRequest) {
+			Logger.debug(this, "Query for getting " + key + " created");
 		} else {
-			Logger.debug(this, "Resuming key : "+key);
-			Logger.info(this, "Resuming id : "+getIdentifier());
+			Logger.debug(this, "Resuming key : " + key);
+			Logger.info(this, "Resuming id : " + getIdentifier());
 		}
 
 		queryManager.addObserver(this);
 	}
 
-
-
-	/**
-	 * won't follow the redirections
-	 */
+	/** won't follow the redirections */
 	public void setNoRedirectionFlag(boolean noRedir) {
 		this.noRedir = noRedir;
 	}
 
-	public boolean start(){
+	public boolean start() {
 		attempt++;
 
 		setStatus(TransferStatus.RUNNING);
 
-		/* TODO : seems to be true sometimes => find why */ 
+		/* TODO : seems to be true sometimes => find why */
 		if (queueManager == null /* TODO: Needed anymore?*/
 				|| queryManager == null
 				|| queryManager.getConnection() == null)
@@ -268,17 +292,16 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			if ((destinationDir = System.getProperty("java.io.tmpdir")) == null) {
 				Logger.error(this, "Unable to find temporary directory ! Will create troubles !");
 				destinationDir = "";
-			}
-			else
-				Logger.notice(this, "Using temporary file: "+getPath());
+			} else
+				Logger.notice(this, "Using temporary file: " + getPath());
 		}
 
 		status = "Requesting";
 
-		if(getIdentifier() == null)
-			setIdentifier(queueManager.getAnID() + "-"+filename);
+		if (getIdentifier() == null)
+			setIdentifier(queueManager.getAnID() + "-" + filename);
 
-		Logger.debug(this, "Requesting key : "+getFileKey());
+		Logger.debug(this, "Requesting key : " + getFileKey());
 
 		final FCPMessage queryMessage = new FCPMessage();
 
@@ -292,12 +315,12 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		if (maxSize > 0)
 			queryMessage.setValue("MaxSize", Long.toString(maxSize));
 
-		if(destinationDir != null)
+		if (destinationDir != null)
 			queryMessage.setValue("ClientToken", destinationDir);
 
 		queryMessage.setValue("Persistence", getPersistenceString());
 
-		if(globalQueue)
+		if (globalQueue)
 			queryMessage.setValue("Global", "true");
 		else
 			queryMessage.setValue("Global", "false");
@@ -317,7 +340,6 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		return queryManager.writeMessage(queryMessage);
 	}
 
-
 	public void update(final Observable o, final Object arg) {
 		if (o == testDDA) {
 			if (!testDDA.mayTheNodeWrite())
@@ -328,13 +350,13 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			return;
 		}
 
-		final FCPMessage message = (FCPMessage)arg;
-		if(!identifierMatches(message))
+		final FCPMessage message = (FCPMessage) arg;
+		if (!identifierMatches(message))
 			return;
 
 		FCPQueryManager queryManager;
 		if (o instanceof FCPQueryManager)
-			queryManager = (FCPQueryManager)o;
+			queryManager = (FCPQueryManager) o;
 		else
 			queryManager = this.queryManager; /* default one */
 
@@ -397,21 +419,20 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		}
 	}
 
-
 	protected void dataFound(FCPMessage message) {
 		Logger.debug(this, "DataFound!");
 
 		/* Mark the network block count as being reliable if it hasn't been marked already */
 		makeReliable();
 
-		if(!isFinished()) {
-			if(!alreadySaved) {
+		if (!isFinished()) {
+			if (!alreadySaved) {
 				alreadySaved = true;
 
 				fileSize = Long.parseLong(message.getValue("DataLength"));
 
-				if(isPersistent() || ddaAllowed()) {
-					if(destinationDir != null) {
+				if (isPersistent() || ddaAllowed()) {
+					if (destinationDir != null) {
 						if (!fileExists()
 								&& !(ddaAllowed())
 								&& queryManager.getConnection().getAutoDownload()) {
@@ -442,7 +463,6 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		}
 	}
 
-
 	protected void identifierCollision() {
 		Logger.notice(this, "IdentifierCollision ! Resending with another id");
 
@@ -451,7 +471,6 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		notifyChange();
 	}
-
 
 	protected void protocolError(FCPMessage message) {
 		Logger.debug(this, "ProtocolError !");
@@ -466,36 +485,34 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			testDDA = new FCPTestDDA(destinationDir, false, true, queryManager);
 			testDDA.addObserver(this);
 			testDDA.start();
-		}
-		else if("15".equals( message.getValue("Code") )) {
+		} else if ("15".equals(message.getValue("Code"))) {
 			Logger.debug(this, "Unknown URI ? was probably a stop order so no problem ...");
-		}
-		else{
+		} else {
 			if ("4".equals(message.getValue("Code"))) {
-				Logger.warning(this, "The node reported an invalid key. Please check the following key\n"+
+				Logger.warning(this, "The node reported an invalid key. Please check the following key\n" +
 						key);
 			}
 
-			Logger.error(this, "=== PROTOCOL ERROR === \n"+message.toString());
+			Logger.error(this, "=== PROTOCOL ERROR === \n" + message.toString());
 
 			protocolErrorCode = Integer.parseInt(message.getValue("Code"));
 
-			status = "Protocol Error ("+message.getValue("CodeDescription")+")";
+			status = "Protocol Error (" + message.getValue("CodeDescription") + ")";
 
 			setStatus(TransferStatus.FAILED);
 
 			fatal = true;
 
-			if((message.getValue("Fatal") != null) &&
+			if ((message.getValue("Fatal") != null) &&
 					message.getValue("Fatal").equals("false")) {
 				fatal = false;
 				status = status + " (non-fatal)";
 			}
 
-			if(isLockOwner) {
+			if (isLockOwner) {
 				if (duplicatedQueryManager != null)
 					duplicatedQueryManager.getConnection().removeFromWriterQueue();
-				isLockOwner= false;
+				isLockOwner = false;
 			}
 
 			notifyChange();
@@ -503,7 +520,6 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			queryManager.deleteObserver(this);
 		}
 	}
-
 
 	protected void persistentRequestRemoved() {
 		status = "Removed";
@@ -521,16 +537,15 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		notifyChange();
 	}
 
-
 	protected void getFailed(FCPMessage message) {
-		Logger.info(this, "GetFailed for "+key);
+		Logger.info(this, "GetFailed for " + key);
 
-		if (message.getValue("RedirectURI") != null ) {
+		if (message.getValue("RedirectURI") != null) {
 			Logger.info(this, "Redirected from " + key + " to " + message.getValue("RedirectURI"));
 
-			if ( key.equals(message.getValue("RedirectURI")) ) {
+			if (key.equals(message.getValue("RedirectURI"))) {
 				Logger.warning(this, "Redirected to the same key we tried to fetch !?");
-			} else if ( !noRedir ) {
+			} else if (!noRedir) {
 				key = message.getValue("RedirectURI");
 				status = "Redirected ...";
 				if (queueManager.isOur(message.getValue("Identifier"))) {
@@ -539,8 +554,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				} else {
 					Logger.info(this, "Not our transfer ; we don't touch");
 				}
-			}
-			else
+			} else
 				Logger.notice(this, "Redirected, but noredir flag is set. Ignoring redirection");
 		}
 
@@ -548,9 +562,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			restartIfFailed = false;
 			start();
 			return;
-		}
-		else if (!"13".equals(message.getValue("Code"))){ /* if != of Data Not Found */
-			Logger.notice(this, "GetFailed : "+message.getValue("CodeDescription"));
+		} else if (!"13".equals(message.getValue("Code"))) { /* if != of Data Not Found */
+			Logger.notice(this, "GetFailed : " + message.getValue("CodeDescription"));
 		}
 
 		if (isRunning()) {
@@ -558,13 +571,13 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 			getFailedCode = Integer.parseInt(message.getValue("Code"));
 
-			status = "Failed ("+message.getValue("CodeDescription")+")";
-			Logger.warning(this, "Transfer failed: "+message.getValue("CodeDescription"));
+			status = "Failed (" + message.getValue("CodeDescription") + ")";
+			Logger.warning(this, "Transfer failed: " + message.getValue("CodeDescription"));
 			setStatus(TransferStatus.FAILED);
 
 			fatal = true;
 
-			if((message.getValue("Fatal") != null) &&
+			if ((message.getValue("Fatal") != null) &&
 					message.getValue("Fatal").equals("false")) {
 				fatal = false;
 				status = status + " (non-fatal)";
@@ -576,7 +589,6 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		}
 	}
 
-
 	protected void simpleProgress(FCPMessage message) {
 		Logger.debug(this, "SimpleProgress !");
 
@@ -584,15 +596,15 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				&& message.getValue("Required") != null
 				&& message.getValue("Succeeded") != null) {
 
-			if ( !gotExpectedFileSize)
-				fileSize = Long.parseLong(message.getValue("Required"))* FCPClientGet.BLOCK_SIZE;
+			if (!gotExpectedFileSize)
+				fileSize = Long.parseLong(message.getValue("Required")) * FCPClientGet.BLOCK_SIZE;
 
 			final long total = Long.parseLong(message.getValue("Total"));
 			final long required = Long.parseLong(message.getValue("Required"));
 			final long succeeded = Long.parseLong(message.getValue("Succeeded"));
 
 			boolean progressReliable = false;
-			if((message.getValue("FinalizedTotal") != null) &&
+			if ((message.getValue("FinalizedTotal") != null) &&
 					message.getValue("FinalizedTotal").equals("true")) {
 				progressReliable = true;
 			}
@@ -614,8 +626,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	}
 
 	/**
-	 * Handles the allData node message and attempts to write
-	 * the contents to the target file.
+	 * Handles the allData node message and attempts to write the contents to the
+	 * target file.
 	 */
 	protected void allData(FCPQueryManager queryManager, FCPMessage message) {
 		Logger.debug(this, "AllData ! : " + getIdentifier());
@@ -632,7 +644,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		notifyChange();
 
-		if(fetchDirectly(queryManager.getConnection(), fileSize, true)) {
+		if (fetchDirectly(queryManager.getConnection(), fileSize, true)) {
 			Logger.info(this, "File received");
 			writingSuccessful = true;
 			status = "Available";
@@ -647,7 +659,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		isLockOwner = false;
 
-		if(writingSuccessful) {
+		if (writingSuccessful) {
 			setStatus(TransferStatus.SUCCESSFUL);
 		} else {
 			setStatus(TransferStatus.FAILED);
@@ -660,17 +672,14 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			queryManager.getConnection().disconnect();
 			duplicatedQueryManager = null;
 		}
-		
+
 		notifyChange();
 	}
-
 
 	protected boolean identifierMatches(FCPMessage message) {
 		return (message.getValue("Identifier") != null)
 				&& message.getValue("Identifier").equals(getIdentifier());
 	}
-
-
 
 	protected boolean ddaAllowed() {
 		return queryManager.getConnection().isLocalSocket() && !noDDA;
@@ -685,8 +694,11 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	}
 
 	private class UnlockWaiter implements ThawRunnable {
+
 		FCPClientGet clientGet;
+
 		FCPConnection c;
+
 		String dir;
 
 		public UnlockWaiter(final FCPClientGet clientGet, final FCPConnection c, final String dir) {
@@ -696,16 +708,17 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		}
 
 		private Thread th;
+
 		private boolean waiting = false;
 
 		public void run() {
-			synchronized(this) {
+			synchronized (this) {
 				waiting = true;
 			}
 
 			c.addToWriterQueue();
 
-			synchronized(this) {
+			synchronized (this) {
 				waiting = false;
 
 				if (Thread.interrupted()) {
@@ -718,23 +731,22 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 			Logger.debug(this, "I take the lock !");
 
-			if(dir == null) {
+			if (dir == null) {
 				Logger.warning(this, "UnlockWaiter.run() : Wtf ?");
 			}
 
 			clientGet.continueSaveFileTo(dir);
 		}
 
-
 		public void setThread(Thread th) {
-			synchronized(this) {
+			synchronized (this) {
 				this.th = th;
 			}
 		}
 
 		/* race-conditions may happen but "shits happen" */
 		public void stop() {
-			synchronized(this) {
+			synchronized (this) {
 				if (waiting)
 					th.interrupt();
 			}
@@ -748,22 +760,21 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	public synchronized boolean saveFileTo(final String dir, final boolean checkStatus) {
 		fromTheNodeProgress = 0;
 
-		Logger.info(this, "Saving file to '"+dir+"'");
+		Logger.info(this, "Saving file to '" + dir + "'");
 
-		if(dir == null) {
+		if (dir == null) {
 			Logger.warning(this, "saveFileTo() : Can't save to null.");
 			return false;
 		}
 
 		destinationDir = dir;
 
-
-		if(checkStatus && (!isFinished() || !isSuccessful())) {
+		if (checkStatus && (!isFinished() || !isSuccessful())) {
 			Logger.warning(this, "Unable to fetch a file not finished");
 			return false;
 		}
 
-		if(!isPersistent()) {
+		if (!isPersistent()) {
 			Logger.warning(this, "Not persistent, so unable to ask");
 			return false;
 		}
@@ -780,11 +791,11 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		Logger.info(this, "Waiting for socket  ...");
 		status = "Waiting for socket availability ...";
 		fromTheNodeProgress = 1; /* display issue */
-		
+
 		setStatus(TransferStatus.RUNNING);
 
 		notifyChange();
-		
+
 		UnlockWaiter uw = new UnlockWaiter(this, duplicatedQueryManager.getConnection(), dir);
 
 		final Thread fork = new Thread(new ThawThread(uw,
@@ -799,7 +810,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 	public synchronized boolean continueSaveFileTo(final String dir) {
 
-		Logger.info(this, "Asking file '"+filename+"' to the node...");
+		Logger.info(this, "Asking file '" + filename + "' to the node...");
 
 		destinationDir = dir;
 
@@ -808,8 +819,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		setStatus(TransferStatus.RUNNING);
 
 		notifyChange();
-		
-		if(destinationDir == null) {
+
+		if (destinationDir == null) {
 			Logger.warning(this, "saveFileTo() : Wtf ?");
 		}
 
@@ -817,7 +828,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		getRequestStatus.setMessageName("GetRequestStatus");
 		getRequestStatus.setValue("Identifier", getIdentifier());
-		if(globalQueue)
+		if (globalQueue)
 			getRequestStatus.setValue("Global", "true");
 		else
 			getRequestStatus.setValue("Global", "false");
@@ -828,14 +839,12 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		return true;
 	}
 
-
 	private boolean fileExists() {
 		final File newFile = new File(getPath());
 		return newFile.exists();
 	}
 
-
-	protected File getDirectFile(){
+	protected File getDirectFile() {
 		String filePath;
 		File file;
 
@@ -843,15 +852,12 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		if (filePath != null) {
 			file = new File(filePath);
 
-			try{
-				if(file.exists() || file.createNewFile())
-				{
+			try {
+				if (file.exists() || file.createNewFile()) {
 					return file;
 				}
-			}
-			catch(final java.io.IOException e)
-			{
-				 Logger.notice(this, "First attempted filename failed");
+			} catch (final java.io.IOException e) {
+				Logger.notice(this, "First attempted filename failed");
 			}
 		}
 
@@ -861,22 +867,20 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		filePath = getSafePath();
 
-		if(filePath != null){
+		if (filePath != null) {
 			file = new File(filePath);
 
 			try {
 				Logger.notice(this, "Trying a simpler filename...");
 
-				if(file.exists() || file.createNewFile())
-				{
+				if (file.exists() || file.createNewFile()) {
 					return file;
 				}
-			} catch(final java.io.IOException e){
-				Logger.notice(this, "Simpler filePath name failed: "+e.toString());
-				Logger.notice(this, "filePath: "+filePath);
+			} catch (final java.io.IOException e) {
+				Logger.notice(this, "Simpler filePath name failed: " + e.toString());
+				Logger.notice(this, "filePath: " + filePath);
 			}
-		}
-		else{
+		} else {
 			/* Filename is null, so create a temporary filePath instead. */
 			try {
 				Logger.info(this, "Using temporary filePath");
@@ -884,19 +888,21 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				finalPath = file.getPath();
 				file.deleteOnExit();
 				return file;
-			} catch(final java.io.IOException e) {
-				Logger.error(this, "Error while creating temporary filePath: "+e.toString());
+			} catch (final java.io.IOException e) {
+				Logger.error(this, "Error while creating temporary filePath: " + e.toString());
 			}
 		}
 
 		return null;
 	}
 
-
 	/**
 	 * Reads the remaining data bytes from the socket as defined by size.
-	 * @param connection Connection to read the data from.
-	 * @param size The number of bytes to read from the connection.
+	 *
+	 * @param connection
+	 * 		Connection to read the data from.
+	 * @param size
+	 * 		The number of bytes to read from the connection.
 	 */
 	protected void dummyDataGet(FCPConnection connection, long size) {
 		final int packet = FCPClientGet.PACKET_SIZE;
@@ -905,21 +911,19 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		read = new byte[packet];
 
-		while(size > 0){
-			if ( size < packet )
-				read = new byte[(int)size]; /* otherwise we would read too much */
+		while (size > 0) {
+			if (size < packet)
+				read = new byte[(int) size]; /* otherwise we would read too much */
 			amount = connection.read(read);
 
-			if(amount >= 0){
+			if (amount >= 0) {
 				size -= amount;
-			}
-			else{
+			} else {
 				/* Either EOF, or socket error */
 				return;
 			}
 		}
 	}
-
 
 	private boolean fetchDirectly(final FCPConnection connection, final long expectedFileSize, final boolean reallyWrite) {
 		File newFile;
@@ -932,7 +936,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 			Logger.info(this, "File is supposed already written. Not rewriting.");
 			status = "File already exists";
 			setStatus(TransferStatus.FAILED);
-			
+
 			/* Clear the data from the socket to prevent socket problems */
 			dummyDataGet(connection, expectedFileSize);
 			return false;
@@ -940,8 +944,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		try {
 			outputStream = new FileOutputStream(newFile);
-		} catch(final java.io.FileNotFoundException e) {
-			Logger.error(this, "Unable to write file on disk ... disk space / perms / filename ? : "+e.toString());
+		} catch (final java.io.FileNotFoundException e) {
+			Logger.error(this, "Unable to write file on disk ... disk space / perms / filename ? : " + e.toString());
 			status = "Write error";
 			return false;
 		}
@@ -955,11 +959,11 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		final int packet = FCPClientGet.PACKET_SIZE;
 		byte[] read = new byte[packet];
 
-		while(bytesRemaining > 0) {
+		while (bytesRemaining > 0) {
 
 			int amount;
 
-			if ( bytesRemaining < packet )
+			if (bytesRemaining < packet)
 				read = new byte[(int) bytesRemaining]; /* otherwise we would read too much */
 
 			amount = connection.read(read);
@@ -968,7 +972,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				bytesRemaining -= amount;
 				try {
 					outputStream.write(read, 0, amount);
-					if( System.currentTimeMillis() >= (startTime+3000)) {
+					if (System.currentTimeMillis() >= (startTime + 3000)) {
 						status = "Writing to disk";
 						fromTheNodeProgress = (int) (((expectedFileSize - bytesRemaining) * 100) / expectedFileSize);
 
@@ -979,19 +983,19 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 						startTime = System.currentTimeMillis();
 					}
-				} catch(final java.io.IOException e) {
+				} catch (final java.io.IOException e) {
 					/* Unable to continue writing to the file.  Disable writing, but
 					 * keep reading data from the socket so that the socket doesn't
 					 * get messed up.
 					 */
-					Logger.error(this, "Unable to write file on disk ... out of space ? : "+e.toString());
+					Logger.error(this, "Unable to write file on disk ... out of space ? : " + e.toString());
 					status = "Unable to fetch / disk probably full !";
 					writingSuccessful = false;
 					setStatus(TransferStatus.FAILED);
 					try {
 						outputStream.close();
-					} catch(java.io.IOException ex) {
-						Logger.error(this, "Unable to close the file cleanly : "+ex.toString());
+					} catch (java.io.IOException ex) {
+						Logger.error(this, "Unable to close the file cleanly : " + ex.toString());
 						Logger.error(this, "Things seem to go wrong !");
 					}
 					newFile.delete();
@@ -1005,8 +1009,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				setStatus(TransferStatus.FAILED);
 				try {
 					outputStream.close();
-				} catch(java.io.IOException ex) {
-					Logger.error(this, "Unable to close the file cleanly : "+ex.toString());
+				} catch (java.io.IOException ex) {
+					Logger.error(this, "Unable to close the file cleanly : " + ex.toString());
 					Logger.error(this, "Things seem to go wrong !");
 				}
 				newFile.delete();
@@ -1016,42 +1020,40 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		fromTheNodeProgress = 100;
 
-		if(reallyWrite) {
+		if (reallyWrite) {
 			try {
 				outputStream.close();
 
-				if(!writingSuccessful && (newFile != null))
+				if (!writingSuccessful && (newFile != null))
 					newFile.delete();
 
-			} catch(final java.io.IOException e) {
-				Logger.notice(this, "Unable to close correctly file on disk !? : "+e.toString());
+			} catch (final java.io.IOException e) {
+				Logger.notice(this, "Unable to close correctly file on disk !? : " + e.toString());
 			}
 		}
 
 		Logger.info(this, "File written");
 
-
 		return true;
 	}
-
 
 	public boolean removeRequest() {
 		final FCPMessage stopMessage = new FCPMessage();
 
-		if(!isPersistent()) {
+		if (!isPersistent()) {
 			Logger.notice(this, "Can't remove non persistent request.");
 
 			return false;
 		}
 
-		if(getIdentifier() == null) {
+		if (getIdentifier() == null) {
 			Logger.notice(this, "Can't remove non-started queries");
 			return true;
 		}
 
 		stopMessage.setMessageName("RemovePersistentRequest");
 
-		if(globalQueue)
+		if (globalQueue)
 			stopMessage.setValue("Global", "true");
 		else
 			stopMessage.setValue("Global", "false");
@@ -1060,7 +1062,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		queryManager.writeMessage(stopMessage);
 
-		if ( isSuccessful() )
+		if (isSuccessful())
 			setStatus(TransferStatus.SUCCESSFUL);
 		else
 			setStatus(TransferStatus.FAILED);
@@ -1072,10 +1074,10 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		/* TODO ? : Reduce the priority
 		   instead of stopping */
 
-		Logger.info(this, "Pausing fetching of the key : "+getFileKey());
+		Logger.info(this, "Pausing fetching of the key : " + getFileKey());
 
 		removeRequest();
-		
+
 		setStatus(TransferStatus.NOT_RUNNING);
 
 		status = "Delayed";
@@ -1085,22 +1087,22 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		return true;
 
 	}
-	
+
 	public boolean stop() {
 		return stop(queryManager, true);
 	}
 
 	public boolean stop(final FCPQueryManager queryManager, boolean notify) {
-		Logger.info(this, "Stop fetching of the key : "+getFileKey());
-		
-		if(isPersistent() && !removeRequest())
+		Logger.info(this, "Stop fetching of the key : " + getFileKey());
+
+		if (isPersistent() && !removeRequest())
 			return false;
-		
+
 		queryManager.deleteObserver(this);
 
 		boolean wasFinished = isFinished();
 
-		if(wasFinished && isSuccessful()) {
+		if (wasFinished && isSuccessful()) {
 			setStatus(TransferStatus.SUCCESSFUL);
 		} else {
 			setStatus(TransferStatus.FAILED);
@@ -1116,9 +1118,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		return true;
 	}
 
-
 	public void updatePersistentRequest(final boolean clientToken) {
-		if(!isPersistent())
+		if (!isPersistent())
 			return;
 
 		final FCPMessage msg = new FCPMessage();
@@ -1128,13 +1129,12 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		msg.setValue("Identifier", getIdentifier());
 		msg.setValue("PriorityClass", Integer.toString(getPriority()));
 
-		if(clientToken && (destinationDir != null))
+		if (clientToken && (destinationDir != null))
 			msg.setValue("ClientToken", destinationDir);
 
 		queryManager.writeMessage(msg);
 
 	}
-
 
 	public int getThawPriority() {
 		return getPriority();
@@ -1145,7 +1145,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	}
 
 	public void setFCPPriority(final int prio) {
-		Logger.info(this, "Setting priority to "+Integer.toString(prio));
+		Logger.info(this, "Setting priority to " + Integer.toString(prio));
 
 		setPriority(prio);
 
@@ -1165,8 +1165,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		//        => to remove when it will become unneeded
 
 		if (filename != null && key != null
-		    && key.startsWith("CHK@")
-		    && key.indexOf('/') < 0) {
+				&& key.startsWith("CHK@")
+				&& key.indexOf('/') < 0) {
 			return key + "/" + filename;
 		}
 
@@ -1182,7 +1182,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		if (finalPath != null)
 			path = finalPath;
-		else if(destinationDir != null)
+		else if (destinationDir != null)
 			path = destinationDir + File.separator + filename;
 
 		if (path != null)
@@ -1192,9 +1192,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	}
 
 	/**
-	 * Returns the path, replacing characters that are often not
-	 * allowed in file systems.  Used as a fallback in case the
-	 * result of getPath() fails.
+	 * Returns the path, replacing characters that are often not allowed in file
+	 * systems.  Used as a fallback in case the result of getPath() fails.
 	 *
 	 * @return Path with "non-standard" characters replaced with underscores.
 	 */
@@ -1204,13 +1203,12 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		if (finalPath != null)
 			path = finalPath;
-		else if(destinationDir != null)
+		else if (destinationDir != null)
 			sanitizedFilename = filename.replaceAll("[\\\\/:\"*?<>|\\r\\n]", "_");
-			path = destinationDir + File.separator + sanitizedFilename;
+		path = destinationDir + File.separator + sanitizedFilename;
 
 		return path;
 	}
-	
 
 	public String getFilename() {
 		if (filename != null)
@@ -1225,7 +1223,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 	public void setAttempt(final int x) {
 		attempt = x;
 
-		if(x == 0) {
+		if (x == 0) {
 			/* We suppose it's a restart */
 			setBlockNumbers(-1, -1, -1, false);
 		}
@@ -1243,8 +1241,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		return ((!isSuccessful()) && fatal);
 	}
 
-	public HashMap<String,String> getParameters() {
-		final HashMap<String,String> result = new HashMap<String,String>();
+	public HashMap<String, String> getParameters() {
+		final HashMap<String, String> result = new HashMap<String, String>();
 
 		result.put("URI", key);
 		result.put("Filename", filename);
@@ -1285,18 +1283,16 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		return protocolErrorCode;
 	}
 
-    protected String getPersistenceString()
-    {
-        switch(persistence)
-        {
-            case PERSISTENCE_FOREVER:
-                return "forever";
-            case PERSISTENCE_UNTIL_NODE_REBOOT:
-                return "reboot";
-            case PERSISTENCE_UNTIL_DISCONNECT:
-                return "connection";
-            default:
-                return "forever";
-        }
-    }
+	protected String getPersistenceString() {
+		switch (persistence) {
+			case PERSISTENCE_FOREVER:
+				return "forever";
+			case PERSISTENCE_UNTIL_NODE_REBOOT:
+				return "reboot";
+			case PERSISTENCE_UNTIL_DISCONNECT:
+				return "connection";
+			default:
+				return "forever";
+		}
+	}
 }

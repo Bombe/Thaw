@@ -28,25 +28,26 @@ package thaw.core;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-
 /**
  * @author David Roden &lt;droden@gmail.com&gt;
  * @version $Id: I18n.java 355 2006-03-24 15:04:11Z bombe $
  */
 public class I18n {
+
 	public final static Locale[] supportedLocales = {
-		Locale.ENGLISH,
-		Locale.FRENCH
+			Locale.ENGLISH,
+			Locale.FRENCH
 	};
 
 	private static Locale currentLocale;
+
 	private static ResourceBundle currentResourceBundle;
 
 	static {
 		currentLocale = Locale.ENGLISH;
 		currentResourceBundle = ResourceBundle.getBundle("thaw.i18n.thaw", currentLocale);
 	}
-	
+
 	public I18n() {
 		I18n.setLocale(Locale.getDefault());
 	}
@@ -64,9 +65,9 @@ public class I18n {
 	public static String getMessage(final String key) {
 		try {
 			return currentResourceBundle.getString(key);
-		} catch(final Exception e) {
+		} catch (final Exception e) {
 			Logger.warning(new I18n(),
-				       "Unable to find translation for '"+key+"'");
+					"Unable to find translation for '" + key + "'");
 			e.printStackTrace();
 			return key;
 		}

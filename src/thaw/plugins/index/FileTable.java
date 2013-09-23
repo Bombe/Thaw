@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
 import java.util.Vector;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -24,29 +23,31 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import thaw.core.Config;
-import thaw.core.ThawThread;
-import thaw.core.ThawRunnable;
-import thaw.fcp.FreenetURIHelper;
 import thaw.core.I18n;
-import thaw.gui.IconBox;
 import thaw.core.Logger;
+import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
 import thaw.fcp.FCPQueueManager;
 import thaw.fcp.FCPTransferQuery;
-import thaw.plugins.ToolbarModifier;
+import thaw.fcp.FreenetURIHelper;
+import thaw.gui.IconBox;
 import thaw.gui.Table;
-
+import thaw.plugins.ToolbarModifier;
 
 public class FileTable implements MouseListener, KeyListener, ActionListener {
 
 	private final JPanel panel;
 
 	private final Table table;
+
 	private FileListModel fileListModel;
 
 	private FileList fileList;
 
 	private final JPopupMenu rightClickMenu;
+
 	private final Vector rightClickActions;
+
 	private final JMenuItem gotoItem;
 	// Download
 	// Insert
@@ -55,26 +56,26 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 	// Copy file keys
 
 	private final ToolbarModifier toolbarModifier;
+
 	private final Vector toolbarActions;
 
 	private int[] selectedRows;
 
 	private IndexBrowserPanel indexBrowser;
+
 	private FCPQueueManager queueManager;
 
 	private TransferRefresher refresher;
 
-
 	private int columnToSort = -1;
-	private boolean sortAsc = false;
 
+	private boolean sortAsc = false;
 
 	private thaw.plugins.index.File firstSelectedFile; /* used for the 'goto corresponding index' option */
 
-
 	public FileTable(final FCPQueueManager queueManager,
-			 IndexBrowserPanel indexBrowser,
-			 final Config config) {
+					 IndexBrowserPanel indexBrowser,
+					 final Config config) {
 		this.indexBrowser = indexBrowser;
 		this.queueManager = queueManager;
 
@@ -100,7 +101,6 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		// Menu
 		rightClickMenu = new JPopupMenu();
 		rightClickActions = new Vector();
-
 
 		toolbarModifier = new ToolbarModifier(indexBrowser.getMainWindow());
 		toolbarActions = new Vector();
@@ -163,7 +163,6 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		refresher.stop();
 	}
 
-
 	public ToolbarModifier getToolbarModifier() {
 		return toolbarModifier;
 	}
@@ -176,11 +175,11 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		FileManagementHelper.FileAction action;
 
 		firstSelectedFile = selectedFiles != null && selectedFiles.size() > 0 ?
-			((thaw.plugins.index.File)selectedFiles.get(0)) : null;
+				((thaw.plugins.index.File) selectedFiles.get(0)) : null;
 
-		for(final Iterator it = rightClickActions.iterator();
-		    it.hasNext();) {
-			action = (FileManagementHelper.FileAction)it.next();
+		for (final Iterator it = rightClickActions.iterator();
+			 it.hasNext(); ) {
+			action = (FileManagementHelper.FileAction) it.next();
 			action.setTarget(selectedFiles);
 		}
 
@@ -190,9 +189,9 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 	protected void updateToolbar(final Vector selectedFiles) {
 		FileManagementHelper.FileAction action;
 
-		for(final Iterator it = toolbarActions.iterator();
-		    it.hasNext();) {
-			action = (FileManagementHelper.FileAction)it.next();
+		for (final Iterator it = toolbarActions.iterator();
+			 it.hasNext(); ) {
+			action = (FileManagementHelper.FileAction) it.next();
 			action.setTarget(selectedFiles);
 		}
 	}
@@ -202,7 +201,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		final File[] srcList = fileListModel.getFiles();
 		final Vector files = new Vector();
 
-		for(int i = 0 ; i < selectedRows.length ; i++) {
+		for (int i = 0; i < selectedRows.length; i++) {
 			files.add(srcList[selectedRows[i]]);
 		}
 
@@ -215,11 +214,9 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		fileListModel.reloadFileList(fileList);
 	}
 
-
 	public FileList getFileList() {
 		return fileList;
 	}
-
 
 	public void mouseClicked(final MouseEvent e) {
 		Vector selection;
@@ -243,22 +240,29 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		}
 	}
 
-	public void mouseEntered(final MouseEvent e) { }
+	public void mouseEntered(final MouseEvent e) {
+	}
 
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseExited(final MouseEvent e) {
+	}
 
-	public void mousePressed(final MouseEvent e) { }
+	public void mousePressed(final MouseEvent e) {
+	}
 
-	public void mouseReleased(final MouseEvent e) { }
+	public void mouseReleased(final MouseEvent e) {
+	}
 
-	public void keyPressed(final KeyEvent e) { }
+	public void keyPressed(final KeyEvent e) {
+	}
 
-	public void keyReleased(final KeyEvent e) { }
+	public void keyReleased(final KeyEvent e) {
+	}
 
-	public void keyTyped(final KeyEvent e) { }
+	public void keyTyped(final KeyEvent e) {
+	}
 
 	public void actionPerformed(final ActionEvent e) {
-		if(fileList == null)
+		if (fileList == null)
 			return;
 
 		if (e.getSource() == gotoItem) {
@@ -272,36 +276,33 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		}
 	}
 
-
 	public void setSelectedRows(final int min, final int max) {
 		table.setRowSelectionInterval(min, max);
 	}
-
 
 	public void refresh() {
 		fileListModel.refresh();
 	}
 
-
 	public class FileListModel extends javax.swing.table.AbstractTableModel {
+
 		private static final long serialVersionUID = 1L;
 
 		public String[] columnNames =
-		{
-			I18n.getMessage("thaw.common.file"),
-			I18n.getMessage("thaw.common.size"),
-			I18n.getMessage("thaw.common.key"),
-			I18n.getMessage("thaw.common.status")
-		};
+				{
+						I18n.getMessage("thaw.common.file"),
+						I18n.getMessage("thaw.common.size"),
+						I18n.getMessage("thaw.common.key"),
+						I18n.getMessage("thaw.common.status")
+				};
 
 		public String[] columnNamesInDb =
-		{
-			"LOWER(filename)",
-			"size",
-			"LOWER(publicKey)",
-			null
-		};
-
+				{
+						"LOWER(filename)",
+						"size",
+						"LOWER(publicKey)",
+						null
+				};
 
 		public File[] files = null;
 
@@ -335,8 +336,8 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		public String getColumnName(final int column) {
 			String result = columnNames[column];
 
-			if(column == columnToSort) {
-				if(sortAsc)
+			if (column == columnToSort) {
+				if (sortAsc)
 					result = result + " >>";
 				else
 					result = result + " <<";
@@ -359,12 +360,12 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 			if (row >= files.length)
 				return null;
 
-			final thaw.plugins.index.File file = (thaw.plugins.index.File)files[row];
+			final thaw.plugins.index.File file = (thaw.plugins.index.File) files[row];
 
-			if(column == 0)
+			if (column == 0)
 				return file.getFilename();
 
-			if(column == 1) {
+			if (column == 1) {
 				if (file.getSize() > 0)
 					return new Long(file.getSize());
 				else
@@ -392,7 +393,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public void refresh() {
-			if(fileList != null) {
+			if (fileList != null) {
 				files = fileList.getFileList(getColumnNameInDb(columnToSort), sortAsc);
 			} else {
 				files = null;
@@ -412,8 +413,8 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		}
 	}
 
-
 	private class TransferRefresher implements ThawRunnable {
+
 		private boolean running;
 
 		public TransferRefresher() {
@@ -421,10 +422,10 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public void run() {
-			while(running) {
+			while (running) {
 				try {
 					Thread.sleep(500);
-				} catch(InterruptedException e) {
+				} catch (InterruptedException e) {
 					/* \_o< */
 				}
 
@@ -436,11 +437,11 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 
 				File[] files = fileListModel.getFiles();
 
-				for (int i = 0 ; i < files.length ; i++) {
-					thaw.plugins.index.File file = (thaw.plugins.index.File)files[i];
+				for (int i = 0; i < files.length; i++) {
+					thaw.plugins.index.File file = (thaw.plugins.index.File) files[i];
 
 					if (file.getPublicKey() == null
-					    || !FreenetURIHelper.isAKey(file.getPublicKey())) {
+							|| !FreenetURIHelper.isAKey(file.getPublicKey())) {
 						FCPTransferQuery transfer;
 						transfer = file.getTransfer(queueManager);
 
@@ -455,7 +456,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 
 					try {
 						Thread.sleep(100);
-					} catch(InterruptedException e) {
+					} catch (InterruptedException e) {
 						/* \_o< */
 					}
 				}
@@ -467,10 +468,8 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		}
 	}
 
-
-
-
 	protected class ColumnListener extends MouseAdapter {
+
 		private JTable table;
 
 		public ColumnListener(final JTable t) {
@@ -493,12 +492,11 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 			}
 
 			if (columnToSort == modelIndex)
-			        sortAsc = !sortAsc;
+				sortAsc = !sortAsc;
 			else {
 				columnToSort = modelIndex;
 				sortAsc = true;
 			}
-
 
 			for (int i = 0; i < columnsCount; i++) {
 				final TableColumn column = colModel.getColumn(i);

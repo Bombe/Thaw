@@ -2,8 +2,8 @@ package thaw.gui;
 
 import java.awt.BorderLayout;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.Collection;
-
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -12,16 +12,16 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
-import java.awt.event.WindowListener;
 
-import thaw.core.*;
-
+import thaw.core.Core;
+import thaw.core.I18n;
+import thaw.core.Logger;
 
 /**
  * MainWindow. This class create the main window.
- *
+ * <p/>
  * Main window is divided in three parts:
- *
+ * <p/>
  * <pre>
  * ------------------------------------
  * | MenuBar                          |
@@ -43,28 +43,29 @@ import thaw.core.*;
  * @author <a href="mailto:jflesch@nerim.net">Jerome Flesch</a>
  */
 public class MainWindow implements WindowListener,
-				   java.util.Observer {
+		java.util.Observer {
 
 	public final static int DEFAULT_SIZE_X = 790;
+
 	public final static int DEFAULT_SIZE_Y = 550;
 
 	private final JFrame mainWindow;
 
 	private MenuBar menuBar;
+
 	private ToolBar toolBar;
 
-
-
 	private final TabbedPane tabbedPane;
+
 	private final JLabel statusBar;
 
 	private final Core core; /* core is called back when exit() */
 
-
-
 	/**
 	 * Creates a new <code>MainWindow</code> instance, and so a new Swing window.
-	 * @param core a <code>Core</code> value
+	 *
+	 * @param core
+	 * 		a <code>Core</code> value
 	 */
 	public MainWindow(final Core core) {
 		this.core = core;
@@ -77,7 +78,7 @@ public class MainWindow implements WindowListener,
 
 		try {
 			mainWindow.setIconImage(IconBox.blueBunny.getImage());
-		} catch(final Throwable e) {
+		} catch (final Throwable e) {
 			Logger.notice(this, "No icon");
 		}
 
@@ -97,8 +98,7 @@ public class MainWindow implements WindowListener,
 		setStatus(null, null);
 		statusBar.setSize(500, 30);
 
-
-		mainWindow.getContentPane().setLayout(new BorderLayout(5,5));
+		mainWindow.getContentPane().setLayout(new BorderLayout(5, 5));
 
 		mainWindow.setJMenuBar(menuBar.getMenuBar());
 
@@ -115,11 +115,11 @@ public class MainWindow implements WindowListener,
 		core.getConnectionManager().addObserver(this);
 
 		if (core.getConfig().getValue("mainWindowSizeX") != null
-		    && core.getConfig().getValue("mainWindowSizeY") != null) {
+				&& core.getConfig().getValue("mainWindowSizeY") != null) {
 			try {
 				mainWindow.setSize(Integer.parseInt(core.getConfig().getValue("mainWindowSizeX")),
-						   Integer.parseInt(core.getConfig().getValue("mainWindowSizeY")));
-			} catch(NumberFormatException e) {
+						Integer.parseInt(core.getConfig().getValue("mainWindowSizeY")));
+			} catch (NumberFormatException e) {
 				Logger.warning(this, "Exception while setting the main window size");
 			}
 		}
@@ -131,7 +131,6 @@ public class MainWindow implements WindowListener,
 		mainWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 
-
 	public void addWindowListener(WindowListener wl) {
 		mainWindow.addWindowListener(wl);
 	}
@@ -140,16 +139,11 @@ public class MainWindow implements WindowListener,
 		mainWindow.removeWindowListener(wl);
 	}
 
-
 	public void connectionHasChanged() {
 		core.getConnectionManager().addObserver(this);
 	}
 
-
-
-	/**
-	 * Make the window visible or not.
-	 */
+	/** Make the window visible or not. */
 	public void setVisible(final boolean v) {
 		if (!v || !core.isStopping()) {
 			mainWindow.setVisible(v);
@@ -158,7 +152,6 @@ public class MainWindow implements WindowListener,
 		if (!v && core.isStopping())
 			mainWindow.dispose();
 	}
-
 
 	public boolean isVisible() {
 		return mainWindow.isVisible();
@@ -180,16 +173,15 @@ public class MainWindow implements WindowListener,
 		mainWindow.setExtendedState(state);
 	}
 
-
 	public JFrame getMainFrame() {
 		return mainWindow;
 	}
 
-
 	/**
 	 * Should not be used.
-	 * @see #addTab(String, java.awt.Component)
+	 *
 	 * @return In the future, it's possible that it will sometimes return null.
+	 * @see #addTab(String, java.awt.Component)
 	 */
 	public JTabbedPane getTabbedPane() {
 		return tabbedPane;
@@ -200,35 +192,38 @@ public class MainWindow implements WindowListener,
 	}
 
 	/**
-	 * @param modifier Correspond to the caller object: it's a security to avoid that a modifier wipe out the buttons from another one
-	 * @param newButtons JButton vector : if null, then it means to remove the buttons from the toolbar. Only the object having currently its buttons displayed will be able to remove them, other will simply be ignored.
+	 * @param modifier
+	 * 		Correspond to the caller object: it's a security to avoid that a modifier
+	 * 		wipe out the buttons from another one
+	 * @param newButtons
+	 * 		JButton vector : if null, then it means to remove the buttons from the
+	 * 		toolbar. Only the object having currently its buttons displayed will be
+	 * 		able to remove them, other will simply be ignored.
 	 */
 	public void changeButtonsInTheToolbar(final Object modifier, final Collection<JButton> newButtons) {
-		toolBar.changeButtonsInTheToolbar(modifier,newButtons);
+		toolBar.changeButtonsInTheToolbar(modifier, newButtons);
 	}
 
 	public void resetLastKnowToolBarModifier() {
 		toolBar.resetLastKnowToolBarModifier();
 	}
 
-
 	/**
-	 * Used to add a tab in the main window.
-	 * In the future, even if the interface change,
-	 * this function should remain available.
+	 * Used to add a tab in the main window. In the future, even if the interface
+	 * change, this function should remain available.
 	 */
 	public boolean addTab(final String tabName, final java.awt.Component panel) {
 		return addTab(tabName, IconBox.add, panel);
 	}
 
 	/**
-	 * Used to add a tab in the main window.
-	 * In the future, even if the interface change,
-	 * this function should remain available
+	 * Used to add a tab in the main window. In the future, even if the interface
+	 * change, this function should remain available
+	 *
 	 * @see #addTab(String, java.awt.Component)
 	 */
 	public boolean addTab(final String tabName, final Icon icon,
-			      final java.awt.Component panel) {
+						  final java.awt.Component panel) {
 		tabbedPane.addTab(tabName, icon, panel);
 
 		return true;
@@ -239,19 +234,14 @@ public class MainWindow implements WindowListener,
 		return true;
 	}
 
-
-	/**
-	 * Used to remove a tab from the main window.
-	 */
+	/** Used to remove a tab from the main window. */
 	public boolean removeTab(final java.awt.Component panel) {
 		tabbedPane.remove(panel);
 
 		return true;
 	}
 
-	/**
-	 * Used by plugins to add their own menu.
-	 */
+	/** Used by plugins to add their own menu. */
 	public void insertMenuAt(JMenu menu, int position) {
 		menuBar.insertMenuAt(menu, position);
 	}
@@ -260,9 +250,7 @@ public class MainWindow implements WindowListener,
 		menuBar.removeMenu(menu);
 	}
 
-	/**
-	 * Used by plugins to add their own menu / menuItem to the menu 'file'.
-	 */
+	/** Used by plugins to add their own menu / menuItem to the menu 'file'. */
 	public void insertInFileMenuAt(JMenuItem newItem, int position) {
 		menuBar.insertInFileMenuAt(newItem, position);
 	}
@@ -271,54 +259,49 @@ public class MainWindow implements WindowListener,
 		menuBar.removeFromFileMenu(item);
 	}
 
-	/**
-	 * Warns the user by a popup.
-	 */
+	/** Warns the user by a popup. */
 	protected void unableToConnect() {
 		new thaw.gui.WarningWindow(core,
-					   I18n.getMessage("thaw.warning.unableToConnectTo")+
-					   " "+core.getConfig().getValue("nodeAddress")+":"+ core.getConfig().getValue("nodePort"));
+				I18n.getMessage("thaw.warning.unableToConnectTo") +
+						" " + core.getConfig().getValue("nodeAddress") + ":" + core.getConfig().getValue("nodePort"));
 	}
 
 	public void update(final java.util.Observable o, final Object arg) {
 		updateToolBar();
 	}
 
-
 	public void updateToolBar() {
 		toolBar.updateToolBar();
 	}
 
-	/**
-	 * Called when window is closed or 'quit' is chosen is the menu.
-	 */
+	/** Called when window is closed or 'quit' is chosen is the menu. */
 	public void endOfTheWorld() {
 		if (mainWindow != null) {
 			java.awt.Dimension size = mainWindow.getSize();
 
 			core.getConfig().setValue("mainWindowSizeX",
-						  Integer.toString((new Double(size.getWidth())).intValue()));
+					Integer.toString((new Double(size.getWidth())).intValue()));
 			core.getConfig().setValue("mainWindowSizeY",
-						  Integer.toString((new Double(size.getHeight())).intValue()));
+					Integer.toString((new Double(size.getHeight())).intValue()));
 			core.getConfig().setValue("mainWindowState",
-						  Integer.toString(mainWindow.getExtendedState()));
+					Integer.toString(mainWindow.getExtendedState()));
 		}
 
 		core.exit();
 	}
 
-
 	public void setStatus(final javax.swing.Icon icon, final String status) {
 		setStatus(icon, status, java.awt.Color.BLACK);
 	}
 
-
 	/**
 	 * Change text in the status bar.
-	 * @param status Null is accepted.
+	 *
+	 * @param status
+	 * 		Null is accepted.
 	 */
 	public void setStatus(final javax.swing.Icon icon, final String status, java.awt.Color color) {
-		if(status != null) {
+		if (status != null) {
 			statusBar.setText(status);
 		} else {
 			statusBar.setText(" ");/* not empty else the status bar disappear */
@@ -331,13 +314,13 @@ public class MainWindow implements WindowListener,
 			statusBar.setForeground(color);
 	}
 
-
 	public String getStatus() {
 		return statusBar.getText();
 	}
 
 	/**
-	 * @param pos can be BorderLayout.EAST or BorderLayout.WEST
+	 * @param pos
+	 * 		can be BorderLayout.EAST or BorderLayout.WEST
 	 */
 	public void addComponent(java.awt.Component c, Object pos) {
 		mainWindow.getContentPane().add(c, pos);
@@ -347,13 +330,10 @@ public class MainWindow implements WindowListener,
 		mainWindow.setEnabled(value);
 	}
 
-	/**
-	 * @see #addComponent(java.awt.Component, Object)
-	 */
+	/** @see #addComponent(java.awt.Component, Object) */
 	public void removeComponent(java.awt.Component c) {
 		mainWindow.getContentPane().remove(c);
 	}
-
 
 	public void windowActivated(final WindowEvent e) {
 
@@ -361,7 +341,7 @@ public class MainWindow implements WindowListener,
 
 	public void windowClosing(final WindowEvent e) {
 		/* Should be in windowClosed(), but doesn't seem to work */
-		if(e.getSource() == mainWindow)
+		if (e.getSource() == mainWindow)
 			endOfTheWorld();
 	}
 

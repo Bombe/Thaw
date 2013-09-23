@@ -2,19 +2,18 @@ package thaw.plugins;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import thaw.core.Core;
-import thaw.gui.FileChooser;
 import thaw.core.I18n;
-import thaw.gui.IconBox;
 import thaw.core.Logger;
 import thaw.core.Plugin;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
+import thaw.gui.FileChooser;
+import thaw.gui.IconBox;
 import thaw.plugins.index.DatabaseManager;
 
 public class IndexExporter implements Plugin, ActionListener {
@@ -22,9 +21,13 @@ public class IndexExporter implements Plugin, ActionListener {
 	private Core core;
 
 	private JMenu menu;
+
 	private JMenu exportMenu;
+
 	private JMenuItem importItem;
+
 	private JMenuItem exportKeys;
+
 	private JMenuItem exportAll;
 
 	private IndexBrowser indexBrowser;
@@ -32,17 +35,17 @@ public class IndexExporter implements Plugin, ActionListener {
 	public boolean run(Core core) {
 		this.core = core;
 
-		if(core.getPluginManager().getPlugin("thaw.plugins.IndexBrowser") == null) {
+		if (core.getPluginManager().getPlugin("thaw.plugins.IndexBrowser") == null) {
 			Logger.info(this, "Loading IndexBrowser plugin");
 
-			if(core.getPluginManager().loadPlugin("thaw.plugins.IndexBrowser") == null
-			   || !core.getPluginManager().runPlugin("thaw.plugins.IndexBrowser")) {
+			if (core.getPluginManager().loadPlugin("thaw.plugins.IndexBrowser") == null
+					|| !core.getPluginManager().runPlugin("thaw.plugins.IndexBrowser")) {
 				Logger.error(this, "Unable to load IndexBrowser !");
 				return false;
 			}
 		}
 
-		indexBrowser = (IndexBrowser)core.getPluginManager().getPlugin("thaw.plugins.IndexBrowser");
+		indexBrowser = (IndexBrowser) core.getPluginManager().getPlugin("thaw.plugins.IndexBrowser");
 
 		if (indexBrowser == null) {
 			Logger.error(this, "WTF?!");
@@ -54,7 +57,7 @@ public class IndexExporter implements Plugin, ActionListener {
 		exportMenu = new JMenu(I18n.getMessage("thaw.plugin.index.export"));
 		exportMenu.setIcon(IconBox.minExportAction);
 		exportKeys = new JMenuItem(I18n.getMessage("thaw.plugin.index.export.indexKeys"));
-		exportAll  = new JMenuItem(I18n.getMessage("thaw.plugin.index.export.all"));
+		exportAll = new JMenuItem(I18n.getMessage("thaw.plugin.index.export.all"));
 		importItem = new JMenuItem(I18n.getMessage("thaw.plugin.index.import"), IconBox.minImportAction);
 
 		exportMenu.add(exportKeys);
@@ -71,7 +74,6 @@ public class IndexExporter implements Plugin, ActionListener {
 
 		return true;
 	}
-
 
 	public void stop() {
 		core.getMainWindow().removeFromFileMenu(menu);
@@ -95,7 +97,6 @@ public class IndexExporter implements Plugin, ActionListener {
 			content = true;
 		}
 
-
 		if (e.getSource() == exportAll) {
 			in = false;
 			content = true;
@@ -118,7 +119,6 @@ public class IndexExporter implements Plugin, ActionListener {
 			return;
 		}
 
-
 		Worker k = new Worker(in, content, file);
 		Thread th = new Thread(new ThawThread(k, "Index exporter", this));
 		th.start();
@@ -126,8 +126,11 @@ public class IndexExporter implements Plugin, ActionListener {
 	}
 
 	private class Worker implements ThawRunnable {
+
 		private boolean impor;
+
 		private boolean content;
+
 		private java.io.File file;
 
 		public Worker(boolean impor, boolean content, java.io.File file) {
@@ -139,13 +142,13 @@ public class IndexExporter implements Plugin, ActionListener {
 		public void run() {
 			if (impor) {
 				DatabaseManager.importDatabase(file,
-							       indexBrowser.getIndexBrowserPanel(),
-							       core.getQueueManager());
-			} else  {
+						indexBrowser.getIndexBrowserPanel(),
+						core.getQueueManager());
+			} else {
 				DatabaseManager.exportDatabase(file,
-							       indexBrowser.getIndexBrowserPanel().getDb(),
-							       indexBrowser.getIndexBrowserPanel().getIndexTree(),
-							       content);
+						indexBrowser.getIndexBrowserPanel().getDb(),
+						indexBrowser.getIndexBrowserPanel().getIndexTree(),
+						content);
 			}
 		}
 

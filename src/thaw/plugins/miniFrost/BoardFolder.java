@@ -4,7 +4,6 @@ import java.util.Enumeration;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-
 public class BoardFolder implements MutableTreeNode {
 
 	public Enumeration children() {
@@ -35,7 +34,6 @@ public class BoardFolder implements MutableTreeNode {
 		return false;
 	}
 
-
 	public void insert(MutableTreeNode child, int index) {
 
 	}
@@ -60,17 +58,12 @@ public class BoardFolder implements MutableTreeNode {
 
 	}
 
-
-	/**
-	 * must store this state in the db
-	 */
+	/** must store this state in the db */
 	public void setFolded(boolean folded) {
 
 	}
 
-	/**
-	 * value from the bdd (can be cached)
-	 */
+	/** value from the bdd (can be cached) */
 	public boolean isFolded() {
 		return true;
 	}

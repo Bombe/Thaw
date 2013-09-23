@@ -3,7 +3,6 @@ package thaw.plugins.webOfTrust;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
-
 import javax.swing.event.TableModelEvent;
 
 import thaw.core.Config;
@@ -14,14 +13,16 @@ import thaw.plugins.signatures.Identity;
 import thaw.plugins.signatures.IdentityTable;
 
 public class TrustListTable extends Observable implements Observer {
+
 	private Hsqldb db;
-	
+
 	private IdentityTable table;
+
 	private TrustListModel model;
-	
+
 	public TrustListTable(Hsqldb db, Config config) {
 		this.db = db;
-		
+
 		model = new TrustListModel();
 
 		table = new IdentityTable(config, "wotIdList_", false);
@@ -30,20 +31,22 @@ public class TrustListTable extends Observable implements Observer {
 
 		refresh(null);
 	}
-	
+
 	public static class TrustListModel extends IdentityTable.IdentityModel {
+
 		private static final long serialVersionUID = 2742525676359889703L;
-		
+
 		private Vector trustLinks = null;
 
 		public TrustListModel() {
 			super(false);
 		}
+
 		public static String[] columnNames = {
-			I18n.getMessage("thaw.plugin.signature.nickname"),
-			I18n.getMessage("thaw.plugin.wot.itsTrustLevel"),
-			I18n.getMessage("thaw.plugin.wot.yourTrustLevel"),
-			I18n.getMessage("thaw.plugin.wot.wotTrustLevel")
+				I18n.getMessage("thaw.plugin.signature.nickname"),
+				I18n.getMessage("thaw.plugin.wot.itsTrustLevel"),
+				I18n.getMessage("thaw.plugin.wot.yourTrustLevel"),
+				I18n.getMessage("thaw.plugin.wot.wotTrustLevel")
 		};
 
 		public void setIdentities(Vector i) {
@@ -52,7 +55,7 @@ public class TrustListTable extends Observable implements Observer {
 			final TableModelEvent event = new TableModelEvent(this);
 			fireTableChanged(event);
 		}
-		
+
 		public Vector getIdentities() {
 			return null;
 		}
@@ -77,27 +80,26 @@ public class TrustListTable extends Observable implements Observer {
 				return null;
 
 			if (column == 0)
-				return ((WotIdentity.TrustLink)trustLinks.get(row)).getDestination().toString();
-			
+				return ((WotIdentity.TrustLink) trustLinks.get(row)).getDestination().toString();
+
 			if (column == 1)
-				return Identity.getTrustLevelStr(((WotIdentity.TrustLink)trustLinks.get(row)).getLinkTrustLevel());
-			
+				return Identity.getTrustLevelStr(((WotIdentity.TrustLink) trustLinks.get(row)).getLinkTrustLevel());
+
 			if (column == 2)
-				return ((WotIdentity.TrustLink)trustLinks.get(row)).getDestination().getUserTrustLevelStr();
+				return ((WotIdentity.TrustLink) trustLinks.get(row)).getDestination().getUserTrustLevelStr();
 
 			if (column == 3)
-				return ((WotIdentity.TrustLink)trustLinks.get(row)).getDestination().getTrustLevelStr();
-		
+				return ((WotIdentity.TrustLink) trustLinks.get(row)).getDestination().getTrustLevelStr();
 
 			return null;
 		}
 
 		public Identity getIdentity(int row) {
-			return ((WotIdentity.TrustLink)trustLinks.get(row)).getDestinationAsSeenByTheSource();
+			return ((WotIdentity.TrustLink) trustLinks.get(row)).getDestinationAsSeenByTheSource();
 		}
-		
+
 	}
-	
+
 	public void refresh(Identity src) {
 		Vector ids;
 
@@ -108,7 +110,7 @@ public class TrustListTable extends Observable implements Observer {
 
 		model.setIdentities(ids);
 	}
-	
+
 	public Table getTable() {
 		return table.getTable();
 	}

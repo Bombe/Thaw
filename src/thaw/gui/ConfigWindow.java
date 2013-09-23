@@ -6,38 +6,49 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.Observable;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import thaw.core.*;
-
+import thaw.core.Core;
+import thaw.core.I18n;
+import thaw.core.NodeConfigPanel;
+import thaw.core.PleaseWaitDialog;
+import thaw.core.PluginConfigPanel;
+import thaw.core.PluginManager;
+import thaw.core.ThawConfigPanel;
+import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
 
 /**
- * ConfigWindow. Create the window used by user to config everything.
- * Composed by a tabbed pane containing a NodeConfigPanel and a PluginConfigPanel, and below the tabbed pane,
- *   a JButton to validate.
- * Notify observer when a button (Ok / Cancel) is clicked (gives the button in arg), or when
- *  window is set visible (arg == null).
+ * ConfigWindow. Create the window used by user to config everything. Composed
+ * by a tabbed pane containing a NodeConfigPanel and a PluginConfigPanel, and
+ * below the tabbed pane, a JButton to validate. Notify observer when a button
+ * (Ok / Cancel) is clicked (gives the button in arg), or when window is set
+ * visible (arg == null).
  */
 public class ConfigWindow extends Observable implements ActionListener, java.awt.event.WindowListener {
+
 	private JDialog configWin;
+
 	private TabbedPane tabs;
 
 	private JPanel buttons;
+
 	private JButton okButton;
+
 	private JButton cancelButton;
 
 	private ThawConfigPanel thawConfigPanel;
+
 	private NodeConfigPanel nodeConfigPanel;
+
 	private PluginConfigPanel pluginConfigPanel;
 
 	private Core core;
 
 	private boolean needConnectionReset = false;
-
 
 	public ConfigWindow(final Core core) {
 		this.core = core;
@@ -84,24 +95,18 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 		setVisible(false);
 	}
 
-
-	/**
-	 * Remove them and re-add them.
-	 */
+	/** Remove them and re-add them. */
 	private void addTabs() {
-		removeTab( thawConfigPanel.getPanel() );
-		removeTab( nodeConfigPanel.getPanel() );
-		removeTab( pluginConfigPanel.getPanel() );
+		removeTab(thawConfigPanel.getPanel());
+		removeTab(nodeConfigPanel.getPanel());
+		removeTab(pluginConfigPanel.getPanel());
 
 		addTab("Thaw", IconBox.blueBunny, thawConfigPanel.getPanel());
 		addTab(I18n.getMessage("thaw.config.nodeConnection"), IconBox.minConnectAction, nodeConfigPanel.getPanel());
 		addTab(I18n.getMessage("thaw.common.plugins"), IconBox.minPlugins, pluginConfigPanel.getPanel());
 	}
 
-
-	/**
-	 * Make [dis]appear the config window.
-	 */
+	/** Make [dis]appear the config window. */
 	public void setVisible(final boolean v) {
 		if (v) {
 			setChanged();
@@ -136,9 +141,7 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 		return true;
 	}
 
-	/**
-	 * Get a ref to the JFrame.
-	 */
+	/** Get a ref to the JFrame. */
 	public JDialog getFrame() {
 		return configWin;
 	}
@@ -147,55 +150,45 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 		return pluginConfigPanel;
 	}
 
-	/**
-	 * Used to update the MDNSPanel
-	 */
+	/** Used to update the MDNSPanel */
 	public NodeConfigPanel getNodeConfigPanel() {
 		return nodeConfigPanel;
 	}
 
-	/**
-	 * Get a ref to validation button.
-	 */
+	/** Get a ref to validation button. */
 	public JButton getOkButton() {
 		return okButton;
 	}
 
-
-	/**
-	 * Get a ref to cancel button.
-	 */
+	/** Get a ref to cancel button. */
 	public JButton getCancelButton() {
 		return cancelButton;
 	}
 
 	/**
-	 * Call this function if a change made by the user
-	 * need a connection reset with the plugins reset
+	 * Call this function if a change made by the user need a connection reset with
+	 * the plugins reset
 	 */
 	public void willNeedConnectionReset() {
 		needConnectionReset = true;
 	}
 
-	/**
-	 * Called when apply button is pressed.
-	 */
+	/** Called when apply button is pressed. */
 	public void actionPerformed(final ActionEvent e) {
-		if((e.getSource() == okButton) && !core.canDisconnect() && needConnectionReset) {
-			final int ret = JOptionPane.showOptionDialog((java.awt.Component)null,
-								       I18n.getMessage("thaw.warning.isWritingSoApplyLater"),
-								       I18n.getMessage("thaw.warning.title"),
-								       JOptionPane.YES_NO_OPTION,
-								       JOptionPane.WARNING_MESSAGE,
-								       (javax.swing.Icon)null,
-								       (java.lang.Object[])null,
-								       (java.lang.Object)null);
-			if((ret == JOptionPane.CLOSED_OPTION) || (ret > 0))
+		if ((e.getSource() == okButton) && !core.canDisconnect() && needConnectionReset) {
+			final int ret = JOptionPane.showOptionDialog((java.awt.Component) null,
+					I18n.getMessage("thaw.warning.isWritingSoApplyLater"),
+					I18n.getMessage("thaw.warning.title"),
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE,
+					(javax.swing.Icon) null,
+					(java.lang.Object[]) null,
+					(java.lang.Object) null);
+			if ((ret == JOptionPane.CLOSED_OPTION) || (ret > 0))
 				return;
 		}
 
-
-		if(e.getSource() == okButton) {
+		if (e.getSource() == okButton) {
 			close(false, true);
 
 			/** the reloader will apply the changes */
@@ -204,7 +197,7 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 			setChanged();
 			notifyObservers(okButton);
 
-			synchronized(PluginManager.pluginLock) {
+			synchronized (PluginManager.pluginLock) {
 				Reloader reloader = new Reloader(needConnectionReset);
 				Thread reload = new Thread(new ThawThread(reloader, "Config reloader", this));
 				reload.start();
@@ -213,18 +206,16 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 			needConnectionReset = false;
 		}
 
-
-		if(e.getSource() == cancelButton) {
+		if (e.getSource() == cancelButton) {
 			close();
 		}
 	}
 
-
-	/**
-	 * We reload the change in another thread to avoid UI freeze
-	 */
+	/** We reload the change in another thread to avoid UI freeze */
 	public class Reloader implements ThawRunnable {
+
 		private boolean resetConnection;
+
 		private boolean running;
 
 		public Reloader(boolean resetConnection) {
@@ -251,14 +242,14 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 				if (running && resetConnection && !core.initConnection()) {
 					if (dialog == null)
 						new thaw.gui.WarningWindow(core.getMainWindow().getMainFrame(),
-									   I18n.getMessage("thaw.warning.unableToConnectTo")+
-									   " "+core.getConfig().getValue("nodeAddress")+
-									   ":"+ core.getConfig().getValue("nodePort"));
+								I18n.getMessage("thaw.warning.unableToConnectTo") +
+										" " + core.getConfig().getValue("nodeAddress") +
+										":" + core.getConfig().getValue("nodePort"));
 					else
 						new thaw.gui.WarningWindow(dialog.getDialog(),
-									   I18n.getMessage("thaw.warning.unableToConnectTo")+
-									   " "+core.getConfig().getValue("nodeAddress")+
-									   ":"+ core.getConfig().getValue("nodePort"));
+								I18n.getMessage("thaw.warning.unableToConnectTo") +
+										" " + core.getConfig().getValue("nodeAddress") +
+										":" + core.getConfig().getValue("nodePort"));
 				}
 
 				needConnectionReset = false;
@@ -279,9 +270,9 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 				dialog.dispose();
 			}
 		}
-		
+
 		public void run() {
-			synchronized(PluginManager.pluginLock) {
+			synchronized (PluginManager.pluginLock) {
 				apply();
 			}
 		}
@@ -296,7 +287,6 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 		close(true, true);
 	}
 
-
 	public void close(boolean notifyCancel, boolean hideWin) {
 		if (notifyCancel) {
 			setChanged();
@@ -309,11 +299,9 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 			setVisible(false);
 	}
 
-
 	public void setEnabled(boolean value) {
 		configWin.setEnabled(value);
 	}
-
 
 	public void windowActivated(final WindowEvent e) {
 
@@ -342,7 +330,5 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 	public void windowOpened(final WindowEvent e) {
 		// idem
 	}
-
-
 
 }

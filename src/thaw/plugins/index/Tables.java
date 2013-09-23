@@ -1,24 +1,25 @@
 package thaw.plugins.index;
 
 import java.awt.BorderLayout;
-
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 import thaw.core.Config;
 import thaw.fcp.FCPQueueManager;
 
-/**
- * Contains a FileTable, a LinkTable, and a SearchBar
- */
+/** Contains a FileTable, a LinkTable, and a SearchBar */
 public class Tables {
+
 	private JPanel panel;
 
 	private SearchBar searchBar;
+
 	private FileTable fileTable;
+
 	private LinkTable linkTable;
 
 	private JSplitPane split;
+
 	private Config config;
 
 	public Tables(final boolean modifiables, FCPQueueManager queueManager, IndexBrowserPanel indexBrowser, final Config config) {
@@ -33,8 +34,8 @@ public class Tables {
 		searchBar = new SearchBar(indexBrowser);
 
 		split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				       linkTable.getPanel(),
-				       fileTable.getPanel());
+				linkTable.getPanel(),
+				fileTable.getPanel());
 
 		panel.add(searchBar.getPanel(), BorderLayout.NORTH);
 		panel.add(split, BorderLayout.CENTER);

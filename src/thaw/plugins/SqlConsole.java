@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -16,23 +15,30 @@ import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.core.Plugin;
 
-
 public class SqlConsole implements Plugin, java.awt.event.ActionListener {
+
 	public final static int MAX_LINE = 512;
 
 	private String[] buffer;
+
 	private String currentLine; /* line in construction (added to buffer when \n is added) */
+
 	private int readOffset;
+
 	private int writeOffset;
 
 	private Core core;
+
 	private Hsqldb hsqldb;
 
 	private JPanel panel;
 
 	private JTextArea sqlArea;
+
 	private JScrollPane sqlAreaScrollPane;
+
 	private JTextField commandField;
+
 	private JButton sendButton;
 
 	public SqlConsole() {
@@ -40,36 +46,35 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 	}
 
 	public boolean run(final Core core) {
-		buffer = new String[MAX_LINE+1];
+		buffer = new String[MAX_LINE + 1];
 		currentLine = "";
 		readOffset = 0;
 		writeOffset = 0;
 
 		this.core = core;
 
-		if(core.getPluginManager().getPlugin("thaw.plugins.Hsqldb") == null) {
+		if (core.getPluginManager().getPlugin("thaw.plugins.Hsqldb") == null) {
 			Logger.info(this, "Loading Hsqldb plugin");
 
-			if(core.getPluginManager().loadPlugin("thaw.plugins.Hsqldb") == null
-			   || !core.getPluginManager().runPlugin("thaw.plugins.Hsqldb")) {
+			if (core.getPluginManager().loadPlugin("thaw.plugins.Hsqldb") == null
+					|| !core.getPluginManager().runPlugin("thaw.plugins.Hsqldb")) {
 				Logger.error(this, "Unable to load thaw.plugins.Hsqldb !");
 				return false;
 			}
 		}
 
-		hsqldb = (Hsqldb)core.getPluginManager().getPlugin("thaw.plugins.Hsqldb");
+		hsqldb = (Hsqldb) core.getPluginManager().getPlugin("thaw.plugins.Hsqldb");
 
 		hsqldb.registerChild(this);
 
 		panel = getPanel();
 
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.hsqldb.console"),
-					    thaw.gui.IconBox.terminal,
-					    panel);
+				thaw.gui.IconBox.terminal,
+				panel);
 
 		return true;
 	}
-
 
 	public void stop() {
 		core.getMainWindow().removeTab(panel);
@@ -134,18 +139,17 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 		}
 	}
 
-
 	public synchronized void refreshDisplay() {
 		int i;
 		String res = "";
 
-		for (i = readOffset ; ; i++) {
+		for (i = readOffset; ; i++) {
 
 			if (buffer[i] != null)
 				res += buffer[i];
 
-			if ( (readOffset-1 > 0 && i == readOffset-2)
-			     || (readOffset-1 <= 0 && i == MAX_LINE))
+			if ((readOffset - 1 > 0 && i == readOffset - 2)
+					|| (readOffset - 1 <= 0 && i == MAX_LINE))
 				break;
 
 			if (i == MAX_LINE)
@@ -160,11 +164,10 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 	public synchronized void flushBuffer() {
 		int i;
 
-		for (i = 0 ; i < MAX_LINE + 1; i++) {
+		for (i = 0; i < MAX_LINE + 1; i++) {
 			buffer[i] = null;
 		}
 	}
-
 
 	public void actionPerformed(final java.awt.event.ActionEvent e) {
 
@@ -177,23 +180,22 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 	}
 
 	protected void display(String txt, int lng) {
-		if(txt == null)
+		if (txt == null)
 			txt = "(null)";
 
 		final int txtLength = txt.length();
 
 		String fTxt = txt;
 
-		if(lng > 30)
+		if (lng > 30)
 			lng = 30;
 
-		for(int i = 0 ; i + txtLength < lng; i++) {
+		for (int i = 0; i + txtLength < lng; i++) {
 			fTxt = fTxt + " ";
 		}
 
 		addToConsole(fTxt);
 	}
-
 
 	protected void printHelp() {
 		addToConsole("Non-SQL commands:\n");
@@ -202,7 +204,6 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 		addToConsole("Some useful Hsqldb comments:\n");
 		addToConsole(" - 'checkpoint defrag' : Remove the empty spaces in the db on the disk\n");
 	}
-
 
 	public synchronized void sendCommand(String cmd) {
 
@@ -216,11 +217,11 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 		}
 
 		/* A simple reminder :) */
-		if("list_tables".equals( cmd.toLowerCase() ))
+		if ("list_tables".equals(cmd.toLowerCase()))
 			cmd = "SELECT * FROM INFORMATION_SCHEMA.SYSTEM_TABLES";
 
 		addToConsole("\n");
-		addToConsole("> "+cmd+"\n");
+		addToConsole("> " + cmd + "\n");
 		addToConsole("\n");
 
 		try {
@@ -229,20 +230,19 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 				return;
 			}
 
-
-			if("reconnect".equals( cmd.toLowerCase() )) {
+			if ("reconnect".equals(cmd.toLowerCase())) {
 				hsqldb.connect();
 				addToConsole("Ok\n");
 				return;
 			}
 
-			synchronized(hsqldb.dbLock) {
+			synchronized (hsqldb.dbLock) {
 				final java.sql.Statement st = hsqldb.getConnection().createStatement();
 
 				ResultSet result;
 
-				if(!"drop_tables".equals( cmd.toLowerCase() )) {
-					if(st.execute(cmd))
+				if (!"drop_tables".equals(cmd.toLowerCase())) {
+					if (st.execute(cmd))
 						result = st.getResultSet();
 					else {
 						addToConsole("Ok\n");
@@ -257,13 +257,13 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 					return;
 				}
 
-				if(result == null) {
+				if (result == null) {
 					addToConsole("(null)\n");
 					st.close();
 					return;
 				}
 
-				if(result.getFetchSize() == 0) {
+				if (result.getFetchSize() == 0) {
 					addToConsole("(done)\n");
 					st.close();
 					return;
@@ -271,12 +271,10 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 
 				java.sql.SQLWarning warning = result.getWarnings();
 
-				while(warning != null) {
-					addToConsole("Warning: "+warning.toString());
+				while (warning != null) {
+					addToConsole("Warning: " + warning.toString());
 					warning = warning.getNextWarning();
 				}
-
-
 
 				final ResultSetMetaData metadatas = result.getMetaData();
 
@@ -284,21 +282,21 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 
 				addToConsole("      ");
 
-				for(int i = 1; i <= nmbCol ; i++) {
+				for (int i = 1; i <= nmbCol; i++) {
 					display(metadatas.getColumnLabel(i), metadatas.getColumnDisplaySize(i));
 					addToConsole("  ");
 				}
 				addToConsole("\n");
 
 				addToConsole("      ");
-				for(int i = 1; i <= nmbCol ; i++) {
+				for (int i = 1; i <= nmbCol; i++) {
 					display(metadatas.getColumnTypeName(i), metadatas.getColumnDisplaySize(i));
 					addToConsole("  ");
 				}
 				addToConsole("\n");
 
 				addToConsole("      ");
-				for(int i = 1; i <= nmbCol ; i++) {
+				for (int i = 1; i <= nmbCol; i++) {
 					display("----", metadatas.getColumnDisplaySize(i));
 					addToConsole("  ");
 				}
@@ -306,27 +304,27 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 
 				boolean ret = true;
 
-				while(ret) {
+				while (ret) {
 					ret = result.next();
 
-					if(!ret)
+					if (!ret)
 						break;
 
 					display(Integer.toString(result.getRow()), 4);
 					addToConsole("  ");
 
-					for(int i =1; i <= nmbCol ; i++) {
+					for (int i = 1; i <= nmbCol; i++) {
 						display(result.getString(i), metadatas.getColumnDisplaySize(i));
 						addToConsole("  ");
 					}
 					addToConsole("\n");
 				}
-				
+
 				st.close();
 			}
 
-		} catch(final java.sql.SQLException e) {
-			addToConsole("SQLException : "+e.toString()+" : "+e.getCause()+"\n");
+		} catch (final java.sql.SQLException e) {
+			addToConsole("SQLException : " + e.toString() + " : " + e.getCause() + "\n");
 		}
 
 	}

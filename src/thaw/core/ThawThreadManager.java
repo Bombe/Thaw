@@ -4,8 +4,11 @@ import java.util.Collection;
 import java.util.Vector;
 
 public class ThawThreadManager {
+
 	private ThreadGroup threadGroup = new ThreadGroup("Thaw");
+
 	private final Collection<ThawThread> threads = new Vector<ThawThread>();
+
 	private boolean allowFullStop = false;   /* TODO: What is this for? */
 
 	public void add(ThawThread thread) {
@@ -27,7 +30,7 @@ public class ThawThreadManager {
 	}
 
 	public void setAllowFullStop(boolean a) {
-		synchronized(threads) {
+		synchronized (threads) {
 			allowFullStop = a;
 			if (allowFullStop) {
 				if (threads.size() == 0) {
@@ -37,23 +40,22 @@ public class ThawThreadManager {
 		}
 	}
 
-
 	public void listThreads() {
-		synchronized(threads) {
+		synchronized (threads) {
 			Logger.info(null,
-				    Integer.toString(threadGroup.activeCount())+" threads "+
-				    "("+Integer.toString(threads.size())+" known)");
+					Integer.toString(threadGroup.activeCount()) + " threads " +
+							"(" + Integer.toString(threads.size()) + " known)");
 
-			for (ThawThread th : threads){
+			for (ThawThread th : threads) {
 				if (th != null) {
 					if (th.getParent() != null) {
 						Logger.info(null,
-								"'"+th.getName()+"' "+
-								"(parent: '"+th.getParent().getClass().getName()+"')");
+								"'" + th.getName() + "' " +
+										"(parent: '" + th.getParent().getClass().getName() + "')");
 					} else {
 						Logger.info(null,
-								"'"+th.getName()+"' "+
-								"(parent: unknown)");
+								"'" + th.getName() + "' " +
+										"(parent: unknown)");
 					}
 				}
 			}
@@ -61,9 +63,9 @@ public class ThawThreadManager {
 	}
 
 	public void stopAll() {
-		synchronized(threads) {
+		synchronized (threads) {
 			for (ThawRunnable th : threads) {
-				if(th != null){
+				if (th != null) {
 					th.stop();
 				}
 			}

@@ -1,43 +1,48 @@
 package thaw.plugins.peerMonitor;
 
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-
-import javax.swing.JLabel;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractButton;
-
-
-import thaw.fcp.*; /* I'm lazy */
-import thaw.gui.MainWindow;
 import thaw.core.I18n;
+import thaw.fcp.FCPAddPeer;
+import thaw.fcp.FCPQueryManager;
+import thaw.fcp.FCPRemovePeer;
+import thaw.gui.MainWindow;
 
 public class PeerHelper {
 
 	public interface PeerAction extends ActionListener {
+
 		public void setTarget(Peer peer);
 	}
 
-
 	public static class PeerAdder implements PeerAction {
+
 		private FCPQueryManager queryManager;
+
 		private AbstractButton src;
+
 		private MainWindow mainWindow;
 
 		private JDialog dialog;
+
 		private JButton okButton;
+
 		private JButton cancelButton;
+
 		private JTextArea refArea;
+
 		private JTextField urlField;
 
 		public PeerAdder(FCPQueryManager queryManager, MainWindow mainWindow, AbstractButton actionSource) {
@@ -56,7 +61,7 @@ public class PeerHelper {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == src) {
 				dialog = new JDialog(mainWindow.getMainFrame(),
-						     I18n.getMessage("thaw.plugin.peerMonitor.addPeer"));
+						I18n.getMessage("thaw.plugin.peerMonitor.addPeer"));
 
 				dialog.getContentPane().setLayout(new BorderLayout(5, 5));
 
@@ -79,7 +84,6 @@ public class PeerHelper {
 				centerPanel.add(label, BorderLayout.NORTH);
 				centerPanel.add(new JScrollPane(refArea), BorderLayout.CENTER);
 
-
 				JPanel southPanel = new JPanel(new GridLayout(2, 1));
 
 				JPanel urlPanel = new JPanel(new BorderLayout());
@@ -101,15 +105,14 @@ public class PeerHelper {
 				return;
 			}
 
-
 			if (e.getSource() == okButton) {
 				String ref;
 
 				ref = refArea.getText();
 
 				if (urlField.getText() != null
-				    && !"http://".equals(urlField.getText())) {
-					ref = "URL="+urlField.getText();
+						&& !"http://".equals(urlField.getText())) {
+					ref = "URL=" + urlField.getText();
 				}
 
 				ref = ref.trim();
@@ -119,7 +122,7 @@ public class PeerHelper {
 					dialog.setVisible(false);
 				} else {
 					new thaw.gui.WarningWindow(dialog,
-								   I18n.getMessage("thaw.plugin.peerMonitor.invalidRef"));
+							I18n.getMessage("thaw.plugin.peerMonitor.invalidRef"));
 				}
 			}
 
@@ -129,14 +132,12 @@ public class PeerHelper {
 		}
 	}
 
-
 	public static boolean looksValid(String ref) {
 		if (ref.startsWith("URL=") || ref.endsWith("End"))
 			return true;
 
 		return false;
 	}
-
 
 	public static void addPeer(FCPQueryManager queryManager, String ref) {
 		FCPAddPeer addPeer = new FCPAddPeer(ref, queryManager);
@@ -146,9 +147,10 @@ public class PeerHelper {
 		/* (ie when the next ListPeers will be done) */
 	}
 
-
 	public static class PeerRemover implements PeerAction {
+
 		private FCPQueryManager queryManager;
+
 		private AbstractButton src;
 
 		private Peer target;
@@ -176,10 +178,10 @@ public class PeerHelper {
 				return;
 
 			int ret = JOptionPane.showConfirmDialog(null,
-								I18n.getMessage("thaw.plugin.peerMonitor.confirmationForRemove"),
-								I18n.getMessage("thaw.warning.title"),
-								JOptionPane.YES_NO_OPTION,
-								JOptionPane.WARNING_MESSAGE);
+					I18n.getMessage("thaw.plugin.peerMonitor.confirmationForRemove"),
+					I18n.getMessage("thaw.warning.title"),
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE);
 
 			if (ret != JOptionPane.YES_OPTION) {
 				return;
@@ -188,7 +190,6 @@ public class PeerHelper {
 			removePeer(queryManager, target.getIdentity());
 		}
 	}
-
 
 	public static void removePeer(FCPQueryManager queryManager, String peer) {
 		FCPRemovePeer addPeer = new FCPRemovePeer(peer, queryManager);

@@ -5,57 +5,60 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
-
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JComboBox;
 
-import thaw.core.Core;
 import thaw.core.Config;
-import thaw.gui.FileChooser;
+import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.LogListener;
 import thaw.core.Logger;
 import thaw.core.Plugin;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
+import thaw.gui.FileChooser;
 
-/**
- * Quick and dirty console showing Thaw logs, and allowing to save them.
- */
+/** Quick and dirty console showing Thaw logs, and allowing to save them. */
 public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunnable {
+
 	public final static int MAX_LINE = 512;
 
 	private Core core;
+
 	private Config config;
 
 	private String[] buffer;
+
 	private int readOffset;
+
 	private int writeOffset;
 
 	private JPanel consolePanel;
+
 	private JTextArea logArea;
+
 	private JScrollPane logAreaScrollPane;
+
 	private JButton saveToFile;
 
 	private JComboBox logLevel;
 
 	private boolean threadRunning;
+
 	private boolean hasChanged;
 
-
 	public final static String[] LOG_LEVEL_NAMES = new String[] {
-		"Errors only",
-		"Errors and warnings",
-		"Errors to notices",
-		"Errors to infos",
-		"Errors to debugs",
-		"Errors to verboses"
+			"Errors only",
+			"Errors and warnings",
+			"Errors to notices",
+			"Errors to infos",
+			"Errors to debugs",
+			"Errors to verboses"
 	};
-
 
 	public LogConsole() {
 
@@ -68,7 +71,7 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		threadRunning = true;
 		hasChanged = false;
 
-		buffer = new String[MAX_LINE+1];
+		buffer = new String[MAX_LINE + 1];
 		readOffset = 0;
 		writeOffset = 0;
 
@@ -78,9 +81,7 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		logArea = new JTextArea();
 		logArea.setEditable(false);
 
-
 		JPanel southPanel = new JPanel(new BorderLayout(5, 5));
-
 
 		logLevel = new JComboBox(LOG_LEVEL_NAMES);
 		updateLogLevel();
@@ -91,15 +92,13 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		saveToFile.addActionListener(this);
 		southPanel.add(saveToFile, BorderLayout.CENTER);
 
-
 		logAreaScrollPane = new JScrollPane(logArea);
 
 		consolePanel.add(logAreaScrollPane, BorderLayout.CENTER);
 		consolePanel.add(southPanel, BorderLayout.SOUTH);
 
-
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.console.console"),
-					    thaw.gui.IconBox.terminal, consolePanel);
+				thaw.gui.IconBox.terminal, consolePanel);
 
 		Logger.addLogListener(this);
 
@@ -118,11 +117,9 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		core.getMainWindow().removeTab(consolePanel);
 	}
 
-
 	public void updateLogLevel() {
 		logLevel.setSelectedIndex(Logger.getLogLevel());
 	}
-
 
 	public void actionPerformed(final ActionEvent e) {
 		if (e.getSource() == logLevel) {
@@ -132,7 +129,7 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 				config.setValue("logLevel", Integer.toString(logLevel.getSelectedIndex()));
 			}
 
-		} else if(e.getSource() == saveToFile) {
+		} else if (e.getSource() == saveToFile) {
 			final FileChooser fileChooser = new FileChooser();
 
 			fileChooser.setTitle(I18n.getMessage("thaw.plugin.console.console"));
@@ -141,7 +138,7 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 
 			final File file = fileChooser.askOneFile();
 
-			if(file != null) {
+			if (file != null) {
 				Logger.info(this, "Saving logs ...");
 				writeLogsToFile(file);
 				Logger.info(this, "Saving done.");
@@ -158,38 +155,36 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 
 		try {
 			output = new FileOutputStream(file);
-		} catch(final java.io.FileNotFoundException e) {
+		} catch (final java.io.FileNotFoundException e) {
 			Logger.error(this, "FileNotFoundException ? wtf ?");
 			return;
 		}
 
 		try {
 			output.write(logArea.getText().getBytes("UTF-8"));
-		} catch(final java.io.IOException e) {
+		} catch (final java.io.IOException e) {
 			Logger.error(this, "IOException while writing logs ... out of space ?");
 			return;
 		}
 
 		try {
 			output.close();
-		} catch(final java.io.IOException e) {
+		} catch (final java.io.IOException e) {
 			Logger.error(this, "IOException while closing log file ?!");
 			return;
 		}
 	}
 
-
 	public void newLogLine(int level, Object src, String line) {
 		if (src != null)
-			addLine(Logger.PREFIXES[level] + " "+src.getClass().getName()+": "+line + "\n");
+			addLine(Logger.PREFIXES[level] + " " + src.getClass().getName() + ": " + line + "\n");
 		else
-			addLine(Logger.PREFIXES[level] + " "+line+"\n");
+			addLine(Logger.PREFIXES[level] + " " + line + "\n");
 	}
 
 	public void logLevelChanged(int oldLevel, int newLevel) {
 		updateLogLevel();
 	}
-
 
 	public void addLine(String line) {
 		buffer[writeOffset] = line;
@@ -213,15 +208,15 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		String res = "";
 		int i;
 
-		for (i = readOffset ; ; i++) {
-			if (i == MAX_LINE+1)
+		for (i = readOffset; ; i++) {
+			if (i == MAX_LINE + 1)
 				i = 0;
 
 			if (buffer[i] != null)
 				res += buffer[i];
 
-			if ( (readOffset > 0 && i == readOffset-1)
-			     || (readOffset <= 0 && i == MAX_LINE))
+			if ((readOffset > 0 && i == readOffset - 1)
+					|| (readOffset <= 0 && i == MAX_LINE))
 				break;
 		}
 
@@ -229,19 +224,18 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 
-				public void run() {
-					logAreaScrollPane.getVerticalScrollBar().setValue(logAreaScrollPane.getVerticalScrollBar().getMaximum());
-				}
+			public void run() {
+				logAreaScrollPane.getVerticalScrollBar().setValue(logAreaScrollPane.getVerticalScrollBar().getMaximum());
+			}
 
-			});
+		});
 	}
 
-
 	public void run() {
-		while(threadRunning) {
+		while (threadRunning) {
 			try {
 				Thread.sleep(1000);
-			} catch(java.lang.InterruptedException e) {
+			} catch (java.lang.InterruptedException e) {
 				/* \_o< */
 			}
 
@@ -252,11 +246,9 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		}
 	}
 
-
 	public String getNameForUser() {
 		return I18n.getMessage("thaw.plugin.console.console");
 	}
-
 
 	public javax.swing.ImageIcon getIcon() {
 		return thaw.gui.IconBox.terminal;

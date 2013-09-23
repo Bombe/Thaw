@@ -2,6 +2,7 @@ package thaw.plugins.index;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,11 +10,10 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.Vector;
-
-/* DOM */
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -23,23 +23,10 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-
-/* SAX */
-
-import org.xml.sax.*;
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-
-
-
 import thaw.core.Config;
 import thaw.core.Logger;
 import thaw.core.SplashScreen;
@@ -47,13 +34,15 @@ import thaw.fcp.FCPQueueManager;
 import thaw.fcp.FreenetURIHelper;
 import thaw.plugins.Hsqldb;
 
+/* DOM */
+/* SAX */
+
 /**
- * Creates all the tables used to save the indexes,
- * manages structure changes if needed, etc.
- *
- * <br/>
- * "Comprenne qui pourra" :P
- *
+ * Creates all the tables used to save the indexes, manages structure changes if
+ * needed, etc.
+ * <p/>
+ * <br/> "Comprenne qui pourra" :P
+ * <p/>
  * <pre>
  * indexFolders (id, name, positionInTree)
  *  |-- indexFolders (id, name, positionInTree)
@@ -70,7 +59,7 @@ import thaw.plugins.Hsqldb;
  * indexBlackList(id, key) # key are complete USK@
  *
  * </pre>
- *
+ * <p/>
  * positionInTree == position in its JTree branch.
  */
 public class DatabaseManager {
@@ -79,10 +68,9 @@ public class DatabaseManager {
 
 	}
 
-
 	/**
-	 * @splashScreen can be null
 	 * @return true if database is a new one
+	 * @splashScreen can be null
 	 */
 	public static boolean init(Hsqldb db, Config config, SplashScreen splashScreen) {
 		boolean newDb;
@@ -154,7 +142,7 @@ public class DatabaseManager {
 				if (convertDatabase_8_to_9(db))
 					config.setValue("indexDatabaseVersion", "9");
 			}
-			
+
 			if ("9".equals(config.getValue("indexDatabaseVersion"))) {
 				if (splashScreen != null)
 					splashScreen.setStatus("Converting database ...");
@@ -165,7 +153,6 @@ public class DatabaseManager {
 			/* ... */
 		}
 
-
 		createTables(db);
 
 		if (splashScreen != null)
@@ -175,65 +162,62 @@ public class DatabaseManager {
 		if (splashScreen != null)
 			splashScreen.setStatus("Updating link categories ...");
 		updateLinkCategories(db);
-		
+
 		if (splashScreen != null)
 			splashScreen.setStatus("Loading index browser ...");
-
 
 		return newDb;
 	}
 
-
 	public static void cleanUpCategories(Hsqldb db) {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 				PreparedStatement countSt;
 				PreparedStatement countBisSt;
 				PreparedStatement deleteSt;
 
 				st = db.getConnection().prepareStatement("SELECT id FROM categories");
-				countSt = db.getConnection().prepareStatement("SELECT id FROM indexes "+
-									      "WHERE categoryId = ? LIMIT 1");
-				countBisSt = db.getConnection().prepareStatement("SELECT id FROM links "+
-										  "WHERE category = ? LIMIT 1");
-				deleteSt = db.getConnection().prepareStatement("DELETE FROM categories "+
-									       "WHERE id = ?");
+				countSt = db.getConnection().prepareStatement("SELECT id FROM indexes " +
+						"WHERE categoryId = ? LIMIT 1");
+				countBisSt = db.getConnection().prepareStatement("SELECT id FROM links " +
+						"WHERE category = ? LIMIT 1");
+				deleteSt = db.getConnection().prepareStatement("DELETE FROM categories " +
+						"WHERE id = ?");
 
 				ResultSet set = st.executeQuery();
 
-				while(set.next()) {
+				while (set.next()) {
 					int id = set.getInt("id");
 
 					countSt.setInt(1, id);
 
 					ResultSet aSet = countSt.executeQuery();
-					
+
 					if (!aSet.next()) {
 						countBisSt.setInt(1, id);
 						aSet = countBisSt.executeQuery();
-						
+
 						if (!aSet.next()) {
 							deleteSt.setInt(1, id);
 							deleteSt.execute();
 						}
 					}
 				}
-				
+
 				st.close();
 				countSt.close();
 				countBisSt.close();
 				deleteSt.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(new DatabaseManager(), "Can't cleanup the unused categories because: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(new DatabaseManager(), "Can't cleanup the unused categories because: " + e.toString());
 		}
 	}
-	
 
 	public static void updateLinkCategories(Hsqldb db) {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement selectLinks;
 				PreparedStatement selectIndex;
 				PreparedStatement updateLink;
@@ -241,20 +225,20 @@ public class DatabaseManager {
 				selectLinks = db.getConnection().prepareStatement("SELECT id, publicKey FROM links WHERE category IS NULL");
 				selectIndex = db.getConnection().prepareStatement("SELECT categoryId FROM indexes wHERE LOWER(publicKey) LIKE ? LIMIT 1");
 				updateLink = db.getConnection().prepareStatement("UPDATE links SET category = ? WHERE id = ?");
-				
+
 				ResultSet linksWithoutCategory = selectLinks.executeQuery();
-				
-				while(linksWithoutCategory.next()) {
+
+				while (linksWithoutCategory.next()) {
 					int linkId = linksWithoutCategory.getInt("id");
 					String linkKey = linksWithoutCategory.getString("publicKey");
-					
-					selectIndex.setString(1, FreenetURIHelper.getComparablePart(linkKey) +"%");
-					
+
+					selectIndex.setString(1, FreenetURIHelper.getComparablePart(linkKey) + "%");
+
 					ResultSet possibleCorrespondingIndex = selectIndex.executeQuery();
-					
+
 					if (possibleCorrespondingIndex.next()) {
 						Object o = possibleCorrespondingIndex.getObject("categoryId");
-						
+
 						if (o != null) {
 							int catId = possibleCorrespondingIndex.getInt("categoryId");
 
@@ -264,20 +248,17 @@ public class DatabaseManager {
 						}
 					}
 				}
-				
+
 				selectLinks.close();
 				selectIndex.close();
 				updateLink.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(new DatabaseManager(), "Can't cleanup the unused categories because: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(new DatabaseManager(), "Can't cleanup the unused categories because: " + e.toString());
 		}
 	}
 
-
-	/**
-	 * Can be safely called, even if the tables already exist.
-	 */
+	/** Can be safely called, even if the tables already exist. */
 	public static void createTables(final Hsqldb db) {
 		//sendQuery(db,
 		//	  "SET IGNORECASE TRUE");
@@ -286,137 +267,136 @@ public class DatabaseManager {
 		 *  "folder[/subfolder[/subsubfolder]]"
 		 */
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE categories ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "name VARCHAR(255) NOT NULL)");
+				"CREATE CACHED TABLE categories ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "name VARCHAR(255) NOT NULL)");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE indexFolders ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "name VARCHAR(255) NOT NULL,"
-			  + "positionInTree INTEGER NOT NULL,"
-			  + "modifiableIndexes BOOLEAN NOT NULL," /* Obsolete */
-			  + "parent INTEGER,"
-			  + "FOREIGN KEY (parent) REFERENCES indexFolders (id))");
+				"CREATE CACHED TABLE indexFolders ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "name VARCHAR(255) NOT NULL,"
+						+ "positionInTree INTEGER NOT NULL,"
+						+ "modifiableIndexes BOOLEAN NOT NULL," /* Obsolete */
+						+ "parent INTEGER,"
+						+ "FOREIGN KEY (parent) REFERENCES indexFolders (id))");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE indexes ("
-			  + "id INTEGER IDENTITY NOT NULL, "
-			  + "originalName VARCHAR(255) NOT NULL, "
-			  + "displayName VARCHAR(255) DEFAULT NULL, "
-			  + "publicKey VARCHAR(255) NOT NULL, "
-			  + "privateKey VARCHAR(255) DEFAULT NULL, "
-			  + "publishPrivateKey BOOLEAN DEFAULT FALSE NOT NULL, "
-			  + "author VARCHAR(255) DEFAULT NULL, "
-			  + "positionInTree INTEGER NOT NULL, "
-			  + "revision INTEGER NOT NULL, "
-			  + "insertionDate DATE DEFAULT NULL, "
-			  + "categoryId INTEGER DEFAULT NULL, "
-			  + "newRev BOOLEAN DEFAULT FALSE NOT NULL, "
-			  + "newComment BOOLEAN DEFAULT FALSE NOT NULL, "
-			  + "parent INTEGER, " /* direct parent */
-			  + "FOREIGN KEY (parent) REFERENCES indexFolders (id), "
-			  + "FOREIGN KEY (categoryId) REFERENCES categories (id))");
+				"CREATE CACHED TABLE indexes ("
+						+ "id INTEGER IDENTITY NOT NULL, "
+						+ "originalName VARCHAR(255) NOT NULL, "
+						+ "displayName VARCHAR(255) DEFAULT NULL, "
+						+ "publicKey VARCHAR(255) NOT NULL, "
+						+ "privateKey VARCHAR(255) DEFAULT NULL, "
+						+ "publishPrivateKey BOOLEAN DEFAULT FALSE NOT NULL, "
+						+ "author VARCHAR(255) DEFAULT NULL, "
+						+ "positionInTree INTEGER NOT NULL, "
+						+ "revision INTEGER NOT NULL, "
+						+ "insertionDate DATE DEFAULT NULL, "
+						+ "categoryId INTEGER DEFAULT NULL, "
+						+ "newRev BOOLEAN DEFAULT FALSE NOT NULL, "
+						+ "newComment BOOLEAN DEFAULT FALSE NOT NULL, "
+						+ "parent INTEGER, " /* direct parent */
+						+ "FOREIGN KEY (parent) REFERENCES indexFolders (id), "
+						+ "FOREIGN KEY (categoryId) REFERENCES categories (id))");
 
 		/* direct AND indirect parents */
 		sendCreateTableQuery(db, /* this table avoid some horrible recursivities */
-			  "CREATE CACHED TABLE indexParents ("
-			  + "indexId INTEGER NOT NULL,"
-			  + "folderId INTEGER)");
+				"CREATE CACHED TABLE indexParents ("
+						+ "indexId INTEGER NOT NULL,"
+						+ "folderId INTEGER)");
 		//+ "FOREIGN KEY (indexId) REFERENCES indexes (id)"
 		//+ "FOREIGN KEY (folderId) REFERENCES indexFolders (id))");
 
 
 		/* direct AND indirect parents */
 		sendCreateTableQuery(db, /* this table avoid some horrible recursivities */
-			  "CREATE CACHED TABLE folderParents ("
-			  + "folderId INTEGER NOT NULL,"
-			  + "parentId INTEGER)");
+				"CREATE CACHED TABLE folderParents ("
+						+ "folderId INTEGER NOT NULL,"
+						+ "parentId INTEGER)");
 		//+ "FOREIGN KEY (folderId) REFERENCES indexFolders (id)"
 		//+ "FOREIGN KEY (parentId) REFERENCES indexFolders (id))");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE files ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "filename VARCHAR(255) NOT NULL,"
-			  + "publicKey VARCHAR(350) NOT NULL," // key ~= 100 + filename == 255 max => 350
-			  + "localPath VARCHAR(500) DEFAULT NULL,"
-			  + "mime VARCHAR(50) DEFAULT NULL,"
-			  + "size BIGINT NOT NULL,"
-			  + "category INTEGER," // TODO : This field is unused, to remove ?
-			  + "indexParent INTEGER NOT NULL,"
-			  + "toDelete BOOLEAN DEFAULT FALSE NOT NULL,"
-			  + "dontDelete BOOLEAN DEFAULT FALSE NOT NULL,"
-			  + "FOREIGN KEY (indexParent) REFERENCES indexes (id),"
-			  + "FOREIGN KEY (category) REFERENCES categories (id))");
+				"CREATE CACHED TABLE files ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "filename VARCHAR(255) NOT NULL,"
+						+ "publicKey VARCHAR(350) NOT NULL," // key ~= 100 + filename == 255 max => 350
+						+ "localPath VARCHAR(500) DEFAULT NULL,"
+						+ "mime VARCHAR(50) DEFAULT NULL,"
+						+ "size BIGINT NOT NULL,"
+						+ "category INTEGER," // TODO : This field is unused, to remove ?
+						+ "indexParent INTEGER NOT NULL,"
+						+ "toDelete BOOLEAN DEFAULT FALSE NOT NULL,"
+						+ "dontDelete BOOLEAN DEFAULT FALSE NOT NULL,"
+						+ "FOREIGN KEY (indexParent) REFERENCES indexes (id),"
+						+ "FOREIGN KEY (category) REFERENCES categories (id))");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE links ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "publicKey VARCHAR(350) NOT NULL," // key ~= 100 + filename == 255 max
-			  + "mark INTEGER NOT NULL,"
-			  + "comment VARCHAR(512) NOT NULL,"
-			  + "indexParent INTEGER NOT NULL,"
-			  + "indexTarget INTEGER,"
-			  + "toDelete BOOLEAN DEFAULT false NOT NULL,"
-			  + "dontDelete BOOLEAN DEFAULT false NOT NULL,"
-			  + "blackListed BOOLEAN DEFAULT false NOT NULL,"
-			  + "category INTEGER DEFAULT NULL, "
-			  + "FOREIGN KEY (indexParent) REFERENCES indexes (id),"
-			  + "FOREIGN KEY (indexTarget) REFERENCES indexes (id),"
-			  + "FOREIGN KEY (category) REFERENCES categories (id))");
+				"CREATE CACHED TABLE links ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "publicKey VARCHAR(350) NOT NULL," // key ~= 100 + filename == 255 max
+						+ "mark INTEGER NOT NULL,"
+						+ "comment VARCHAR(512) NOT NULL,"
+						+ "indexParent INTEGER NOT NULL,"
+						+ "indexTarget INTEGER,"
+						+ "toDelete BOOLEAN DEFAULT false NOT NULL,"
+						+ "dontDelete BOOLEAN DEFAULT false NOT NULL,"
+						+ "blackListed BOOLEAN DEFAULT false NOT NULL,"
+						+ "category INTEGER DEFAULT NULL, "
+						+ "FOREIGN KEY (indexParent) REFERENCES indexes (id),"
+						+ "FOREIGN KEY (indexTarget) REFERENCES indexes (id),"
+						+ "FOREIGN KEY (category) REFERENCES categories (id))");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE metadataNames ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "name VARCHAR(255) NOT NULL)");
+				"CREATE CACHED TABLE metadataNames ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "name VARCHAR(255) NOT NULL)");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE metadatas ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "nameId INTEGER NOT NULL,"
-			  + "value VARCHAR(255) NOT NULL,"
-			  + "fileId INTEGER NOT NULL,"
-			  + "FOREIGN KEY (fileId) REFERENCES files (id),"
-			  + "FOREIGN KEY (nameId) REFERENCES metadataNames (id))");
+				"CREATE CACHED TABLE metadatas ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "nameId INTEGER NOT NULL,"
+						+ "value VARCHAR(255) NOT NULL,"
+						+ "fileId INTEGER NOT NULL,"
+						+ "FOREIGN KEY (fileId) REFERENCES files (id),"
+						+ "FOREIGN KEY (nameId) REFERENCES metadataNames (id))");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE indexBlackList ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "publicKey VARCHAR(350) NOT NULL,"
-			  + "name VARCHAR(255) NOT NULL)");
+				"CREATE CACHED TABLE indexBlackList ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "publicKey VARCHAR(350) NOT NULL,"
+						+ "name VARCHAR(255) NOT NULL)");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE indexCommentKeys ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "publicKey VARCHAR(255) NOT NULL,"
-			  + "privateKey VARCHAR(255) NOT NULL,"
-			  + "indexId INTEGER NOT NULL,"
-			  + "FOREIGN KEY (indexId) REFERENCES indexes (id))");
+				"CREATE CACHED TABLE indexCommentKeys ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "publicKey VARCHAR(255) NOT NULL,"
+						+ "privateKey VARCHAR(255) NOT NULL,"
+						+ "indexId INTEGER NOT NULL,"
+						+ "FOREIGN KEY (indexId) REFERENCES indexes (id))");
 
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE indexComments ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "authorId INTEGER NOT NULL,"
-			  + "text VARCHAR(16384) NOT NULL," /* 16 KB */
-			  + "rev INTEGER NOT NULL,"
-			  + "indexId INTEGER NOT NULL,"
-			  + "sig VARCHAR(400) NOT NULL," /* signature */
-			  + "FOREIGN KEY (indexId) REFERENCES indexes (id),"
-			  + "FOREIGN KEY (authorId) REFERENCES signatures (id))");
+				"CREATE CACHED TABLE indexComments ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "authorId INTEGER NOT NULL,"
+						+ "text VARCHAR(16384) NOT NULL," /* 16 KB */
+						+ "rev INTEGER NOT NULL,"
+						+ "indexId INTEGER NOT NULL,"
+						+ "sig VARCHAR(400) NOT NULL," /* signature */
+						+ "FOREIGN KEY (indexId) REFERENCES indexes (id),"
+						+ "FOREIGN KEY (authorId) REFERENCES signatures (id))");
 
 		/**
 		 * black listed comments should not be fetched.
 		 * and if they are already fetched, they will be ignored at display time
 		 */
 		sendCreateTableQuery(db,
-			  "CREATE CACHED TABLE indexCommentBlackList ("
-			  + "id INTEGER IDENTITY NOT NULL,"
-			  + "rev INTEGER NOT NULL,"
-			  + "indexId INTEGER NOT NULL,"
-			  + "FOREIGN KEY (indexId) REFERENCES indexes (id))");
+				"CREATE CACHED TABLE indexCommentBlackList ("
+						+ "id INTEGER IDENTITY NOT NULL,"
+						+ "rev INTEGER NOT NULL,"
+						+ "indexId INTEGER NOT NULL,"
+						+ "FOREIGN KEY (indexId) REFERENCES indexes (id))");
 	}
-
 
 	public static void dropTables(final Hsqldb db) {
 		/* TODO : Add a warning here */
@@ -442,34 +422,33 @@ public class DatabaseManager {
 		sendQuery(db, "DROP TABLE categories");
 	}
 
-
 	/**
 	 * Returns no error / Throws no exception.
+	 *
 	 * @return false if an exception happened
 	 */
 	protected static boolean sendQuery(final Hsqldb db, final String query) {
 		try {
 			db.executeQuery(query);
 			return true;
-		} catch(final SQLException e) {
-			Logger.notice(new DatabaseManager(), "While (re)creating sql tables: "+e.toString());
+		} catch (final SQLException e) {
+			Logger.notice(new DatabaseManager(), "While (re)creating sql tables: " + e.toString());
 			return false;
 		}
 	}
 
-
 	/**
-	 * Given a CREATE TABLE expression, determines if the table exists.
-	 * If the table does not exist, calls sendQuery(db,query). 
+	 * Given a CREATE TABLE expression, determines if the table exists. If the
+	 * table does not exist, calls sendQuery(db,query).
 	 */
 	protected static boolean sendCreateTableQuery(final Hsqldb db, final String query) {
 		String tableName;
 
 		tableName = db.getTableNameFromCreateTable(query);
 
-		if(tableName != null) {
-			if(!db.tableExists(tableName)) {
-				Logger.warning(new DatabaseManager(), "Creating table "+tableName);
+		if (tableName != null) {
+			if (!db.tableExists(tableName)) {
+				Logger.warning(new DatabaseManager(), "Creating table " + tableName);
 				return sendQuery(db, query);
 			} else {
 				return true;
@@ -479,43 +458,39 @@ public class DatabaseManager {
 		}
 	}
 
-
-	/**
-	 * try to use the auto increment instead
-	 */
+	/** try to use the auto increment instead */
 	public static int getNextId(Hsqldb db, String table) {
-			try {
-				synchronized(db.dbLock) {
-					PreparedStatement st;
+		try {
+			synchronized (db.dbLock) {
+				PreparedStatement st;
 
-					st = db.getConnection().prepareStatement("select id+1 from "+
-							table +
-					" order by id desc limit 1");
-					ResultSet res = st.executeQuery();
-					int r;
+				st = db.getConnection().prepareStatement("select id+1 from " +
+						table +
+						" order by id desc limit 1");
+				ResultSet res = st.executeQuery();
+				int r;
 
-					if (res.next()) {
-						r = res.getInt(1);
-					} else
-						r = 1;
+				if (res.next()) {
+					r = res.getInt(1);
+				} else
+					r = 1;
 
-					st.close();
+				st.close();
 
-					return r;
-				}
-			} catch(SQLException e) {
-				Logger.error(new DatabaseManager(), "Unable to get next id because: "+e.toString());
+				return r;
 			}
+		} catch (SQLException e) {
+			Logger.error(new DatabaseManager(), "Unable to get next id because: " + e.toString());
+		}
 
-			return -1;
+		return -1;
 	}
-
 
 	public static int getNmbIndexes(Hsqldb db) {
 		int nmb;
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				final Connection c = db.getConnection();
 				PreparedStatement st;
 
@@ -526,15 +501,15 @@ public class DatabaseManager {
 					final ResultSet answer = st.getResultSet();
 					answer.next();
 					nmb = answer.getInt(1);
-				} catch(final SQLException e) {
+				} catch (final SQLException e) {
 					nmb = 0;
 				}
 
 				st.close();
 			}
 
-		} catch(final SQLException e) {
-			Logger.error(new DatabaseManager(), "Unable to insert the new index category in the db, because: "+e.toString());
+		} catch (final SQLException e) {
+			Logger.error(new DatabaseManager(), "Unable to insert the new index category in the db, because: " + e.toString());
 
 			return 0;
 		}
@@ -542,10 +517,8 @@ public class DatabaseManager {
 		return nmb;
 	}
 
-
 	public static void exportDatabase(java.io.File dest, Hsqldb db, IndexTree indexTree, boolean withContent) {
 		//int nmbIndexes = getNmbIndexes(db);
-
 
 		Logger.info(new DatabaseManager(), "Generating export ...");
 
@@ -553,8 +526,8 @@ public class DatabaseManager {
 
 		try {
 			outputStream = new FileOutputStream(dest);
-		} catch(final java.io.FileNotFoundException e) {
-			Logger.warning(new DatabaseManager(), "Unable to create file '"+dest.toString()+"' ! not generated !");
+		} catch (final java.io.FileNotFoundException e) {
+			Logger.warning(new DatabaseManager(), "Unable to create file '" + dest.toString() + "' ! not generated !");
 			return;
 		}
 
@@ -566,8 +539,8 @@ public class DatabaseManager {
 
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch(final javax.xml.parsers.ParserConfigurationException e) {
-			Logger.error(new DatabaseManager(), "Unable to generate the index because : "+e.toString());
+		} catch (final javax.xml.parsers.ParserConfigurationException e) {
+			Logger.error(new DatabaseManager(), "Unable to generate the index because : " + e.toString());
 			return;
 		}
 
@@ -576,7 +549,6 @@ public class DatabaseManager {
 		xmlDoc = impl.createDocument(null, "indexDatabase", null);
 
 		final Element rootEl = xmlDoc.getDocumentElement();
-
 
 		rootEl.appendChild(indexTree.getRoot().do_export(xmlDoc, withContent));
 
@@ -589,57 +561,56 @@ public class DatabaseManager {
 
 		try {
 			serializer = transformFactory.newTransformer();
-		} catch(final javax.xml.transform.TransformerConfigurationException e) {
-			Logger.error(new DatabaseManager(), "Unable to save index because: "+e.toString());
+		} catch (final javax.xml.transform.TransformerConfigurationException e) {
+			Logger.error(new DatabaseManager(), "Unable to save index because: " + e.toString());
 			return;
 		}
 
-		serializer.setOutputProperty(OutputKeys.ENCODING,"UTF-8");
-		serializer.setOutputProperty(OutputKeys.INDENT,"yes");
+		serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+		serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 
 		/* final step */
 		try {
 			serializer.transform(domSource, streamResult);
-		} catch(final javax.xml.transform.TransformerException e) {
-			Logger.error(new DatabaseManager(), "Unable to save index because: "+e.toString());
+		} catch (final javax.xml.transform.TransformerException e) {
+			Logger.error(new DatabaseManager(), "Unable to save index because: " + e.toString());
 			return;
 		}
 
 		try {
 			outputStream.close();
-		} catch(IOException e) {
-			Logger.warning(new DatabaseManager(), "Can't close the export file cleanly");	
+		} catch (IOException e) {
+			Logger.warning(new DatabaseManager(), "Can't close the export file cleanly");
 		}
-		
+
 		Logger.info(new DatabaseManager(), "Export done");
 	}
 
-
-
 	protected static class DatabaseHandler extends DefaultHandler {
+
 		private final Hsqldb db;
+
 		private IndexBrowserPanel indexBrowser;
 
 		private IndexFolder importFolder;
 
 		private IndexFolder folders[] = new IndexFolder[64];
-		private int folderLevel = 0;
 
+		private int folderLevel = 0;
 
 		public DatabaseHandler(IndexBrowserPanel indexBrowser) {
 			this.db = indexBrowser.getDb();
 			this.indexBrowser = indexBrowser;
 		}
 
-		/**
-		 * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
-		 */
+		/** @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator) */
 		public void setDocumentLocator(Locator value) {
 
 		}
 
 		/**
 		 * Called when parsing is started
+		 *
 		 * @see org.xml.sax.ContentHandler#startDocument()
 		 */
 		public void startDocument() throws SAXException {
@@ -650,6 +621,7 @@ public class DatabaseManager {
 
 		/**
 		 * Called when parsing is finished
+		 *
 		 * @see org.xml.sax.ContentHandler#endDocument()
 		 */
 		public void endDocument() throws SAXException {
@@ -658,46 +630,51 @@ public class DatabaseManager {
 
 		/**
 		 * Called when starting to parse in a specific name space
-		 * @param prefix name space prefix
-		 * @param URI name space URI
-		 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
+		 *
+		 * @param prefix
+		 * 		name space prefix
+		 * @param URI
+		 * 		name space URI
+		 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String,
+		 *      java.lang.String)
 		 */
 		public void startPrefixMapping(String prefix, String URI) throws SAXException {
 			/* \_o< */
 		}
 
 		/**
-		 * @param prefix name space prefix
+		 * @param prefix
+		 * 		name space prefix
 		 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
 		 */
 		public void endPrefixMapping(String prefix) throws SAXException {
 			/* \_o< */
 		}
 
-
-
 		/**
-		 * if null, then not in an index
-		 * else all the tag found will be sent to this handler
+		 * if null, then not in an index else all the tag found will be sent to this
+		 * handler
 		 */
 		private IndexParser.IndexHandler indexHandler = null;
 
-
 		/**
 		 * Called when the parsed find an opening tag
-		 * @param localName local tag name
-		 * @param rawName rawName (the one used here)
-		 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+		 *
+		 * @param localName
+		 * 		local tag name
+		 * @param rawName
+		 * 		rawName (the one used here)
+		 * @see org.xml.sax.ContentHandler#startElement(java.lang.String,
+		 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
 		 */
 		public void startElement(String nameSpaceURI, String localName,
-					 String rawName, Attributes attrs) throws SAXException {
+								 String rawName, Attributes attrs) throws SAXException {
 			if (rawName == null) {
 				rawName = localName;
 			}
 
 			if (rawName == null)
 				return;
-
 
 			if ("indexCategory".equals(rawName)) {
 				/* should be indexFolder ... but because of the backward compatibility ... */
@@ -712,19 +689,19 @@ public class DatabaseManager {
 				folderLevel++;
 
 				folders[folderLevel] =
-					IndexManagementHelper.addIndexFolder(indexBrowser,
-									     folders[folderLevel-1],
-									     attrs.getValue("name"));
+						IndexManagementHelper.addIndexFolder(indexBrowser,
+								folders[folderLevel - 1],
+								attrs.getValue("name"));
 
 				return;
 			}
 
 			if ("fullIndex".equals(rawName)) {
 				Index index = IndexManagementHelper.reuseIndex(null, indexBrowser,
-									       folders[folderLevel],
-									       attrs.getValue("publicKey"),
-									       attrs.getValue("privateKey"),
-									       false, false);
+						folders[folderLevel],
+						attrs.getValue("publicKey"),
+						attrs.getValue("privateKey"),
+						false, false);
 				if (index != null) {
 					index.rename(attrs.getValue("displayName"));
 
@@ -737,13 +714,13 @@ public class DatabaseManager {
 
 					String publicKey = attrs.getValue("publicKey");
 					String privateKey = attrs.getValue("privateKey");
-					
+
 					if (privateKey == null || "".equals(privateKey)) {
 						return;
 					}
-					
+
 					int id = Index.isAlreadyKnown(db, publicKey, true);
-					
+
 					if (id < 0)
 						return;
 					else
@@ -755,16 +732,18 @@ public class DatabaseManager {
 
 			if (indexHandler != null) {
 				indexHandler.startElement(nameSpaceURI, localName,
-							  rawName, attrs);
+						rawName, attrs);
 			}
 		}
 
 		/**
 		 * Called when a closing tag is met
-		 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+		 *
+		 * @see org.xml.sax.ContentHandler#endElement(java.lang.String,
+		 *      java.lang.String, java.lang.String)
 		 */
 		public void endElement(String nameSpaceURI, String localName,
-				       String rawName) throws SAXException {
+							   String rawName) throws SAXException {
 			if (rawName == null) {
 				rawName = localName;
 			}
@@ -788,12 +767,15 @@ public class DatabaseManager {
 				indexHandler.endElement(nameSpaceURI, localName, rawName);
 		}
 
-
 		/**
 		 * Called when a text between two tag is met
-		 * @param ch text
-		 * @param start position
-		 * @param end position
+		 *
+		 * @param ch
+		 * 		text
+		 * @param start
+		 * 		position
+		 * @param end
+		 * 		position
 		 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
 		 */
 		public void characters(char[] ch, int start, int end) throws SAXException {
@@ -812,16 +794,12 @@ public class DatabaseManager {
 
 		}
 
-		/**
-		 * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
-		 */
+		/** @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String) */
 		public void skippedEntity(String arg0) throws SAXException {
 
 		}
 
-
 	}
-
 
 	public static void importDatabase(java.io.File source, IndexBrowserPanel indexBrowser, FCPQueueManager queueManager) {
 		java.io.InputStream input;
@@ -830,16 +808,15 @@ public class DatabaseManager {
 
 		try {
 			input = new FileInputStream(source);
-		} catch(final java.io.FileNotFoundException e) {
-			Logger.error(new DatabaseManager(), "Unable to load XML: FileNotFoundException ('"+source.getPath()+"') ! : "+e.toString());
+		} catch (final java.io.FileNotFoundException e) {
+			Logger.error(new DatabaseManager(), "Unable to load XML: FileNotFoundException ('" + source.getPath() + "') ! : " + e.toString());
 			return;
 		}
-
 
 		DatabaseHandler handler = new DatabaseHandler(indexBrowser);
 
 		/* and remember kids, always lock the database before parsing an index ! */
-		synchronized(indexBrowser.getDb().dbLock) {
+		synchronized (indexBrowser.getDb().dbLock) {
 			try {
 				// Use the default (non-validating) parser
 				SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -847,18 +824,18 @@ public class DatabaseManager {
 				// Parse the input
 				SAXParser saxParser = factory.newSAXParser();
 				saxParser.parse(input, handler);
-			} catch(javax.xml.parsers.ParserConfigurationException e) {
-				Logger.error(new DatabaseManager(), "Error (1) while importing database : "+e.toString());
-			} catch(org.xml.sax.SAXException e) {
-				Logger.error(new DatabaseManager(), "Error (2) while importing database : "+e.toString());
-			} catch(java.io.IOException e) {
-				Logger.error(new DatabaseManager(), "Error (3) while importing database : "+e.toString());
+			} catch (javax.xml.parsers.ParserConfigurationException e) {
+				Logger.error(new DatabaseManager(), "Error (1) while importing database : " + e.toString());
+			} catch (org.xml.sax.SAXException e) {
+				Logger.error(new DatabaseManager(), "Error (2) while importing database : " + e.toString());
+			} catch (java.io.IOException e) {
+				Logger.error(new DatabaseManager(), "Error (3) while importing database : " + e.toString());
 			}
 		}
 
 		try {
 			input.close();
-		} catch(java.io.IOException e) {
+		} catch (java.io.IOException e) {
 			Logger.warning(new DatabaseManager(), "Unable to close cleanly the xml file");
 		}
 
@@ -869,22 +846,18 @@ public class DatabaseManager {
 
 	}
 
-
-
-	/**
-	 * used by convertDatabase_1_to_2()
-	 */
+	/** used by convertDatabase_1_to_2() */
 	private static boolean insertChildIn(Hsqldb db, int folderId) throws SQLException {
 		java.util.Vector<Integer> results;
 		int i = 0, j;
 
-		Logger.notice(new DatabaseManager(), "Expanding folder "+Integer.toString(folderId));
+		Logger.notice(new DatabaseManager(), "Expanding folder " + Integer.toString(folderId));
 
-		synchronized(db.dbLock) {
+		synchronized (db.dbLock) {
 			PreparedStatement st;
 
-			st = db.getConnection().prepareStatement("SELECT id FROM indexFolders WHERE "+
-								 ((folderId >= 0) ? "parent = ?" : "parent IS NULL"));
+			st = db.getConnection().prepareStatement("SELECT id FROM indexFolders WHERE " +
+					((folderId >= 0) ? "parent = ?" : "parent IS NULL"));
 
 			if (folderId >= 0)
 				st.setInt(1, folderId);
@@ -892,18 +865,18 @@ public class DatabaseManager {
 			ResultSet set = st.executeQuery();
 			results = new java.util.Vector<Integer>();
 
-			while(set.next()) {
+			while (set.next()) {
 				results.add(set.getInt("id"));
 			}
 
 			st.close();
 		}
 
-		synchronized(db.dbLock) {
+		synchronized (db.dbLock) {
 			PreparedStatement getChildFolders = db.getConnection().prepareStatement("SELECT folderId FROM folderParents WHERE parentId = ?");
 			PreparedStatement setChildFolders = db.getConnection().prepareStatement("INSERT INTO folderParents (folderId, parentId) VALUES (?, ?)");
 			PreparedStatement getChildIndexes = db.getConnection().prepareStatement("SELECT indexId FROM indexParents WHERE folderId = ?");
-		    PreparedStatement setChildIndexes = db.getConnection().prepareStatement("INSERT INTO indexParents (indexId, folderId) VALUES (?, ?)");
+			PreparedStatement setChildIndexes = db.getConnection().prepareStatement("INSERT INTO indexParents (indexId, folderId) VALUES (?, ?)");
 
 			for (int nextId : results) {
 				if (!insertChildIn(db, nextId)) {
@@ -925,15 +898,14 @@ public class DatabaseManager {
 
 				ResultSet rs = getChildFolders.executeQuery();
 
-				while(rs.next()) {
+				while (rs.next()) {
 					j++;
 					childFolders.add(new Integer(rs.getInt("folderId")));
 				}
 
 				for (Iterator ite = childFolders.iterator();
-					 ite.hasNext();) {
-					Integer a = (Integer)ite.next();
-
+					 ite.hasNext(); ) {
+					Integer a = (Integer) ite.next();
 
 					setChildFolders.setInt(1, a.intValue());
 					if (folderId < 0)
@@ -950,18 +922,18 @@ public class DatabaseManager {
 
 				rs = getChildIndexes.executeQuery();
 
-				while(rs.next()) {
+				while (rs.next()) {
 					j++;
 					childIndexes.add(new Integer(rs.getInt("indexId")));
 				}
 
 				if (j == 0) {
-					Logger.warning(new DatabaseManager(), "empty folder (id = "+Integer.toString(nextId)+") ?");
+					Logger.warning(new DatabaseManager(), "empty folder (id = " + Integer.toString(nextId) + ") ?");
 				}
 
 				for (Iterator ite = childIndexes.iterator();
-					 ite.hasNext();) {
-					Integer a = (Integer)ite.next();
+					 ite.hasNext(); ) {
+					Integer a = (Integer) ite.next();
 
 					setChildIndexes.setInt(1, a.intValue());
 					if (folderId < 0)
@@ -972,26 +944,23 @@ public class DatabaseManager {
 					setChildIndexes.execute();
 				}
 			}
-			
+
 			getChildFolders.close();
 			setChildFolders.close();
 			getChildIndexes.close();
 			setChildIndexes.close();
 		}
 
-		Logger.notice(new DatabaseManager(), Integer.toString(i) + " child folder found for folder "+Integer.toString(folderId));
+		Logger.notice(new DatabaseManager(), Integer.toString(i) + " child folder found for folder " + Integer.toString(folderId));
 
 		return true;
 	}
-
-
 
 	public static boolean convertDatabase_1_to_2(Hsqldb db) {
 		if (!sendQuery(db, "ALTER TABLE indexCategories RENAME TO indexFolders")) {
 			Logger.error(new DatabaseManager(), "Error while converting the database (1 to 2) (renaming table indexCategories to indexfolders)");
 			return false;
 		}
-
 
 		if (!sendQuery(db, "ALTER TABLE indexes ADD COLUMN newRev BOOLEAN DEFAULT false")) {
 			Logger.error(new DatabaseManager(), "Error while converting the database (1 to 2) ! (adding column 'newRev' to the index table)");
@@ -1015,42 +984,40 @@ public class DatabaseManager {
 
 		/* direct AND indirect parents */
 		if (!sendQuery(db, /* this table avoid some horrible recusirvities */
-			       "CREATE CACHED TABLE indexParents ("
-			       + "indexId INTEGER NOT NULL,"
-			       + "folderId INTEGER)")) {
+				"CREATE CACHED TABLE indexParents ("
+						+ "indexId INTEGER NOT NULL,"
+						+ "folderId INTEGER)")) {
 			Logger.error(new DatabaseManager(), "Unable to create table because");
 			return false;
 		}
 
 		/* direct AND indirect parents */
 		if (!sendQuery(db, /* this table avoid some horrible recursivities */
-			       "CREATE CACHED TABLE folderParents ("
-			       + "folderId INTEGER NOT NULL,"
-			       + "parentId INTEGER)")) {
+				"CREATE CACHED TABLE folderParents ("
+						+ "folderId INTEGER NOT NULL,"
+						+ "parentId INTEGER)")) {
 			Logger.error(new DatabaseManager(), "Unable to create table because");
 			return false;
 		}
 
-
 		if (!sendQuery(db,
-			       "INSERT INTO folderParents (folderId, parentId) "+
-			       "SELECT id, parent FROM indexFolders")) {
+				"INSERT INTO folderParents (folderId, parentId) " +
+						"SELECT id, parent FROM indexFolders")) {
 			Logger.error(new DatabaseManager(), "Error while converting (1_2_1)");
 			return false;
 		}
 
 		if (!sendQuery(db,
-			       "INSERT INTO indexParents (indexId, folderId) "+
-			       "SELECT id, parent FROM indexes")) {
+				"INSERT INTO indexParents (indexId, folderId) " +
+						"SELECT id, parent FROM indexes")) {
 			Logger.error(new DatabaseManager(), "Error while converting (1_2_2)");
 			return false;
 		}
 
-
 		try {
 			insertChildIn(db, -1);
-		} catch(SQLException e) {
-			Logger.error(new DatabaseManager(), "Error while converting : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(new DatabaseManager(), "Error while converting : " + e.toString());
 			return false;
 		}
 
@@ -1058,19 +1025,19 @@ public class DatabaseManager {
 		/* convert SSK into USK */
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				st = db.getConnection().prepareStatement("SELECT id, publicKey, originalName, revision FROM indexes");
 
 				PreparedStatement subSt;
-				subSt = db.getConnection().prepareStatement("UPDATE indexes "+
-										"SET publicKey = ? "+
-										"WHERE id = ?");
+				subSt = db.getConnection().prepareStatement("UPDATE indexes " +
+						"SET publicKey = ? " +
+						"WHERE id = ?");
 
 				ResultSet set = st.executeQuery();
 
-				while(set.next()) {
+				while (set.next()) {
 					String key = set.getString("publicKey");
 
 					if (key != null && key.startsWith("SSK@")) {
@@ -1081,11 +1048,11 @@ public class DatabaseManager {
 						String newKey;
 
 						if (key.endsWith("/"))
-							newKey = key.replaceFirst("SSK@", "USK@")+name+"/"+rev+"/"+name+".frdx";
+							newKey = key.replaceFirst("SSK@", "USK@") + name + "/" + rev + "/" + name + ".frdx";
 						else
-							newKey = key.replaceFirst("SSK@", "USK@")+"/"+name+"/"+rev+"/"+name+".frdx";
+							newKey = key.replaceFirst("SSK@", "USK@") + "/" + name + "/" + rev + "/" + name + ".frdx";
 
-						Logger.notice(new DatabaseManager(), "Replacing "+key+" with "+newKey);
+						Logger.notice(new DatabaseManager(), "Replacing " + key + " with " + newKey);
 
 						subSt.setString(1, newKey);
 						subSt.setInt(2, id);
@@ -1097,8 +1064,8 @@ public class DatabaseManager {
 				st.close();
 				subSt.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(new DatabaseManager(), "Error while converting SSK into USK : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(new DatabaseManager(), "Error while converting SSK into USK : " + e.toString());
 			return false;
 		}
 
@@ -1119,7 +1086,6 @@ public class DatabaseManager {
 		return true;
 	}
 
-
 	public static boolean convertDatabase_3_to_4(Hsqldb db) {
 		if (!sendQuery(db, "ALTER TABLE links ADD COLUMN blackListed BOOLEAN DEFAULT false")) {
 			Logger.error(new DatabaseManager(), "Error while converting the database (3 to 4) ! (adding column to link table)");
@@ -1137,7 +1103,6 @@ public class DatabaseManager {
 
 		return true;
 	}
-
 
 	public static boolean convertDatabase_5_to_6(Hsqldb db) {
 		if (!sendQuery(db, "DELETE FROM indexComments")) {
@@ -1167,7 +1132,6 @@ public class DatabaseManager {
 		return true;
 	}
 
-
 	public static boolean convertDatabase_6_to_7(Hsqldb db) {
 		if (!sendQuery(db, "ALTER TABLE indexes ADD COLUMN insertionDate DATE DEFAULT NULL")) {
 			Logger.error(new DatabaseManager(), "Error while converting the database (6 to 7) ! (adding column to index table)");
@@ -1179,9 +1143,9 @@ public class DatabaseManager {
 
 	public static boolean convertDatabase_7_to_8(Hsqldb db) {
 		if (!sendQuery(db, "DELETE FROM indexComments")
-		    || !sendQuery(db, "ALTER TABLE indexComments DROP r")
-		    || !sendQuery(db, "ALTER TABLE indexComments DROP s")
-		    || !sendQuery(db, "ALTER TABLE indexComments ADD COLUMN sig VARCHAR(400) NOT NULL")) {
+				|| !sendQuery(db, "ALTER TABLE indexComments DROP r")
+				|| !sendQuery(db, "ALTER TABLE indexComments DROP s")
+				|| !sendQuery(db, "ALTER TABLE indexComments ADD COLUMN sig VARCHAR(400) NOT NULL")) {
 
 			Logger.error(new DatabaseManager(), "Error while converting the database (7 to 8) !");
 			return false;
@@ -1190,10 +1154,9 @@ public class DatabaseManager {
 		return true;
 	}
 
-
 	public static boolean convertDatabase_8_to_9(Hsqldb db) {
 		if (!sendQuery(db, "ALTER TABLE indexes ADD COLUMN categoryId INTEGER DEFAULT NULL")
-		    || !sendQuery(db, "ALTER TABLE indexes ADD FOREIGN KEY (categoryId) REFERENCES categories (id)")) {
+				|| !sendQuery(db, "ALTER TABLE indexes ADD FOREIGN KEY (categoryId) REFERENCES categories (id)")) {
 
 			Logger.error(new DatabaseManager(), "Error while converting the database (8 to 9) !");
 			return false;
@@ -1202,7 +1165,7 @@ public class DatabaseManager {
 		return true;
 
 	}
-	
+
 	public static boolean convertDatabase_9_to_10(Hsqldb db) {
 		if (!sendQuery(db, "ALTER TABLE links ADD COLUMN category INTEGER DEFAULT NULL")
 				|| !sendQuery(db, "ALTER TABLE links ADD FOREIGN KEY (category) REFERENCES categories (id)")) {

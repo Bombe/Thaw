@@ -3,27 +3,26 @@ package thaw.plugins.index;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import javax.swing.JOptionPane;
 
 import thaw.core.I18n;
 import thaw.core.Logger;
-import thaw.gui.MainWindow;
-
 import thaw.fcp.FCPQueueManager;
+import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
 
 public class IndexRoot extends IndexFolder implements IndexTreeNode {
 
 	private FCPQueueManager queueManager;
+
 	private IndexBrowserPanel indexBrowser;
 
 	private MainWindow mainWindow;
 
 	public IndexRoot(final FCPQueueManager queueManager,
-			 final IndexBrowserPanel indexBrowser,
-			 final String name,
-			 final boolean loadOnTheFly) {
+					 final IndexBrowserPanel indexBrowser,
+					 final String name,
+					 final boolean loadOnTheFly) {
 		super(indexBrowser.getDb(), indexBrowser.getConfig(), -1, loadOnTheFly);
 
 		mainWindow = indexBrowser.getMainWindow();
@@ -35,7 +34,6 @@ public class IndexRoot extends IndexFolder implements IndexTreeNode {
 			loadChildren();
 	}
 
-
 	public IndexFolder getNewImportFolder(Hsqldb db) {
 		String fname = null;
 
@@ -46,15 +44,15 @@ public class IndexRoot extends IndexFolder implements IndexTreeNode {
 		 *        or that the database will return the good one :p
 		 */
 
-		synchronized(db.dbLock) {
+		synchronized (db.dbLock) {
 			try {
 				int i;
 				PreparedStatement select;
 
 				select = db.getConnection().prepareStatement("SELECT id from indexfolders where parent is null and name = ? LIMIT 1");
 
-				for (i = 0 ; i < 100 ; i++) {
-					fname = I18n.getMessage("thaw.plugin.index.importedFolderName")+" - "+Integer.toString(i);
+				for (i = 0; i < 100; i++) {
+					fname = I18n.getMessage("thaw.plugin.index.importedFolderName") + " - " + Integer.toString(i);
 					select.setString(1, fname);
 
 					ResultSet set = select.executeQuery();
@@ -63,9 +61,9 @@ public class IndexRoot extends IndexFolder implements IndexTreeNode {
 						break;
 					}
 				}
-				
+
 				select.close();
-			} catch(SQLException e) {
+			} catch (SQLException e) {
 				Logger.error(this, "Unable to find a name for the import folder !");
 				return null;
 			}
@@ -77,16 +75,14 @@ public class IndexRoot extends IndexFolder implements IndexTreeNode {
 		return IndexManagementHelper.addIndexFolder(indexBrowser, this, fname);
 	}
 
-
-
 	public void delete() {
 		Logger.warning(this, "The user will do something dangerous");
 
 		int ret = JOptionPane.showConfirmDialog(mainWindow.getMainFrame(),
-							I18n.getMessage("thaw.plugin.index.ultimateWarning"),
-							I18n.getMessage("thaw.warning.title"),
-							JOptionPane.YES_NO_OPTION,
-							JOptionPane.WARNING_MESSAGE);
+				I18n.getMessage("thaw.plugin.index.ultimateWarning"),
+				I18n.getMessage("thaw.warning.title"),
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
 
 		if (ret != JOptionPane.YES_OPTION) {
 			Logger.info(this, "Cancelled");
@@ -98,10 +94,10 @@ public class IndexRoot extends IndexFolder implements IndexTreeNode {
 		DatabaseManager.dropTables(indexBrowser.getDb());
 		DatabaseManager.createTables(indexBrowser.getDb());
 
-		for (int i = 0 ; i < thaw.plugins.IndexBrowser.DEFAULT_INDEXES.length ; i++) {
+		for (int i = 0; i < thaw.plugins.IndexBrowser.DEFAULT_INDEXES.length; i++) {
 			IndexManagementHelper.addIndex(queueManager, indexBrowser, null,
-						       thaw.plugins.IndexBrowser.DEFAULT_INDEXES[i],
-						       true);
+					thaw.plugins.IndexBrowser.DEFAULT_INDEXES[i],
+					true);
 		}
 
 		forceReload();
@@ -109,29 +105,24 @@ public class IndexRoot extends IndexFolder implements IndexTreeNode {
 		Logger.notice(this, "Destruction of the world done, have a nice day.");
 	}
 
-
 	public IndexFolder getOrCreateFolder(String folder) {
 		IndexFolder f = getFolder(folder);
 
 		if (f == null) {
 			f = IndexManagementHelper.addIndexFolder(indexBrowser,
-								 this,
-								 folder);
+					this,
+					folder);
 		}
 
 		return f;
 	}
 
-	/**
-	 * create if it doesn't exist
-	 */
+	/** create if it doesn't exist */
 	public IndexFolder getAutoSortedFolder() {
 		return getOrCreateFolder(I18n.getMessage("thaw.plugin.index.automaticallySorted"));
 	}
 
-	/**
-	 * create if it doesn't exist
-	 */
+	/** create if it doesn't exist */
 	public IndexFolder getRecentlyAddedFolder() {
 		return getOrCreateFolder(I18n.getMessage("thaw.plugin.index.recentlyAdded"));
 	}

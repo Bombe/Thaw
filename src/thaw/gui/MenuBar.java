@@ -1,45 +1,51 @@
 package thaw.gui;
 
+import java.awt.event.ActionEvent;
+import java.util.Vector;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.gui.ActionHandlers.MainMenuAbout;
+import thaw.gui.ActionHandlers.MainMenuReconnection;
 import thaw.gui.ActionHandlers.MainOptions;
 import thaw.gui.ActionHandlers.MainQuit;
-import thaw.gui.ActionHandlers.MainMenuReconnection;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.util.Vector;
 
 public class MenuBar implements java.awt.event.ActionListener {
+
 	private final JMenuBar menuBar;
+
 	private JMenu fileMenu;
 
 	private Vector<JMenuItem> fileMenuList = null;
 
 	private final JMenuItem reconnectionFileMenuItem;
+
 	private final JMenuItem optionsFileMenuItem;
+
 	private final JMenuItem quitFileMenuItem;
 
 	private final Vector<JMenu> menuList;
+
 	private final JMenuItem aboutHelpMenuItem;
 
 	public MenuBar(Core core) {
 		menuBar = new JMenuBar();
 		menuList = new Vector<JMenu>();
 
-
 		fileMenu = new JMenu(I18n.getMessage("thaw.menu.file"));
 		fileMenuList = new Vector<JMenuItem>();
 
 		reconnectionFileMenuItem = new JMenuItem(I18n.getMessage("thaw.menu.item.reconnect"),
-							 IconBox.minReconnectAction);
+				IconBox.minReconnectAction);
 		optionsFileMenuItem = new JMenuItem(I18n.getMessage("thaw.menu.item.options"),
-						    IconBox.minSettings);
+				IconBox.minSettings);
 		quitFileMenuItem = new JMenuItem(I18n.getMessage("thaw.menu.item.quit"),
-						 IconBox.minQuitAction);
-		
+				IconBox.minQuitAction);
+
 		fileMenuList.add(reconnectionFileMenuItem);
 		fileMenuList.add(optionsFileMenuItem);
 		fileMenuList.add(quitFileMenuItem);
@@ -58,7 +64,7 @@ public class MenuBar implements java.awt.event.ActionListener {
 		JMenu helpMenu = new JMenu(I18n.getMessage("thaw.menu.help"));
 
 		aboutHelpMenuItem = new JMenuItem(I18n.getMessage("thaw.menu.item.about"),
-						  IconBox.minHelp);
+				IconBox.minHelp);
 		aboutHelpMenuItem.addActionListener(new MainMenuAbout());
 
 		helpMenu.add(aboutHelpMenuItem);
@@ -72,10 +78,7 @@ public class MenuBar implements java.awt.event.ActionListener {
 		return menuBar;
 	}
 
-
-		/**
-	 * Used by plugins to add their own menu.
-	 */
+	/** Used by plugins to add their own menu. */
 	public void insertMenuAt(JMenu menu, int position) {
 		menuList.add(position, menu);
 		refreshMenuBar();
@@ -87,14 +90,14 @@ public class MenuBar implements java.awt.event.ActionListener {
 	}
 
 	protected void refreshMenuBar() {
-		Logger.info(this, "Display "+
-			    Integer.toString(menuList.size())+
-			    " menus in the main window");
+		Logger.info(this, "Display " +
+				Integer.toString(menuList.size()) +
+				" menus in the main window");
 
 		/* rebuilding menubar */
 		menuBar.removeAll();
 
-		for(JMenu menu : menuList) {
+		for (JMenu menu : menuList) {
 			menuBar.add(menu);
 		}
 
@@ -102,12 +105,11 @@ public class MenuBar implements java.awt.event.ActionListener {
 		//mainWindow.validate(); /* no getContentPane() ! else it won't work ! */
 	}
 
-
 	protected void refreshFileMenu() {
 		/* rebuilding menubar */
 		JMenu m = new JMenu(I18n.getMessage("thaw.menu.file"));
 
-		for(JMenuItem menuItem : fileMenuList) {
+		for (JMenuItem menuItem : fileMenuList) {
 			m.add(menuItem);
 		}
 
@@ -118,18 +120,12 @@ public class MenuBar implements java.awt.event.ActionListener {
 		refreshMenuBar();
 	}
 
-
-	/**
-	 * Called when an element from the menu is called.
-	 */
+	/** Called when an element from the menu is called. */
 	public void actionPerformed(final ActionEvent e) {
 
 	}
 
-
-	/**
-	 * Used by plugins to add their own menu / menuItem to the menu 'file'.
-	 */
+	/** Used by plugins to add their own menu / menuItem to the menu 'file'. */
 	public void insertInFileMenuAt(JMenuItem newItem, int position) {
 		fileMenuList.add(position, newItem);
 		refreshFileMenu();

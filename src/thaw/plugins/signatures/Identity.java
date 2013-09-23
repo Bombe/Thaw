@@ -1,80 +1,79 @@
 package thaw.plugins.signatures;
 
 import java.awt.Color;
-
-import java.sql.*;
-
-import java.util.Vector;
+import java.io.File;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import frost.crypt.FrostCrypt;
 import frost.util.XMLTools;
-import org.w3c.dom.*;
-import java.io.File;
-import thaw.core.Logger;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import thaw.core.Config;
 import thaw.core.I18n;
+import thaw.core.Logger;
 import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
 import thaw.plugins.Signatures;
-import thaw.core.Config;
-
-
 
 public class Identity {
 
 	public final static int[] trustLevelInt = {
-		100,
-		10,
-		5,
-		1,
-		0,
-		-1,
-		-5,
-		-10
+			100,
+			10,
+			5,
+			1,
+			0,
+			-1,
+			-5,
+			-10
 	};
 
 	public final static String[] trustLevelStr = {
-		I18n.getMessage("thaw.plugin.signature.trustLevel.dev"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.trustworthy"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.good"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.observe"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.check"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.bad"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.evil"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.asshole")
+			I18n.getMessage("thaw.plugin.signature.trustLevel.dev"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.trustworthy"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.good"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.observe"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.check"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.bad"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.evil"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.asshole")
 	};
 
-	public final static String[] trustLevelUserStr= {
-		I18n.getMessage("thaw.plugin.signature.trustLevel.trustworthy"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.good"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.observe"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.check"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.bad"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.evil"),
-		I18n.getMessage("thaw.plugin.signature.trustLevel.asshole")
+	public final static String[] trustLevelUserStr = {
+			I18n.getMessage("thaw.plugin.signature.trustLevel.trustworthy"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.good"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.observe"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.check"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.bad"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.evil"),
+			I18n.getMessage("thaw.plugin.signature.trustLevel.asshole")
 	};
 
 	public final static Color[] trustLevelColor = {
-		Color.BLUE,
-		new Color(0, 200, 0), /* light green */
-		new Color(0, 150, 0), 
-		new Color(0, 80, 0), /* green */
-		Color.BLACK,
-		new Color(125, 0, 0), /* moderatly red */
-		new Color(200, 0, 0),
-		new Color(255, 0, 0)
+			Color.BLUE,
+			new Color(0, 200, 0), /* light green */
+			new Color(0, 150, 0),
+			new Color(0, 80, 0), /* green */
+			Color.BLACK,
+			new Color(125, 0, 0), /* moderatly red */
+			new Color(200, 0, 0),
+			new Color(255, 0, 0)
 	};
 
 	public final static Color trustLevelColorMe = new Color(127, 127, 255) /* weird color */;
-
 
 	private Hsqldb db;
 
 	private int id = -1;
 
 	private String nick;
-
 
 	/* public key (aka Y) */
 	private String publicKey;
@@ -83,25 +82,26 @@ public class Identity {
 	private String privateKey;
 
 	private boolean isDup;
-	private int trustLevel;
 
+	private int trustLevel;
 
 	private String hash;
 
 	private static FrostCrypt frostCrypt;
 
-
-	protected Identity() { }
-
+	protected Identity() {
+	}
 
 	/**
 	 * If you don't have a value, let it to null and pray it won't be used :P
-	 * @param nick part *before* the @
+	 *
+	 * @param nick
+	 * 		part *before* the @
 	 */
 	public Identity(Hsqldb db, int id, String nick,
-			String publicKey, String privateKey,
-			boolean isDup,
-			int trustLevel) {
+					String publicKey, String privateKey,
+					boolean isDup,
+					int trustLevel) {
 
 		if (nick == null || publicKey == null) {
 			Logger.error(this, "missing value ?!");
@@ -125,11 +125,11 @@ public class Identity {
 
 		hash = frostCrypt.digest(publicKey);
 	}
-	
+
 	protected void setDb(Hsqldb db) {
 		this.db = db;
 	}
-	
+
 	public Hsqldb getDb() {
 		return db;
 	}
@@ -166,7 +166,7 @@ public class Identity {
 	public static int getTrustLevel(String str) {
 		int i;
 
-		for (i = 0 ; i < trustLevelStr.length ; i++) {
+		for (i = 0; i < trustLevelStr.length; i++) {
 			if (trustLevelStr[i].equals(str))
 				return trustLevelInt[i];
 		}
@@ -186,7 +186,7 @@ public class Identity {
 	public static String getTrustLevelStr(int trustLevel) {
 		int i;
 
-		for (i = 0 ; i < trustLevelInt.length ; i++) {
+		for (i = 0; i < trustLevelInt.length; i++) {
 			if (trustLevelInt[i] == trustLevel)
 				return trustLevelStr[i];
 		}
@@ -201,14 +201,13 @@ public class Identity {
 		return isDup;
 	}
 
-
 	public Color getTrustLevelColor() {
 		int i;
 
 		if (privateKey != null)
 			return trustLevelColorMe;
 
-		for (i = 0 ; i < trustLevelInt.length ; i++) {
+		for (i = 0; i < trustLevelInt.length; i++) {
 			if (trustLevelInt[i] == trustLevel)
 				break;
 		}
@@ -223,23 +222,22 @@ public class Identity {
 	public void setTrustLevel(String str) {
 		int i;
 
-		for (i = 0 ; i < Identity.trustLevelStr.length ; i++) {
+		for (i = 0; i < Identity.trustLevelStr.length; i++) {
 			if (Identity.trustLevelStr[i].equals(str))
 				break;
 		}
 
 		if (i >= Identity.trustLevelStr.length) {
-			Logger.error(this, "Unknown trust level: "+str);
+			Logger.error(this, "Unknown trust level: " + str);
 			return;
 		}
 
 		setTrustLevel(trustLevelInt[i]);
 	}
 
-
 	public void setTrustLevel(int i) {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				st = db.getConnection().prepareStatement("UPDATE signatures SET trustLevel = ? WHERE id = ?");
@@ -251,47 +249,45 @@ public class Identity {
 			}
 
 			trustLevel = i;
-			
+
 			Signatures.notifyIdentityUpdated(this);
 
-		} catch(SQLException e) {
-			Logger.error(this, "Unable to change trust level because: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Unable to change trust level because: " + e.toString());
 			e.printStackTrace();
 		}
 	}
 
-
 	/**
-	 * will put all the other identities with the same nickname as duplicata,
-	 * and will put this identity as non duplicate
+	 * will put all the other identities with the same nickname as duplicata, and
+	 * will put this identity as non duplicate
 	 */
 	public void setOriginal() {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				st = db.getConnection().prepareStatement("UPDATE signatures SET isDup = TRUE "
-									 + "WHERE LOWER(nickName) = ?");
+						+ "WHERE LOWER(nickName) = ?");
 				st.setString(1, nick.toLowerCase());
 
 				st.execute();
 				st.close();
 
 				st = db.getConnection().prepareStatement("UPDATE signatures SET isDup = FALSE "
-									 + "WHERE id = ?");
+						+ "WHERE id = ?");
 				st.setInt(1, id);
 
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
+		} catch (SQLException e) {
 			Logger.error(this,
-				     "SQLException while setting the identity as original : "
-				     +e.toString());
+					"SQLException while setting the identity as original : "
+							+ e.toString());
 			e.printStackTrace();
 		}
 	}
-
 
 	public boolean mustBeIgnored(Config config) {
 		if (privateKey != null)
@@ -302,44 +298,41 @@ public class Identity {
 		return (trustLevel < min);
 	}
 
-
-	/**
-	 * if the identity doesn't exists, it will be created
-	 */
+	/** if the identity doesn't exists, it will be created */
 	public static Identity getIdentity(Hsqldb db,
-					   String nick,
-					   String publicKey) {
+									   String nick,
+									   String publicKey) {
 		return getIdentity(db, nick, publicKey, true);
 	}
 
 	public static Identity getIdentity(Hsqldb db,
-					   String nick,
-					   String publicKey,
-					   boolean create) {
+									   String nick,
+									   String publicKey,
+									   boolean create) {
 		if (nick == null || publicKey == null)
 			return null;
-		
+
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, "+
-									 "privateKey, isDup, trustLevel "+
-									 "FROM signatures "+
-									 "WHERE publicKey = ? LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, " +
+						"privateKey, isDup, trustLevel " +
+						"FROM signatures " +
+						"WHERE publicKey = ? LIMIT 1");
 				st.setString(1, publicKey);
 
 				ResultSet set = st.executeQuery();
 
 				if (set.next()) {
 					Identity i = new Identity(db, set.getInt("id"), set.getString("nickName"),
-								  set.getString("publicKey"), set.getString("privateKey"),
-								  set.getBoolean("isDup"), set.getInt("trustLevel"));
+							set.getString("publicKey"), set.getString("privateKey"),
+							set.getBoolean("isDup"), set.getInt("trustLevel"));
 					Logger.debug(i, "Identity found");
 					st.close();
 					return i;
 				}
-				
+
 				st.close();
 
 				if (!create)
@@ -347,21 +340,21 @@ public class Identity {
 
 				/* else we must add it, but first we need to know if it's a dup */
 
-				st = db.getConnection().prepareStatement("SELECT id FROM signatures "+
-									 "WHERE lower(nickName) = ? LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT id FROM signatures " +
+						"WHERE lower(nickName) = ? LIMIT 1");
 				st.setString(1, nick.toLowerCase());
 
 				set = st.executeQuery();
 
 				boolean isDup = set.next();
-				
+
 				st.close();
 
 				/* and we add */
 
-				st = db.getConnection().prepareStatement("INSERT INTO signatures "+
-									 "(nickName, publicKey, privateKey, isDup, trustLevel) "+
-									 "VALUES (?, ?, ?, ?, 0)");
+				st = db.getConnection().prepareStatement("INSERT INTO signatures " +
+						"(nickName, publicKey, privateKey, isDup, trustLevel) " +
+						"VALUES (?, ?, ?, ?, 0)");
 
 				st.setString(1, nick);
 				st.setString(2, publicKey);
@@ -373,9 +366,9 @@ public class Identity {
 
 				/* and next we find back the id */
 
-				st = db.getConnection().prepareStatement("SELECT id "+
-									 "FROM signatures "+
-									 "WHERE publicKey = ? LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT id " +
+						"FROM signatures " +
+						"WHERE publicKey = ? LIMIT 1");
 				st.setString(1, publicKey);
 
 				set = st.executeQuery();
@@ -383,41 +376,38 @@ public class Identity {
 				set.next();
 
 				int id = set.getInt("id");
-				
+
 				st.close();
 
 				Identity i = new Identity(db, id, nick, publicKey, null, isDup, 0);
 				Logger.info(i, "New identity found");
-				
+
 				Signatures.notifyPublicIdentityAdded(i);
-				
+
 				return i;
 
 			}
-		} catch(SQLException e) {
-			Logger.error(new Identity(), "Error while getting identity (2) : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(new Identity(), "Error while getting identity (2) : " + e.toString());
 			e.printStackTrace();
 		}
 
 		return null;
 	}
 
-
-	/**
-	 * won't create
-	 */
+	/** won't create */
 	public static Identity getIdentity(Hsqldb db,
-					   int id) {
+									   int id) {
 		Identity i = null;
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, "+
-									 "privateKey, isDup, trustLevel "+
-									 "FROM signatures "+
-									 "WHERE id = ? LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, " +
+						"privateKey, isDup, trustLevel " +
+						"FROM signatures " +
+						"WHERE id = ? LIMIT 1");
 				st.setInt(1, id);
 
 				ResultSet set = st.executeQuery();
@@ -428,23 +418,23 @@ public class Identity {
 				}
 
 				i = new Identity(db, id, set.getString("nickName"),
-						 set.getString("publicKey"), set.getString("privateKey"),
-						 set.getBoolean("isDup"), set.getInt("trustLevel"));
+						set.getString("publicKey"), set.getString("privateKey"),
+						set.getBoolean("isDup"), set.getInt("trustLevel"));
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(new Identity(), "Error while getting identity (1) : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(new Identity(), "Error while getting identity (1) : " + e.toString());
 			e.printStackTrace();
 		}
 
 		return i;
 	}
 
-
 	/**
-	 * Generate a new identity
-	 * you have to insert() it after
-	 * @param db just here to fill in the class
+	 * Generate a new identity you have to insert() it after
+	 *
+	 * @param db
+	 * 		just here to fill in the class
 	 */
 	public static Identity generate(Hsqldb db, String nick) {
 		Logger.info(null, "thaw.plugins.signatures.Identity : Generating new identity ...");
@@ -454,28 +444,24 @@ public class Identity {
 		String[] keys = frostCrypt.generateKeys();
 
 		Identity identity = new Identity(db, -1, nick,
-						 keys[1], /* public */
-						 keys[0], /* private */
-						 false,
-						 10);
-
+				keys[1], /* public */
+				keys[0], /* private */
+				false,
+				10);
 
 		Logger.info(identity, "done");
 
 		return identity;
 	}
 
-
-	/**
-	 * id won't be set
-	 */
+	/** id won't be set */
 	public void insert() {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT id FROM signatures "+
-									 "WHERE publicKey = ? LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT id FROM signatures " +
+						"WHERE publicKey = ? LIMIT 1");
 				st.setString(1, publicKey);
 
 				ResultSet set = st.executeQuery();
@@ -484,26 +470,26 @@ public class Identity {
 					int id = set.getInt("id");
 
 					st.close();
-					
-					st = db.getConnection().prepareStatement("UPDATE signatures SET "+
-										 "privateKey = ?, trustLevel = ? "+
-										 "WHERE id = ?");
+
+					st = db.getConnection().prepareStatement("UPDATE signatures SET " +
+							"privateKey = ?, trustLevel = ? " +
+							"WHERE id = ?");
 					st.setString(1, privateKey);
 					st.setInt(2, trustLevel);
 					st.setInt(3, id);
 
 					st.execute();
 					st.close();
-					
+
 					Signatures.notifyIdentityUpdated(this);
 				} else {
 
 					st.close();
-					
-					st = db.getConnection().prepareStatement("INSERT INTO signatures "+
-										 "(nickName, publicKey, privateKey, "+
-										 "isDup, trustLevel) "+
-										 "VALUES (?, ?, ?, ?, ?)");
+
+					st = db.getConnection().prepareStatement("INSERT INTO signatures " +
+							"(nickName, publicKey, privateKey, " +
+							"isDup, trustLevel) " +
+							"VALUES (?, ?, ?, ?, ?)");
 					st.setString(1, nick);
 					st.setString(2, publicKey);
 					st.setString(3, privateKey);
@@ -512,65 +498,62 @@ public class Identity {
 
 					st.execute();
 					st.close();
-					
+
 					if (privateKey == null)
 						Signatures.notifyPublicIdentityAdded(this);
 					else
 						Signatures.notifyPrivateIdentityAdded(this);
 				}
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Exception while adding the identity to the bdd: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Exception while adding the identity to the bdd: " + e.toString());
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	public static boolean hasAtLeastATrustDefined(Hsqldb db) {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st = db.getConnection().prepareStatement("SELECT id FROM signatures WHERE trustLevel != ? and trustLevel < ?");
 				st.setInt(1, 0);
 				st.setInt(2, trustLevelInt[0]);
-				
+
 				ResultSet set = st.executeQuery();
 
-				boolean b=  set.next();
-				
+				boolean b = set.next();
+
 				st.close();
-				
+
 				return b;
-			}			
-		} catch(SQLException e) {
-			Logger.error(new Identity(), "Exception while accessing the signature table : "+e.toString());
+			}
+		} catch (SQLException e) {
+			Logger.error(new Identity(), "Exception while accessing the signature table : " + e.toString());
 			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
 
-
 	public void delete() {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("DELETE FROM signatures "+
-									 "WHERE id = ?");
+				st = db.getConnection().prepareStatement("DELETE FROM signatures " +
+						"WHERE id = ?");
 				st.setInt(1, id);
 
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.warning(this, "Exception while deleting the identity from the bdd: "+e.toString());
+		} catch (SQLException e) {
+			Logger.warning(this, "Exception while deleting the identity from the bdd: " + e.toString());
 			e.printStackTrace();
-			new thaw.gui.WarningWindow((MainWindow)null,
-						   I18n.getMessage("thaw.plugin.signature.delete.cant"));
+			new thaw.gui.WarningWindow((MainWindow) null,
+					I18n.getMessage("thaw.plugin.signature.delete.cant"));
 		}
 
 	}
-
 
 	public String sign(String text) {
 		initFrostCrypt();
@@ -578,33 +561,29 @@ public class Identity {
 		return frostCrypt.detachedSign(text, privateKey);
 	}
 
-
 	public static String sign(String text, String privateKey) {
 		initFrostCrypt();
 
 		return frostCrypt.detachedSign(text, privateKey);
 	}
 
-
 	public boolean check(String text, String sig) {
 		try {
 			initFrostCrypt();
 			return frostCrypt.detachedVerify(text, publicKey, sig);
-		} catch(Exception e) {
-			Logger.info(this, "Exception while checking signature: "+e.toString());
+		} catch (Exception e) {
+			Logger.info(this, "Exception while checking signature: " + e.toString());
 			//e.printStackTrace();
 			return false;
 		}
 	}
 
-
 	public static boolean check(String text, /* signed text */
-				    String sig,
-				    String publicKey) /* y */ {
+								String sig,
+								String publicKey) /* y */ {
 		initFrostCrypt();
 		return frostCrypt.detachedVerify(text, publicKey, sig);
 	}
-
 
 	public String toString() {
 		String n = nick;
@@ -612,62 +591,58 @@ public class Identity {
 		if (n.indexOf('@') >= 0)
 			n.replaceAll("@", "_");
 
-		return n+"@"+hash;
+		return n + "@" + hash;
 	}
-
 
 	public static Vector getIdentities(Hsqldb db, String cond) {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				Vector v = new Vector();
 
 				PreparedStatement st;
 
 				if (cond != null)
-					st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, "+
-										 "privateKey, isDup, trustLevel "+
-										 "FROM signatures "+
-										 "WHERE "+cond + " "+
-										 "ORDER BY LOWER(nickName)");
+					st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, " +
+							"privateKey, isDup, trustLevel " +
+							"FROM signatures " +
+							"WHERE " + cond + " " +
+							"ORDER BY LOWER(nickName)");
 				else
-					st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, "+
-										 "privateKey, isDup, trustLevel "+
-										 "FROM signatures ORDER BY LOWER(nickName)");
+					st = db.getConnection().prepareStatement("SELECT id, nickName, publicKey, " +
+							"privateKey, isDup, trustLevel " +
+							"FROM signatures ORDER BY LOWER(nickName)");
 
 				ResultSet set = st.executeQuery();
 
-				while(set.next()) {
+				while (set.next()) {
 					v.add(new Identity(db,
-							   set.getInt("id"),
-							   set.getString("nickName"),
-							   set.getString("publicKey"),
-							   set.getString("privateKey"),
-							   set.getBoolean("isDup"),
-							   set.getInt("trustLevel")));
+							set.getInt("id"),
+							set.getString("nickName"),
+							set.getString("publicKey"),
+							set.getString("privateKey"),
+							set.getBoolean("isDup"),
+							set.getInt("trustLevel")));
 				}
-				
+
 				st.close();
 
 				return v;
 			}
-		} catch(SQLException e) {
-			Logger.error(new Identity(), "Error while getting identities (1): "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(new Identity(), "Error while getting identities (1): " + e.toString());
 			e.printStackTrace();
 		}
 
 		return null;
 	}
 
-
 	public static Vector getYourIdentities(Hsqldb db) {
 		return getIdentities(db, "privateKey IS NOT NULL");
 	}
 
-
 	public static Vector getOtherIdentities(Hsqldb db) {
 		return getIdentities(db, "privateKey IS NULL");
 	}
-
 
 	public Element makeCDATA(Document doc, String tagName, String content) {
 		if (content == null || tagName == null)
@@ -685,6 +660,7 @@ public class Identity {
 
 	/**
 	 * Frost format
+	 *
 	 * @param file
 	 * @return
 	 */
@@ -697,7 +673,7 @@ public class Identity {
 
 		identityEl.appendChild(makeCDATA(doc, "name", toString()));
 		identityEl.appendChild(makeCDATA(doc, "key", publicKey));
-		
+
 		if (privateKey != null)
 			identityEl.appendChild(makeCDATA(doc, "privKey", privateKey));
 
@@ -707,55 +683,55 @@ public class Identity {
 		return XMLTools.writeXmlFile(doc, file.getPath());
 	}
 
-
 	public byte[] decode(byte[] input) {
 		initFrostCrypt();
 
 		try {
 			return frostCrypt.decrypt(input, privateKey);
-		} catch(Exception e) {
-			Logger.info(this, "hm, '"+e.toString()+"' => probably not for us ("+toString()+")");
+		} catch (Exception e) {
+			Logger.info(this, "hm, '" + e.toString() + "' => probably not for us (" + toString() + ")");
 			e.printStackTrace();
 		}
 
 		return null;
 	}
-	
+
 	public byte[] encode(byte[] input) {
 		initFrostCrypt();
-		
+
 		try {
 			return frostCrypt.encrypt(input, publicKey);
-		} catch(Exception e) {
-			Logger.error(this, "Can't crypt message because : '"+e.toString()+"'");
+		} catch (Exception e) {
+			Logger.error(this, "Can't crypt message because : '" + e.toString() + "'");
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 
 	/**
 	 * Frost format
+	 *
 	 * @param db
 	 * @param file
 	 * @return Vector<Identity>
 	 */
 	public static Vector importIdentity(Hsqldb db, File file) {
 		Vector ids = new Vector();
-		
+
 		try {
 			Document doc = null;
 			try {
 				doc = XMLTools.parseXmlFile(file, false);
-			} catch(Exception ex) {  // xml format error
+			} catch (Exception ex) {  // xml format error
 				Logger.error(ex, "Invalid Xml");
 				return null;
 			}
 
-			if( doc == null ) {
+			if (doc == null) {
 				Logger.error(null,
-					       "Error: couldn't parse XML Document - " +
-					       "File name: '" + file.getName() + "'");
+						"Error: couldn't parse XML Document - " +
+								"File name: '" + file.getName() + "'");
 				return null;
 			}
 
@@ -769,44 +745,43 @@ public class Identity {
 			}
 
 			for (Iterator it = l.iterator();
-			     it.hasNext();) {
-				Element identityEl = (Element)it.next();
+				 it.hasNext(); ) {
+				Element identityEl = (Element) it.next();
 
 				String[] split = XMLTools.getChildElementsCDATAValue(identityEl, "name").split("@");
 				String nick = split[0];
 				String publicKey = XMLTools.getChildElementsCDATAValue(identityEl, "key");
 				String privateKey = XMLTools.getChildElementsCDATAValue(identityEl, "privKey");
 
-
 				Identity identity = new Identity(db, -1, nick,
-								 publicKey, privateKey, false,
-								 10);
+						publicKey, privateKey, false,
+						10);
 				identity.insert();
-				
+
 				ids.add(identity);
 			}
 
-		} catch(Exception e) {
+		} catch (Exception e) {
 			/* XMLTools throws runtime exception sometimes ... */
-			Logger.error(e, "Unable to parse XML message because : "+e.toString());
+			Logger.error(e, "Unable to parse XML message because : " + e.toString());
 			e.printStackTrace();
 			return null;
 		}
 
 		return ids;
 	}
-	
+
 	public boolean equals(Object o) {
 		if (o == null)
 			return false;
-		
+
 		if (!(o instanceof Identity))
 			return false;
-		
+
 		if (getId() < 0)
 			return false;
-		
-		return (getId() == ((Identity)o).getId());
+
+		return (getId() == ((Identity) o).getId());
 	}
 }
 

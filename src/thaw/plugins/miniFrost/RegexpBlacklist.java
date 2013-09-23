@@ -1,33 +1,30 @@
 package thaw.plugins.miniFrost;
 
-import java.util.Vector;
-import java.util.Iterator;
-
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-
-import java.util.Observer;
-import java.util.Observable;
-
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Vector;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
-import java.sql.*;
-
-import thaw.plugins.Hsqldb;
-import thaw.core.Logger;
 import thaw.core.I18n;
+import thaw.core.Logger;
 import thaw.gui.ConfigWindow;
-
+import thaw.plugins.Hsqldb;
 
 /**
- * Simply store a list of regexp in the db.
- * Board.refresh() can next use to know if they must ignore or not a message.
+ * Simply store a list of regexp in the db. Board.refresh() can next use to know
+ * if they must ignore or not a message.
  */
 public class RegexpBlacklist implements Observer, ActionListener {
 
@@ -37,12 +34,11 @@ public class RegexpBlacklist implements Observer, ActionListener {
 
 	private Vector blacklist;
 
+	private JPanel panel;
 
-	private JPanel    panel;
 	private JTextArea textArea;
 
 	private JButton applyButton;
-
 
 	public RegexpBlacklist(Hsqldb db) {
 		this.db = db;
@@ -51,9 +47,7 @@ public class RegexpBlacklist implements Observer, ActionListener {
 		createTable();
 		loadBlackList();
 
-
 		panel = new JPanel(new BorderLayout(5, 5));
-
 
 		JPanel topPanel = new JPanel(new GridLayout(2, 1));
 		topPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.regexpBlacklistLongDesc")));
@@ -77,43 +71,41 @@ public class RegexpBlacklist implements Observer, ActionListener {
 		try {
 			db.executeQuery(query);
 			return true;
-		} catch(final SQLException e) {
-			Logger.notice(e, "While (re)creating sql tables: "+e.toString());
+		} catch (final SQLException e) {
+			Logger.notice(e, "While (re)creating sql tables: " + e.toString());
 			return false;
 		}
 	}
 
 	private void createTable() {
 		sendQuery("CREATE CACHED TABLE regexpBlacklist ("
-			  + "id INTEGER IDENTITY NOT NULL, "
-			  + "regexp VARCHAR(512) NOT NULL)");
+				+ "id INTEGER IDENTITY NOT NULL, "
+				+ "regexp VARCHAR(512) NOT NULL)");
 	}
-
 
 	public void loadBlackList() {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				st = db.getConnection().prepareStatement("SELECT regexp FROM regexpBlacklist");
 				ResultSet set = st.executeQuery();
 
-				while(set.next()) {
-					synchronized(blacklist) {
+				while (set.next()) {
+					synchronized (blacklist) {
 						blacklist.add(set.getString("regexp"));
 					}
 				}
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Error while loading the regexp blacklist: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Error while loading the regexp blacklist: " + e.toString());
 		}
 	}
 
-
 	public void saveBlacklist() {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 
 				PreparedStatement st;
 
@@ -121,39 +113,38 @@ public class RegexpBlacklist implements Observer, ActionListener {
 				st.execute();
 				st.close();
 
-				st = db.getConnection().prepareStatement("INSERT INTO regexpBlackList (regexp) "+
-									 "VALUES (?)");
+				st = db.getConnection().prepareStatement("INSERT INTO regexpBlackList (regexp) " +
+						"VALUES (?)");
 
-				synchronized(blacklist) {
+				synchronized (blacklist) {
 					for (Iterator it = blacklist.iterator();
-					     it.hasNext();) {
-						st.setString(1, (String)it.next());
+						 it.hasNext(); ) {
+						st.setString(1, (String) it.next());
 						st.execute();
 					}
 				}
 				st.close();
 
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Error while saving the regexp blacklist: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Error while saving the regexp blacklist: " + e.toString());
 		}
 	}
-
 
 	public boolean isBlacklisted(String str) {
 		if (str == null)
 			return true;
 
-		synchronized(blacklist) {
+		synchronized (blacklist) {
 			for (Iterator it = blacklist.iterator();
-			     it.hasNext();) {
-				String regexp = ((String)it.next());
+				 it.hasNext(); ) {
+				String regexp = ((String) it.next());
 
 				try {
-					if (str.matches(".*"+regexp+".*"))
+					if (str.matches(".*" + regexp + ".*"))
 						return true;
-				} catch(java.util.regex.PatternSyntaxException e) {
-					Logger.error(e, "Invalid regexp in the blacklist : "+regexp);
+				} catch (java.util.regex.PatternSyntaxException e) {
+					Logger.error(e, "Invalid regexp in the blacklist : " + regexp);
 				}
 			}
 		}
@@ -162,18 +153,19 @@ public class RegexpBlacklist implements Observer, ActionListener {
 	}
 
 	/**
-	 * @return null if all the regexp are valids, else return the first invalid one
+	 * @return null if all the regexp are valids, else return the first invalid
+	 *         one
 	 */
 	public static String validateBlacklist(Vector blacklist) {
-		synchronized(blacklist) {
+		synchronized (blacklist) {
 			for (Iterator it = blacklist.iterator();
-			     it.hasNext();) {
-				String regexp = (String)it.next();
+				 it.hasNext(); ) {
+				String regexp = (String) it.next();
 
 				try {
-					"".matches(".*"+regexp+".*");
-				} catch(java.util.regex.PatternSyntaxException e) {
-					Logger.error(e, "Invalid regexp in the blacklist : "+regexp);
+					"".matches(".*" + regexp + ".*");
+				} catch (java.util.regex.PatternSyntaxException e) {
+					Logger.error(e, "Invalid regexp in the blacklist : " + regexp);
 					return regexp;
 				}
 			}
@@ -182,14 +174,13 @@ public class RegexpBlacklist implements Observer, ActionListener {
 		return null;
 	}
 
-
 	public void refresh() {
 		StringBuffer buf = new StringBuffer("");
 
-		synchronized(blacklist) {
+		synchronized (blacklist) {
 			for (Iterator it = blacklist.iterator();
-			     it.hasNext();) {
-				buf.append((String)it.next());
+				 it.hasNext(); ) {
+				buf.append((String) it.next());
 				buf.append("\n");
 			}
 		}
@@ -199,19 +190,17 @@ public class RegexpBlacklist implements Observer, ActionListener {
 
 	private ConfigWindow window;
 
-
 	public void displayTab(ConfigWindow window) {
 		this.window = window;
 
 		refresh();
 
 		window.addTab(I18n.getMessage("thaw.plugin.miniFrost.regexpBlacklist"),
-			      thaw.gui.IconBox.minStop,
-			      panel);
+				thaw.gui.IconBox.minStop,
+				panel);
 		window.setSelectedTab(panel);
 		window.addObserver(this);
 	}
-
 
 	public void hideTab(ConfigWindow window) {
 		window.deleteObserver(this);
@@ -231,7 +220,7 @@ public class RegexpBlacklist implements Observer, ActionListener {
 
 			Vector newRegexps = new Vector();
 
-			for (int i = 0 ; i < split.length ; i++) {
+			for (int i = 0; i < split.length; i++) {
 				if (split[i] != null && !"".equals(split[i]))
 					newRegexps.add(split[i]);
 			}
@@ -245,8 +234,8 @@ public class RegexpBlacklist implements Observer, ActionListener {
 				String txt = I18n.getMessage("thaw.plugin.miniFrost.invalidRegexp").replaceAll("X", r);
 
 				JOptionPane.showMessageDialog(window.getFrame(),
-							      txt, txt,
-							      JOptionPane.ERROR_MESSAGE);
+						txt, txt,
+						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 		}

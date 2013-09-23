@@ -1,93 +1,102 @@
 package thaw.plugins.index;
 
-
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Vector;
 import javax.swing.JButton;
-import javax.swing.JTextField;
 import javax.swing.JCheckBox;
-import javax.swing.JPopupMenu;
 import javax.swing.JDialog;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-
-import java.awt.GridLayout;
-import java.awt.BorderLayout;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-
-import javax.swing.event.ListSelectionListener;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-import java.sql.*;
-
-import java.util.Vector;
-import thaw.fcp.FCPQueueManager;
-import thaw.fcp.FreenetURIHelper;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.fcp.FCPQueueManager;
+import thaw.fcp.FreenetURIHelper;
 import thaw.plugins.Hsqldb;
 
-
 public class IndexConfigDialog implements ActionListener, MouseListener,
-					  ListSelectionListener {
+		ListSelectionListener {
 
 	public final static int SIZE_X = 700;
+
 	public final static int SIZE_Y = 170;
+
 	public final static int CATEGORY_DIALOG_SIZE_X = 400;
+
 	public final static int CATEGORY_DIALOG_SIZE_Y = 400;
 
 	private JDialog frame;
 
 	private IndexBrowserPanel indexBrowser;
+
 	private FCPQueueManager queueManager;
+
 	private Hsqldb db;
+
 	private Index index;
 
-
 	private JButton okButton;
+
 	private JButton cancelButton;
+
 	private int formState;
 
 	private JButton resetCommentsButton;
 
-	private JTextField publicKeyField       = null;
-	private JTextField privateKeyField      = null;
-	private JCheckBox  publishPrivateKeyBox = null;
-	private JCheckBox  allowCommentsBox     = null;
-	private JLabel     categoryLabel        = null;
-	private JButton    changeCategory       = null;
+	private JTextField publicKeyField = null;
+
+	private JTextField privateKeyField = null;
+
+	private JCheckBox publishPrivateKeyBox = null;
+
+	private JCheckBox allowCommentsBox = null;
+
+	private JLabel categoryLabel = null;
+
+	private JButton changeCategory = null;
 
 	private JPopupMenu popupMenuA;
+
 	private JPopupMenu popupMenuB;
 
-
 	/**
-	 * Use it to add an already existing index (won't add it ; just get the basic values)
-	 * Various fields will be disabled (publish private key, etc).
+	 * Use it to add an already existing index (won't add it ; just get the basic
+	 * values) Various fields will be disabled (publish private key, etc).
 	 */
 	public IndexConfigDialog(IndexBrowserPanel indexBrowser,
-				 FCPQueueManager queueManager) {
+							 FCPQueueManager queueManager) {
 		this(indexBrowser, queueManager, null);
 	}
 
 	/**
 	 * Use it to modify an existing index (will modify automagically)
-	 * @param index if index is provided, changes will be automagically set
+	 *
+	 * @param index
+	 * 		if index is provided, changes will be automagically set
 	 */
 	public IndexConfigDialog(IndexBrowserPanel indexBrowser,
-				 FCPQueueManager queueManager,
-				 Index index) {
+							 FCPQueueManager queueManager,
+							 Index index) {
 		this.indexBrowser = indexBrowser;
 		this.queueManager = queueManager;
-		this.index        = index;
-		this.db           = indexBrowser.getDb();
+		this.index = index;
+		this.db = indexBrowser.getDb();
 	}
-
 
 	public String getPublicKey() {
 		String key = publicKeyField.getText();
@@ -115,12 +124,10 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		return allowCommentsBox.isSelected();
 	}
 
-
-
 	/**
-	 * If this function return true, you can use the get[...]() function
-	 * to get the user input.
-	 * (Note: What a mess !)
+	 * If this function return true, you can use the get[...]() function to get the
+	 * user input. (Note: What a mess !)
+	 *
 	 * @return false if the user cancelled
 	 */
 	public boolean promptUser() {
@@ -128,43 +135,40 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		return (showDialog());
 	}
 
-
-
 	private void prepareDialog() {
 		frame = new JDialog(indexBrowser.getMainWindow().getMainFrame(),
-				    I18n.getMessage("thaw.plugin.index.indexSettings"));
+				I18n.getMessage("thaw.plugin.index.indexSettings"));
 
 		frame.getContentPane().setLayout(new BorderLayout());
 
 
 		/* main elements (fields, checkboxes, etc) */
 
-		publicKeyField       = new JTextField((index == null) ?
-						      "USK@" :
-						      index.getPublicKey());
+		publicKeyField = new JTextField((index == null) ?
+				"USK@" :
+				index.getPublicKey());
 
-		privateKeyField      = new JTextField((index == null) ?
-						      "SSK@" :
-						      index.getPrivateKey());
+		privateKeyField = new JTextField((index == null) ?
+				"SSK@" :
+				index.getPrivateKey());
 
 		publishPrivateKeyBox = new JCheckBox(I18n.getMessage("thaw.plugin.index.publishPrivateKey"),
-						     ((index == null) ?
-						      false :
-						      index.publishPrivateKey()));
+				((index == null) ?
+						false :
+						index.publishPrivateKey()));
 
 		publishPrivateKeyBox.setEnabled(index != null && index.getPrivateKey() != null);
 
-		allowCommentsBox     = new JCheckBox(I18n.getMessage("thaw.plugin.index.allowComments"),
-						     (index == null) ?
-						     false :
-						     (index.getCommentPublicKey() != null));
+		allowCommentsBox = new JCheckBox(I18n.getMessage("thaw.plugin.index.allowComments"),
+				(index == null) ?
+						false :
+						(index.getCommentPublicKey() != null));
 
 		allowCommentsBox.setEnabled((index == null) ?
-					    false :
-					    (index.getPrivateKey() != null));
+				false :
+				(index.getPrivateKey() != null));
 
 		categoryLabel = new JLabel("");
-
 
 		resetCommentsButton = new JButton(I18n.getMessage("thaw.plugin.index.comment.reset"));
 		resetCommentsButton.setEnabled(index != null && index.getPrivateKey() != null);
@@ -185,7 +189,7 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		labelPanel.setLayout(new GridLayout(2, 1));
 		textFieldPanel.setLayout(new GridLayout(2, 1));
 
-		labelPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.indexKey")+ " "), BorderLayout.WEST);
+		labelPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.indexKey") + " "), BorderLayout.WEST);
 		textFieldPanel.add(publicKeyField, BorderLayout.CENTER);
 
 		popupMenuA = new JPopupMenu();
@@ -194,8 +198,7 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		new thaw.gui.GUIHelper.PasteHelper(item, publicKeyField);
 		publicKeyField.addMouseListener(this);
 
-
-		labelPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.indexPrivateKey")+" "), BorderLayout.WEST);
+		labelPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.indexPrivateKey") + " "), BorderLayout.WEST);
 		textFieldPanel.add(privateKeyField, BorderLayout.CENTER);
 
 		popupMenuB = new JPopupMenu();
@@ -204,13 +207,10 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		new thaw.gui.GUIHelper.PasteHelper(item, privateKeyField);
 		privateKeyField.addMouseListener(this);
 
-
 		frame.getContentPane().add(labelPanel, BorderLayout.WEST);
 		frame.getContentPane().add(textFieldPanel, BorderLayout.CENTER);
 
-
 		/** various other settings **/
-
 
 		final JPanel indexSettingsPanel = new JPanel();
 		indexSettingsPanel.setLayout(new GridLayout(4, 1));
@@ -244,7 +244,6 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		frame.getContentPane().add(indexSettingsPanel, BorderLayout.SOUTH);
 	}
 
-
 	private boolean showDialog() {
 
 		/* let's rock'n'rool :p */
@@ -253,10 +252,10 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		frame.setVisible(true);
 
 		try {
-			synchronized(this) {
+			synchronized (this) {
 				wait();
 			}
-		} catch(final InterruptedException e) {
+		} catch (final InterruptedException e) {
 			/* \_o< */
 		}
 
@@ -272,7 +271,6 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 
 		return true;
 	}
-
 
 	public void updateValues(Index index) {
 		index.setPublicKey(getPublicKey());
@@ -290,14 +288,15 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		}
 	}
 
-
-
 	private JDialog categoryDialog;
-	private JList categoryList;
-	private JTextField categoryField;
-	private JButton categoryOkButton;
-	private JButton categoryCancelButton;
 
+	private JList categoryList;
+
+	private JTextField categoryField;
+
+	private JButton categoryOkButton;
+
+	private JButton categoryCancelButton;
 
 	public void updateCategoryLabel() {
 		String cat = (index == null ? null : index.getCategory());
@@ -306,41 +305,40 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 			cat = I18n.getMessage("thaw.plugin.index.categoryUnspecified");
 
 		categoryLabel.setText(I18n.getMessage("thaw.plugin.index.category")
-				      +": "+cat);
+				+ ": " + cat);
 	}
 
 	public Vector getCategories() {
 		Vector v = new Vector();
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT id, name "+
-									 "FROM categories "+
-									 "ORDER BY name");
+				st = db.getConnection().prepareStatement("SELECT id, name " +
+						"FROM categories " +
+						"ORDER BY name");
 
 				ResultSet set = st.executeQuery();
 
-				while(set.next()) {
+				while (set.next()) {
 					v.add(set.getString("name"));
 				}
-				
+
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Can't get index categories list because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Can't get index categories list because : " + e.toString());
 		}
 
 		return v;
 	}
 
-
 	public void showCategoryDialog() {
 		Vector cats = getCategories();
 
 		categoryDialog = new JDialog(frame,
-					     I18n.getMessage("thaw.plugin.index.category"));
+				I18n.getMessage("thaw.plugin.index.category"));
 
 		categoryList = new JList(cats);
 		categoryOkButton = new JButton(I18n.getMessage("thaw.common.ok"));
@@ -358,9 +356,7 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 			categoryField.setText(cat);
 		}
 
-
 		categoryDialog.getContentPane().setLayout(new BorderLayout(5, 5));
-
 
 		JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
 		buttonPanel.add(categoryOkButton);
@@ -370,28 +366,25 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		southPanel.add(categoryField);
 		southPanel.add(buttonPanel);
 
-
 		categoryDialog.getContentPane().add(new JLabel(I18n.getMessage("thaw.plugin.index.categories")),
-						    BorderLayout.NORTH);
+				BorderLayout.NORTH);
 		categoryDialog.getContentPane().add(new JScrollPane(categoryList),
-						    BorderLayout.CENTER);
+				BorderLayout.CENTER);
 		categoryDialog.getContentPane().add(southPanel,
-						    BorderLayout.SOUTH);
+				BorderLayout.SOUTH);
 
 		categoryDialog.setSize(CATEGORY_DIALOG_SIZE_X, CATEGORY_DIALOG_SIZE_Y);
 		categoryDialog.setVisible(true);
 	}
 
-
 	public void valueChanged(ListSelectionEvent e) {
-		categoryField.setText((String)categoryList.getSelectedValue());
+		categoryField.setText((String) categoryList.getSelectedValue());
 	}
-
 
 	public void actionPerformed(final ActionEvent e) {
 		if (e.getSource() == okButton) {
 			formState = 1;
-			synchronized(this) {
+			synchronized (this) {
 				notifyAll();
 			}
 			return;
@@ -399,7 +392,7 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		} else if (e.getSource() == cancelButton) {
 
 			formState = 2;
-			synchronized(this) {
+			synchronized (this) {
 				notifyAll();
 			}
 			return;
@@ -427,9 +420,14 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		}
 	}
 
-	public void mouseClicked(final MouseEvent e) { }
-	public void mouseEntered(final MouseEvent e) { }
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseClicked(final MouseEvent e) {
+	}
+
+	public void mouseEntered(final MouseEvent e) {
+	}
+
+	public void mouseExited(final MouseEvent e) {
+	}
 
 	public void mousePressed(final MouseEvent e) {
 		showPopupMenu(e);
@@ -440,7 +438,7 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 	}
 
 	protected void showPopupMenu(final MouseEvent e) {
-		if(e.isPopupTrigger()) {
+		if (e.isPopupTrigger()) {
 			if (e.getComponent() == publicKeyField)
 				popupMenuA.show(e.getComponent(), e.getX(), e.getY());
 			if (e.getComponent() == privateKeyField)

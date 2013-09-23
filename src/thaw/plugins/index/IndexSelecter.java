@@ -1,11 +1,9 @@
 package thaw.plugins.index;
 
-
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.Iterator;
 import java.util.Vector;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -19,9 +17,9 @@ import thaw.fcp.FreenetURIHelper;
 import thaw.plugins.Hsqldb;
 
 /**
- * Class helping to display a dialog allowing the user to choose an index. (For example, it's used when you want
- * to make a link to another index.
- *
+ * Class helping to display a dialog allowing the user to choose an index. (For
+ * example, it's used when you want to make a link to another index.
+ * <p/>
  * <pre>
  * Window
  * *--------------------------------------*
@@ -40,21 +38,27 @@ import thaw.plugins.Hsqldb;
  * </pre>
  */
 public class IndexSelecter implements java.awt.event.ActionListener, java.util.Observer {
+
 	private JFrame frame;
 
 	private JPanel upPanel;
 
 	private JPanel indexPanel;
+
 	private IndexTree indexTree;
 
 	private JPanel fieldPanel;
+
 	private JTextArea keyArea;
 
 	private JPanel downPanel;
+
 	private JButton cancelButton;
+
 	private JButton okButton;
 
 	private boolean closeWin;
+
 	private String[] selectedIndexKeys = null;
 
 	private IndexBrowserPanel indexBrowser;
@@ -63,9 +67,7 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 		this.indexBrowser = indexBrowser;
 	}
 
-	/**
-	 * Returned null if canceled. Is blocking !
-	 */
+	/** Returned null if canceled. Is blocking ! */
 	public String[] askForIndexURIs(final Hsqldb db) {
 		frame = new JFrame(I18n.getMessage("thaw.plugin.index.selectIndex"));
 
@@ -91,15 +93,14 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 		indexPanel.setLayout(new GridLayout(1, 2));
 		indexPanel.add(indexTree.getPanel());
 
-
 		upPanel.add(indexPanel, BorderLayout.CENTER);
-		
+
 		JScrollPane sp = new JScrollPane(keyArea);
-		
+
 		keyArea.setSize(100, 100);
 		sp.setSize(100, 100);
 		sp.setPreferredSize(new java.awt.Dimension(100, 100));
-		
+
 		fieldPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.indexKey")), BorderLayout.NORTH);
 		fieldPanel.add(sp, BorderLayout.CENTER);
 		upPanel.add(fieldPanel, BorderLayout.SOUTH);
@@ -112,11 +113,11 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 		frame.getContentPane().add(downPanel, BorderLayout.SOUTH);
 
 		frame.setSize(600, 600);
-		
+
 		keyArea.setSize(100, 100);
 		sp.setSize(100, 100);
 		sp.setPreferredSize(new java.awt.Dimension(100, 100));
-		
+
 		selectedIndexKeys = null;
 
 		cancelButton.addActionListener(this);
@@ -125,10 +126,10 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 
 		frame.setVisible(true);
 
-		for (closeWin = false ; !closeWin ; ) {
+		for (closeWin = false; !closeWin; ) {
 			try {
 				Thread.sleep(500);
-			} catch(final java.lang.InterruptedException e) {
+			} catch (final java.lang.InterruptedException e) {
 				/* \_o< \_o< \_o< */
 			}
 		}
@@ -152,37 +153,36 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 		return selectedIndexKeys;
 	}
 
-
 	public void update(final java.util.Observable o, final Object param) {
 		if (param instanceof Vector) {
 			keyArea.setText("");
-			
-			for (Iterator it = ((Vector)param).iterator(); it.hasNext(); ) {
-				IndexTreeNode node = (IndexTreeNode)it.next();
-				
+
+			for (Iterator it = ((Vector) param).iterator(); it.hasNext(); ) {
+				IndexTreeNode node = (IndexTreeNode) it.next();
+
 				if (node instanceof Index) {
-					final Index index = (Index)node;
+					final Index index = (Index) node;
 					final String key = index.getPublicKey();
 
-					Logger.info(this, "Selected index key: "+key);
-					keyArea.setText(keyArea.getText()+key+"\n");
+					Logger.info(this, "Selected index key: " + key);
+					keyArea.setText(keyArea.getText() + key + "\n");
 				}
-			}			
+			}
 		}
-		
+
 	}
 
 	public void actionPerformed(final java.awt.event.ActionEvent e) {
 		if (e.getSource() == okButton) {
-			if ((keyArea.getText() == null) || "".equals( keyArea.getText() ))
+			if ((keyArea.getText() == null) || "".equals(keyArea.getText()))
 				selectedIndexKeys = null;
 			else {
 				selectedIndexKeys = keyArea.getText().trim().split("\n");
-				
-				for (int i = 0 ; i < selectedIndexKeys.length ; i++) {
-					selectedIndexKeys[i] = FreenetURIHelper.cleanURI(selectedIndexKeys[i]);					
+
+				for (int i = 0; i < selectedIndexKeys.length; i++) {
+					selectedIndexKeys[i] = FreenetURIHelper.cleanURI(selectedIndexKeys[i]);
 				}
-				
+
 			}
 			closeWin = true;
 		}

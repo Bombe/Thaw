@@ -1,12 +1,10 @@
 package thaw.fcp;
 
-import java.util.Observable;
-
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.File;
-
+import java.io.FileInputStream;
 import java.security.MessageDigest;
+import java.util.Observable;
 
 import freenet.crypt.SHA256;
 import freenet.support.Base64;
@@ -14,19 +12,21 @@ import freenet.support.Base64;
 import thaw.core.Logger;
 import thaw.core.ThawRunnable;
 
-
-/**
- * Automatically used by FCPClientPut.
- * You shouldn't have to bother about it
- */
+/** Automatically used by FCPClientPut. You shouldn't have to bother about it */
 public class SHA256Computer extends Observable implements ThawRunnable {
+
 	private MessageDigest md;
 
 	private String hash;
+
 	private final Object hashLock = new Object();
+
 	private final String file;
+
 	private final String headers;
+
 	private short progress = 0;
+
 	private boolean isFinished = false;
 
 	public final static int BLOCK_SIZE = 32768; /* 32 Ko */
@@ -38,7 +38,6 @@ public class SHA256Computer extends Observable implements ThawRunnable {
 		this.headers = header;
 		this.running = true;
 	}
-
 
 	public void run() {
 		File realFile = new File(file);
@@ -53,7 +52,7 @@ public class SHA256Computer extends Observable implements ThawRunnable {
 
 			byte[] buf = new byte[4096];
 			int readBytes = bis.read(buf);
-			while(readBytes > -1 && running) {
+			while (readBytes > -1 && running) {
 				md.update(buf, 0, readBytes);
 				readBytes = bis.read(buf);
 				progress = (short) Math.round(readBytes * 100 / realFileSize);
@@ -76,10 +75,10 @@ public class SHA256Computer extends Observable implements ThawRunnable {
 			isFinished = true;
 			SHA256.returnMessageDigest(md);
 
-		} catch(java.io.FileNotFoundException e) {
-			Logger.error(this, "Can't hash file because: "+e.toString());
-		} catch(java.io.IOException e) {
-			Logger.error(this, "Can't hash file because: "+e.toString());
+		} catch (java.io.FileNotFoundException e) {
+			Logger.error(this, "Can't hash file because: " + e.toString());
+		} catch (java.io.IOException e) {
+			Logger.error(this, "Can't hash file because: " + e.toString());
 		}
 
 		setChanged();
@@ -90,22 +89,17 @@ public class SHA256Computer extends Observable implements ThawRunnable {
 		running = false;
 	}
 
-
-	/**
-	 * In %
-	 */
+	/** In % */
 	public int getProgression() {
-		if(isFinished)
+		if (isFinished)
 			return 100;
-		else if(progress > 99)
+		else if (progress > 99)
 			return 99;
 		else
 			return progress;
 	}
 
-	/**
-	 * Returns the Base64Encode of the hash
-	 */
+	/** Returns the Base64Encode of the hash */
 	public String getHash() {
 		synchronized (hashLock) {
 			return hash;

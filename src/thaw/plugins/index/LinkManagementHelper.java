@@ -7,27 +7,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.Vector;
-
 import javax.swing.AbstractButton;
 
 import thaw.core.Logger;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
 import thaw.fcp.FCPQueueManager;
 
-
 public class LinkManagementHelper {
+
 	public interface LinkAction extends ActionListener {
 
 		/**
 		 * Can disable the abstract button if required
-		 * @param links can be null
+		 *
+		 * @param links
+		 * 		can be null
 		 */
 		public void setTarget(Vector links);
 	}
 
-
 	public static abstract class BasicLinkAction implements LinkAction, ThawRunnable {
+
 		private AbstractButton src;
 
 		public BasicLinkAction(AbstractButton src) {
@@ -50,13 +51,16 @@ public class LinkManagementHelper {
 		}
 
 		public abstract void setTarget(Vector files);
+
 		public abstract void apply();
 	}
 
-
 	public static class LinkRemover implements LinkAction {
+
 		private IndexBrowserPanel indexBrowser;
+
 		private AbstractButton actionSource;
+
 		private Vector target;
 
 		public LinkRemover(IndexBrowserPanel indexBrowser, final AbstractButton actionSource) {
@@ -74,7 +78,7 @@ public class LinkManagementHelper {
 			this.target = target;
 
 			if (target != null && target.size() > 0) {
-				Link link = (Link)target.get(0);
+				Link link = (Link) target.get(0);
 				if (!link.isModifiable())
 					isOk = false;
 			}
@@ -92,33 +96,37 @@ public class LinkManagementHelper {
 			return;
 
 		for (final Iterator it = links.iterator();
-		     it.hasNext() ; ) {
-			final Link link = (Link)it.next();
+			 it.hasNext(); ) {
+			final Link link = (Link) it.next();
 			link.delete();
 		}
 
 		indexBrowser.getTables().getLinkTable().refresh();
 	}
 
-
 	public static class IndexAdder extends BasicLinkAction {
+
 		private FCPQueueManager queueManager;
+
 		private IndexBrowserPanel indexBrowser;
 
 		private AbstractButton src;
+
 		private Vector t;
 
 		private boolean addToParent; /* (== add to the same parent folder) */
+
 		private boolean autoSorting = true;
 
 		/**
-		 * @param addToParent Try to add the new index to the same folder than the
-		 *                    index from where comes the link
+		 * @param addToParent
+		 * 		Try to add the new index to the same folder than the index from where
+		 * 		comes the link
 		 */
 		public IndexAdder(final AbstractButton actionSource,
-				  final FCPQueueManager queueManager,
-				  final IndexBrowserPanel indexBrowser,
-				  boolean addToParent) {
+						  final FCPQueueManager queueManager,
+						  final IndexBrowserPanel indexBrowser,
+						  boolean addToParent) {
 			super(actionSource);
 
 			src = actionSource;
@@ -140,24 +148,25 @@ public class LinkManagementHelper {
 
 		public void apply() {
 			for (final Iterator it = t.iterator();
-			     it.hasNext(); ) {
-				final Link link = (Link)it.next();
+				 it.hasNext(); ) {
+				final Link link = (Link) it.next();
 				if (link != null) {
 					if (addToParent && link.getTreeParent() != null)
 						IndexManagementHelper.addIndex(queueManager, indexBrowser,
-									       ((IndexFolder)link.getTreeParent().getParent()),
-									       link.getPublicKey(), autoSorting);
+								((IndexFolder) link.getTreeParent().getParent()),
+								link.getPublicKey(), autoSorting);
 					else
 						IndexManagementHelper.addIndex(queueManager, indexBrowser,
-									       null, link.getPublicKey(), autoSorting);
+								null, link.getPublicKey(), autoSorting);
 				}
 			}
 		}
 	}
 
-
 	public static class PublicKeyCopier implements LinkAction {
+
 		private AbstractButton src;
+
 		private Vector t;
 
 		public PublicKeyCopier(final AbstractButton actionSource) {
@@ -176,7 +185,6 @@ public class LinkManagementHelper {
 		}
 	}
 
-
 	public static void copyPublicKeyFrom(final Vector targets) {
 		String keys = "";
 
@@ -185,9 +193,9 @@ public class LinkManagementHelper {
 
 		final Toolkit tk = Toolkit.getDefaultToolkit();
 
-		for(final Iterator it = targets.iterator();
-		    it.hasNext();) {
-			final Link link = (Link)it.next();
+		for (final Iterator it = targets.iterator();
+			 it.hasNext(); ) {
+			final Link link = (Link) it.next();
 			keys = keys + link.getPublicKey() + "\n";
 		}
 
@@ -196,9 +204,10 @@ public class LinkManagementHelper {
 		cp.setContents(st, null);
 	}
 
-
 	public static class BlackListDisplayer implements LinkAction {
+
 		private AbstractButton src;
+
 		private BlackList blackList;
 
 		public BlackListDisplayer(final AbstractButton actionSource, BlackList blackList) {
@@ -219,9 +228,10 @@ public class LinkManagementHelper {
 		}
 	}
 
-
 	public static class ToBlackListAdder implements LinkAction {
+
 		private AbstractButton src;
+
 		private Vector t;
 
 		private IndexBrowserPanel indexBrowser;
@@ -247,8 +257,8 @@ public class LinkManagementHelper {
 			}
 
 			for (Iterator it = t.iterator();
-			     it.hasNext(); ) {
-				Link link = (Link)it.next();
+				 it.hasNext(); ) {
+				Link link = (Link) it.next();
 
 				BlackList.addToBlackList(indexBrowser.getDb(), link.getPublicKey());
 				indexBrowser.getUnknownIndexList().removeLink(link);

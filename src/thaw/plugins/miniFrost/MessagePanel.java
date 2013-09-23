@@ -1,54 +1,47 @@
 package thaw.plugins.miniFrost;
 
-import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.Iterator;
+import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-
-import java.util.Vector;
-import java.util.Iterator;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-
-
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 
-
-import thaw.gui.IconBox;
 import thaw.core.I18n;
 import thaw.core.Logger;
-import thaw.plugins.signatures.Identity;
-import thaw.plugins.miniFrost.interfaces.Message;
-import thaw.plugins.miniFrost.interfaces.SubMessage;
-import thaw.plugins.miniFrost.interfaces.Attachment;
-import thaw.plugins.miniFrost.interfaces.Draft;
-
-import thaw.fcp.*;
+import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
+import thaw.fcp.FCPClientGet;
+import thaw.fcp.FCPQueueManager;
+import thaw.gui.IconBox;
 import thaw.plugins.IndexBrowser;
 import thaw.plugins.index.IndexManagementHelper;
-import thaw.core.ThawThread;
-import thaw.core.ThawRunnable;
+import thaw.plugins.miniFrost.interfaces.Attachment;
+import thaw.plugins.miniFrost.interfaces.Draft;
+import thaw.plugins.miniFrost.interfaces.Message;
+import thaw.plugins.miniFrost.interfaces.SubMessage;
+import thaw.plugins.signatures.Identity;
 
 public class MessagePanel
-	implements ActionListener {
-
+		implements ActionListener {
 
 	public final static String[] ACTIONS = {
-		I18n.getMessage("thaw.plugin.miniFrost.actions"),
-		I18n.getMessage("thaw.plugin.miniFrost.reply"),
-		I18n.getMessage("thaw.plugin.miniFrost.archivate"),
-		I18n.getMessage("thaw.plugin.miniFrost.unarchivate"),
-		I18n.getMessage("thaw.plugin.miniFrost.unfoldAll"),
-		I18n.getMessage("thaw.plugin.miniFrost.foldAll")
+			I18n.getMessage("thaw.plugin.miniFrost.actions"),
+			I18n.getMessage("thaw.plugin.miniFrost.reply"),
+			I18n.getMessage("thaw.plugin.miniFrost.archivate"),
+			I18n.getMessage("thaw.plugin.miniFrost.unarchivate"),
+			I18n.getMessage("thaw.plugin.miniFrost.unfoldAll"),
+			I18n.getMessage("thaw.plugin.miniFrost.foldAll")
 	};
 
 	public final static int DEFAULT_UNFOLDED = 2;
@@ -58,20 +51,23 @@ public class MessagePanel
 	private JPanel panel;
 
 	private JPanel insidePanel;
+
 	private JPanel msgsPanel;
 
-
 	private Message msg;
-	private Vector subMsgs;
-	private Vector attachments;
 
+	private Vector subMsgs;
+
+	private Vector attachments;
 
 	private JScrollPane scrollPane;
 
-
 	private JComboBox actions;
+
 	private JButton back;
+
 	private JButton nextUnread;
+
 	private JButton reply;
 
 	private Vector subPanels;
@@ -87,7 +83,6 @@ public class MessagePanel
 		/* keyActionMenu == Right click menu when you click on an highlighted key
 		 */
 		keyActionMenu = new KeyActionMenu(chkActions, indexActions);
-
 
 		insidePanel = null;
 
@@ -129,7 +124,7 @@ public class MessagePanel
 		subject.setIconTextGap(15);
 
 		JPanel northPanel = new JPanel(new BorderLayout(5, 5));
-		JPanel northNorthPanel = new JPanel(new BorderLayout(5,5));
+		JPanel northNorthPanel = new JPanel(new BorderLayout(5, 5));
 
 		boolean gmailView = mainPanel.isInGmailView();
 
@@ -143,8 +138,8 @@ public class MessagePanel
 			panel.add(northPanel, BorderLayout.NORTH);
 
 			scrollPane = new JScrollPane(msgsPanel,
-						     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-						     JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+					JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
 		} else { /* => if outlook layout */
 
@@ -153,13 +148,12 @@ public class MessagePanel
 			globalPanel.add(msgsPanel, BorderLayout.CENTER);
 
 			scrollPane = new JScrollPane(globalPanel,
-						     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-						     JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+					JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		}
 
 		panel.add(scrollPane, BorderLayout.CENTER);
 	}
-
 
 	public MiniFrostPanel getMiniFrostPanel() {
 		return mainPanel;
@@ -190,16 +184,16 @@ public class MessagePanel
 		return msg;
 	}
 
-
-
 	protected class AttachmentAction extends JMenuItem
-		implements ActionListener {
+			implements ActionListener {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 3518533179205885687L;
+
 		private Attachment a;
+
 		private String action;
 
 		public AttachmentAction(Attachment a, String action) {
@@ -213,20 +207,21 @@ public class MessagePanel
 
 		public void actionPerformed(ActionEvent e) {
 			a.apply(mainPanel.getDb(),
-				mainPanel.getPluginCore().getCore().getQueueManager(),
-				action);
+					mainPanel.getPluginCore().getCore().getQueueManager(),
+					action);
 		}
 	}
 
-
 	protected class AttachmentPanel extends JPanel
-		implements ActionListener {
+			implements ActionListener {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 367756847110840408L;
+
 		private JButton button;
+
 		private Vector attachments;
 
 		public AttachmentPanel(Vector attachments) {
@@ -244,14 +239,14 @@ public class MessagePanel
 
 				/* make the menu */
 
-				for(Iterator it = attachments.iterator();
-				    it.hasNext();) {
-					Attachment a = (Attachment)it.next();
-					JMenu subMenu = new JMenu(a.getPrintableType() + " : "+a.toString());
+				for (Iterator it = attachments.iterator();
+					 it.hasNext(); ) {
+					Attachment a = (Attachment) it.next();
+					JMenu subMenu = new JMenu(a.getPrintableType() + " : " + a.toString());
 
 					String[] actions = a.getActions();
 
-					for (int i = 0 ; i < actions.length ; i++) {
+					for (int i = 0; i < actions.length; i++) {
 						subMenu.add(new AttachmentAction(a, actions[i]));
 					}
 
@@ -261,19 +256,17 @@ public class MessagePanel
 
 				/* and next display it */
 				menu.show(this,
-					  this.getWidth()/2,
-					  this.getHeight()/2);
+						this.getWidth() / 2,
+						this.getHeight() / 2);
 			}
 		}
 	}
-
 
 	public JPanel getEncryptedForPanel(Identity id) {
 		JPanel panel = new JPanel(new GridLayout(1, 1));
 		panel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.encryptedBody").replaceAll("X", id.toString())));
 		return panel;
 	}
-
 
 	public void refresh() {
 
@@ -283,16 +276,16 @@ public class MessagePanel
 		/* it's dirty, but it should work */
 
 		JPanel iPanel = null;
-		
+
 		String rev = "";
 
 		if (msg.getRev() >= 0)
-			rev = "    [r"+Integer.toString(msg.getRev())+"]";
-		
-		subject.setText(I18n.getMessage("thaw.plugin.miniFrost.subject")+": "+msg.getSubject()+
+			rev = "    [r" + Integer.toString(msg.getRev()) + "]";
+
+		subject.setText(I18n.getMessage("thaw.plugin.miniFrost.subject") + ": " + msg.getSubject() +
 				rev);
 
-		Logger.info(this, "Displaying "+Integer.toString(subMsgs.size())+" sub-msgs");
+		Logger.info(this, "Displaying " + Integer.toString(subMsgs.size()) + " sub-msgs");
 
 		if (msg.encryptedFor() != null) {
 			iPanel = getEncryptedForPanel(msg.encryptedFor());
@@ -303,8 +296,8 @@ public class MessagePanel
 
 		/* sub messages */
 		for (Iterator it = subMsgs.iterator();
-		     it.hasNext();) {
-			SubMessage subMsg = (SubMessage)it.next();
+			 it.hasNext(); ) {
+			SubMessage subMsg = (SubMessage) it.next();
 			//SubMessagePanel panel = new SubMessagePanel(subMsg,
 			//					    (i + DEFAULT_UNFOLDED) < subMsgs.size());
 			SubMessagePanel panel = new SubMessagePanel(this, subMsg, false);
@@ -322,7 +315,6 @@ public class MessagePanel
 
 			i++;
 		}
-
 
 		if (msg.encryptedFor() != null) {
 			if (iPanel == null) {
@@ -349,7 +341,6 @@ public class MessagePanel
 			}
 		}
 
-
 		if (insidePanel != null) {
 			msgsPanel.remove(insidePanel);
 		}
@@ -366,20 +357,20 @@ public class MessagePanel
 		putScrollBarAtBottom();
 	}
 
-
 	public JScrollPane getScrollPane() {
 		return scrollPane;
 	}
 
-
 	private class ScrollBarSetter implements ThawRunnable {
-		public ScrollBarSetter() { }
+
+		public ScrollBarSetter() {
+		}
 
 		public void run() {
 			try {
 				/* dirty way to have the expected result */
 				Thread.sleep(100);
-			} catch(InterruptedException e) {
+			} catch (InterruptedException e) {
 
 			}
 
@@ -391,10 +382,10 @@ public class MessagePanel
 			int value = scrollPane.getVerticalScrollBar().getValue();
 
 			Logger.debug(this, "ScrollBar: "
-				     +"min : "+Integer.toString(min)
-				     +" ; max : "+Integer.toString(max)
-				     +" ; extent : "+Integer.toString(extent)
-				     +" ; value : "+Integer.toString(value));
+					+ "min : " + Integer.toString(min)
+					+ " ; max : " + Integer.toString(max)
+					+ " ; extent : " + Integer.toString(extent)
+					+ " ; value : " + Integer.toString(value));
 
 			scrollPane.getVerticalScrollBar().setValue(max);
 		}
@@ -404,28 +395,25 @@ public class MessagePanel
 		}
 	}
 
-
 	private void putScrollBarAtBottom() {
 		int max = scrollPane.getVerticalScrollBar().getMaximum();
 		scrollPane.getVerticalScrollBar().setValue(max);
 
 		Runnable doScroll = new Runnable() {
-				public void run() {
+			public void run() {
 
-					Thread th = new Thread(new ThawThread(new ScrollBarSetter(),
-							"Scrollbar setter", this));
-					th.start();
-				}
-			};
+				Thread th = new Thread(new ThawThread(new ScrollBarSetter(),
+						"Scrollbar setter", this));
+				th.start();
+			}
+		};
 
 		javax.swing.SwingUtilities.invokeLater(doScroll);
 	}
 
-
 	public JPanel getPanel() {
 		return panel;
 	}
-
 
 	private boolean nextUnread() {
 		/**
@@ -433,7 +421,6 @@ public class MessagePanel
 		 */
 		return mainPanel.getMessageTreeTable().nextUnread();
 	}
-
 
 	protected void reply() {
 		Draft draft = msg.getBoard().getDraft(msg);
@@ -479,9 +466,9 @@ public class MessagePanel
 				boolean retracted = (sel == 5);
 
 				for (Iterator it = subPanels.iterator();
-				     it.hasNext();) {
+					 it.hasNext(); ) {
 
-					((SubMessagePanel)it.next()).setRetracted(retracted);
+					((SubMessagePanel) it.next()).setRetracted(retracted);
 				}
 			}
 
@@ -490,24 +477,21 @@ public class MessagePanel
 		}
 	}
 
-
 	public final static JMenuItem[] chkActions = {
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.downloadThisKey")),
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.downloadAllKeys")),
-		null,
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyThisKey")),
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyAllKeys"))
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.downloadThisKey")),
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.downloadAllKeys")),
+			null,
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyThisKey")),
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyAllKeys"))
 	};
 
 	public final static JMenuItem[] indexActions = {
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.addThisIndex")),
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.addAllIndexes")),
-		null,
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyThisKey")),
-		new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyAllKeys"))
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.addThisIndex")),
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.addAllIndexes")),
+			null,
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyThisKey")),
+			new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.copyAllKeys"))
 	};
-
-
 
 	protected MiniFrostPanel getMainPanel() {
 		return mainPanel;
@@ -517,8 +501,8 @@ public class MessagePanel
 		Vector v = new Vector();
 
 		for (Iterator it = subPanels.iterator();
-		     it.hasNext();) {
-			v.addAll( ((SubMessagePanel)it.next()).getKeys() );
+			 it.hasNext(); ) {
+			v.addAll(((SubMessagePanel) it.next()).getKeys());
 		}
 
 		return v;
@@ -530,8 +514,8 @@ public class MessagePanel
 		Vector keys = getAllKeys();
 
 		for (Iterator it = keys.iterator();
-		     it.hasNext();) {
-			String key = (String)it.next();
+			 it.hasNext(); ) {
+			String key = (String) it.next();
 
 			if (key.startsWith("CHK@"))
 				v.add(key);
@@ -540,15 +524,14 @@ public class MessagePanel
 		return v;
 	}
 
-
 	public Vector getIndexKeys() {
 		Vector v = new Vector();
 
 		Vector keys = getAllKeys();
 
 		for (Iterator it = keys.iterator();
-		     it.hasNext();) {
-			String key = (String)it.next();
+			 it.hasNext(); ) {
+			String key = (String) it.next();
 
 			if (key.endsWith(".frdx"))
 				v.add(key);
@@ -557,15 +540,19 @@ public class MessagePanel
 		return v;
 	}
 
-
 	protected class KeyActionMenu extends JPopupMenu implements ActionListener {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 7604690757405586814L;
+
 		private String key;
+
 		private JMenuItem[] chkActions;
+
 		private JMenuItem[] indexActions;
+
 		private MessagePanel messagePanel;
 
 		public KeyActionMenu(JMenuItem[] chkActions, JMenuItem[] indexActions) {
@@ -574,17 +561,16 @@ public class MessagePanel
 			this.chkActions = chkActions;
 			this.indexActions = indexActions;
 
-			for (int i = 0 ; i < indexActions.length;i++) {
+			for (int i = 0; i < indexActions.length; i++) {
 				if (indexActions[i] != null)
 					indexActions[i].addActionListener(this);
 			}
 
-			for (int i = 0 ; i < indexActions.length;i++) {
+			for (int i = 0; i < indexActions.length; i++) {
 				if (chkActions[i] != null)
 					chkActions[i].addActionListener(this);
 			}
 		}
-
 
 		public void setKeys(MessagePanel panel, String key) {
 			this.key = key;
@@ -596,7 +582,7 @@ public class MessagePanel
 
 			JMenuItem[] items = (index ? indexActions : chkActions);
 
-			for (int i = 0 ; i < items.length ;i++) {
+			for (int i = 0; i < items.length; i++) {
 				if (items[i] != null)
 					add(items[i]);
 				else
@@ -608,20 +594,19 @@ public class MessagePanel
 			FCPQueueManager queueManager = messagePanel.getMainPanel().getPluginCore().getCore().getQueueManager();
 
 			FCPClientGet get = new FCPClientGet.Builder(queueManager)
-													.setKey(key)
-													.setPriority(FCPClientGet.DEFAULT_PRIORITY)
-													.setPersistence(FCPClientGet.PERSISTENCE_FOREVER)
-													.setGlobalQueue(true)
-													.setMaxRetries(FCPClientGet.DEFAULT_MAX_RETRIES)
-													.setDestinationDir(destDir.getPath())
-													.build();
+					.setKey(key)
+					.setPriority(FCPClientGet.DEFAULT_PRIORITY)
+					.setPersistence(FCPClientGet.PERSISTENCE_FOREVER)
+					.setGlobalQueue(true)
+					.setMaxRetries(FCPClientGet.DEFAULT_MAX_RETRIES)
+					.setDestinationDir(destDir.getPath())
+					.build();
 			queueManager.addQueryToThePendingQueue(get);
 		}
 
-
 		public void addIndex(String key) {
 			FCPQueueManager queueManager = messagePanel.getMainPanel().getPluginCore().getCore().getQueueManager();
-			IndexBrowser browser = (IndexBrowser)messagePanel.getMainPanel().getPluginCore().getCore().getPluginManager().getPlugin("thaw.plugins.IndexBrowser");
+			IndexBrowser browser = (IndexBrowser) messagePanel.getMainPanel().getPluginCore().getCore().getPluginManager().getPlugin("thaw.plugins.IndexBrowser");
 
 			if (browser == null) {
 				Logger.error(this, "The index browser is not running. Can't add an index");
@@ -629,31 +614,31 @@ public class MessagePanel
 			}
 
 			IndexManagementHelper.addIndex(queueManager,
-						       browser.getIndexBrowserPanel(),
-						       null,
-						       key,
-						       true);
+					browser.getIndexBrowserPanel(),
+					null,
+					key,
+					true);
 		}
 
 		public void actionPerformed(ActionEvent e) {
 
 			if (e.getSource() == chkActions[3]
-			    || e.getSource() == indexActions[3]) { /* copy this key */
+					|| e.getSource() == indexActions[3]) { /* copy this key */
 
 				thaw.gui.GUIHelper.copyToClipboard(key);
 
 			} else if (e.getSource() == chkActions[4]
-				   || e.getSource() == indexActions[4]) { /* copy all keys */
+					|| e.getSource() == indexActions[4]) { /* copy all keys */
 
-				Vector v = ( (e.getSource() == indexActions[4]) ?
-					     messagePanel.getIndexKeys() :
-					     messagePanel.getCHKKeys() );
+				Vector v = ((e.getSource() == indexActions[4]) ?
+						messagePanel.getIndexKeys() :
+						messagePanel.getCHKKeys());
 
 				String str = "";
 
 				for (Iterator it = v.iterator();
-				     it.hasNext();) {
-					str += ((String)it.next())+"\n";
+					 it.hasNext(); ) {
+					str += ((String) it.next()) + "\n";
 				}
 
 				thaw.gui.GUIHelper.copyToClipboard(str);
@@ -663,8 +648,8 @@ public class MessagePanel
 				String lastPath = mainPanel.getConfig().getValue("lastDestinationDirectory");
 
 				thaw.gui.FileChooser chooser = (lastPath != null ?
-								new thaw.gui.FileChooser(lastPath) :
-								new thaw.gui.FileChooser());
+						new thaw.gui.FileChooser(lastPath) :
+						new thaw.gui.FileChooser());
 
 				chooser.setTitle(I18n.getMessage("thaw.plugin.fetch.chooseDestination"));
 				chooser.setDirectoryOnly(true);
@@ -684,8 +669,8 @@ public class MessagePanel
 				String lastPath = mainPanel.getConfig().getValue("lastDestinationDirectory");
 
 				thaw.gui.FileChooser chooser = (lastPath != null ?
-								new thaw.gui.FileChooser(lastPath) :
-								new thaw.gui.FileChooser());
+						new thaw.gui.FileChooser(lastPath) :
+						new thaw.gui.FileChooser());
 
 				chooser.setTitle(I18n.getMessage("thaw.plugin.fetch.chooseDestination"));
 				chooser.setDirectoryOnly(true);
@@ -701,8 +686,8 @@ public class MessagePanel
 				Vector v = messagePanel.getCHKKeys();
 
 				for (Iterator it = v.iterator();
-				     it.hasNext();) {
-					download((String)it.next(), file);
+					 it.hasNext(); ) {
+					download((String) it.next(), file);
 				}
 
 			} else if (e.getSource() == indexActions[0]) { /* add this index */
@@ -714,16 +699,14 @@ public class MessagePanel
 				Vector v = messagePanel.getIndexKeys();
 
 				for (Iterator it = v.iterator();
-				     it.hasNext();) {
-					addIndex((String)it.next());
+					 it.hasNext(); ) {
+					addIndex((String) it.next());
 				}
 
 			}
 
 		}
 	}
-
-
 
 	public void popMenuOnKey(MouseEvent e, String key) {
 		keyActionMenu.setKeys(this, key);

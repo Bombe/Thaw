@@ -1,45 +1,36 @@
 package thaw.plugins.miniFrost;
 
-import javax.swing.JPanel;
-import java.util.Observable;
 import java.awt.BorderLayout;
-
-import javax.swing.JList;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-
-import java.util.Vector;
-import java.util.Iterator;
-
-import javax.swing.AbstractListModel;
-import javax.swing.DefaultListCellRenderer;
-
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
+import java.util.Iterator;
+import java.util.Observable;
+import java.util.Vector;
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 
-
-import java.awt.Color;
-
-import java.awt.Font;
-
-import thaw.gui.IconBox;
 import thaw.core.I18n;
-
+import thaw.gui.IconBox;
 import thaw.plugins.ToolbarModifier;
-import thaw.plugins.miniFrost.interfaces.BoardFactory;
 import thaw.plugins.miniFrost.interfaces.Board;
+import thaw.plugins.miniFrost.interfaces.BoardFactory;
 
 /**
- * It's called BoardTree, but in fact it's just a list.<br/>
- * Notify each time the selection is changed (board is given in argument)
+ * It's called BoardTree, but in fact it's just a list.<br/> Notify each time
+ * the selection is changed (board is given in argument)
  */
 public class BoardTree extends Observable
-	implements javax.swing.event.ListSelectionListener,
-		   MouseListener {
+		implements javax.swing.event.ListSelectionListener,
+		MouseListener {
 
 	/* X and Y are replaced */
 	public final static String DRAFTS_STR = "W: X / U : Y";
@@ -47,20 +38,24 @@ public class BoardTree extends Observable
 	private JPanel panel;
 
 	private BoardListModel model;
+
 	private JList list;
 
 	private JPopupMenu rightClickMenu;
+
 	private ToolbarModifier toolbarModifier;
+
 	private Vector actions;
 
 	private MiniFrostPanel mainPanel;
 
-	public final static Color SELECTION_COLOR         = new Color(190, 190, 190);
-	public final static Color LOADING_COLOR           = new Color(230, 230, 230);
+	public final static Color SELECTION_COLOR = new Color(190, 190, 190);
+
+	public final static Color LOADING_COLOR = new Color(230, 230, 230);
+
 	public final static Color LOADING_SELECTION_COLOR = new Color(150, 150, 150);
 
 	private JLabel draftsState;
-
 
 	public BoardTree(MiniFrostPanel mainPanel) {
 		this.mainPanel = mainPanel;
@@ -70,7 +65,7 @@ public class BoardTree extends Observable
 		panel = new JPanel(new BorderLayout());
 
 		panel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.boards")),
-			  BorderLayout.NORTH);
+				BorderLayout.NORTH);
 
 
 		/* board list */
@@ -103,33 +98,32 @@ public class BoardTree extends Observable
 		rightClickMenu.addSeparator();
 
 		item = new JMenuItem(I18n.getMessage("thaw.common.add"),
-				     IconBox.minAdd);
+				IconBox.minAdd);
 		rightClickMenu.add(item);
 		actions.add(new BoardManagementHelper.BoardAdder(mainPanel, item));
 
 		item = new JMenuItem(I18n.getMessage("thaw.common.remove"),
-				     IconBox.minDelete);
+				IconBox.minDelete);
 		rightClickMenu.add(item);
 		actions.add(new BoardManagementHelper.BoardRemover(mainPanel, item));
 
 		item = new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.loadNewMessages"),
-				     IconBox.minRefreshAction);
+				IconBox.minRefreshAction);
 		rightClickMenu.add(item);
 		actions.add(new BoardManagementHelper.BoardRefresher(mainPanel, item));
 
 		item = new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.markAsRead"),
-				     IconBox.minMarkAsRead);
+				IconBox.minMarkAsRead);
 		rightClickMenu.add(item);
 		actions.add(new BoardManagementHelper.MarkAllAsRead(mainPanel, item));
 
 		item = new JMenuItem(I18n.getMessage("thaw.plugin.miniFrost.newMessage"),
-				     IconBox.minMsgNew);
+				IconBox.minMsgNew);
 		rightClickMenu.add(item);
 		actions.add(new BoardManagementHelper.NewMessage(mainPanel, item));
 
 		/* toolbar buttons */
 
-		
 		JButton button;
 		toolbarModifier = new ToolbarModifier(mainPanel.getPluginCore().getCore().getMainWindow());
 
@@ -169,17 +163,18 @@ public class BoardTree extends Observable
 
 		panel.add(draftsState, BorderLayout.SOUTH);
 	}
-	
+
 	public ToolbarModifier getToolbarModifier() {
 		return toolbarModifier;
 	}
 
-
 	protected class BoardListRenderer extends DefaultListCellRenderer {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 6021183532695159257L;
+
 		private MessageTreeTable messageTreeTable;
 
 		public BoardListRenderer() {
@@ -187,24 +182,24 @@ public class BoardTree extends Observable
 		}
 
 		public java.awt.Component getListCellRendererComponent(JList list, Object value,
-								       int index, boolean isSelected,
-								       boolean cellHasFocus) {
-			Board board = (Board)value;
+															   int index, boolean isSelected,
+															   boolean cellHasFocus) {
+			Board board = (Board) value;
 
 			String str = board.toString();
 
 			int unread = 0;
 
-			if ( (unread = board.getNewMessageNumber(messageTreeTable.seeUnsigned(),
-								 messageTreeTable.seeArchived(),
-								 messageTreeTable.getMinTrustLevel())) > 0)
-				str += " ("+Integer.toString(unread)+")";
+			if ((unread = board.getNewMessageNumber(messageTreeTable.seeUnsigned(),
+					messageTreeTable.seeArchived(),
+					messageTreeTable.getMinTrustLevel())) > 0)
+				str += " (" + Integer.toString(unread) + ")";
 
 			java.awt.Component c = super.getListCellRendererComponent(list, str,
-										  index, isSelected,
-										  cellHasFocus);
+					index, isSelected,
+					cellHasFocus);
 
-			c.setFont(c.getFont().deriveFont((float)13.5));
+			c.setFont(c.getFont().deriveFont((float) 13.5));
 
 			if (unread > 0)
 				c.setFont(c.getFont().deriveFont(Font.BOLD));
@@ -225,12 +220,13 @@ public class BoardTree extends Observable
 		}
 	}
 
-
 	protected class BoardListModel extends AbstractListModel {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 7295609643591087950L;
+
 		private Vector boardList;
 
 		public BoardListModel() {
@@ -239,7 +235,7 @@ public class BoardTree extends Observable
 		}
 
 		public Vector getBoardList() {
-			synchronized(boardList) {
+			synchronized (boardList) {
 				return boardList;
 			}
 		}
@@ -253,7 +249,7 @@ public class BoardTree extends Observable
 
 			boardList = l;
 
-			synchronized(boardList) {
+			synchronized (boardList) {
 				if (boardList.size() < oldSize)
 					fireIntervalRemoved(this, boardList.size(), oldSize);
 
@@ -265,7 +261,7 @@ public class BoardTree extends Observable
 		}
 
 		public void refresh(Board board) {
-			synchronized(boardList) {
+			synchronized (boardList) {
 				refresh(boardList.indexOf(board));
 			}
 		}
@@ -278,7 +274,7 @@ public class BoardTree extends Observable
 			if (boardList == null)
 				return null;
 
-			synchronized(boardList) {
+			synchronized (boardList) {
 				return boardList.get(index);
 			}
 		}
@@ -287,18 +283,15 @@ public class BoardTree extends Observable
 			if (boardList == null)
 				return 0;
 
-			synchronized(boardList) {
+			synchronized (boardList) {
 				return boardList.size();
 			}
 		}
 	}
 
-
 	public Vector getBoards() {
 		return model.getBoardList();
 	}
-
-
 
 	public void refresh() {
 		Vector boards = new Vector();
@@ -306,7 +299,7 @@ public class BoardTree extends Observable
 		BoardFactory[] factories = mainPanel.getPluginCore().getFactories();
 
 		if (factories != null) {
-			for (int i = 0 ; i < factories.length; i++) {
+			for (int i = 0; i < factories.length; i++) {
 				Vector v = factories[i].getBoards();
 
 				if (v != null) {
@@ -328,7 +321,6 @@ public class BoardTree extends Observable
 		model.refresh(row);
 	}
 
-
 	public void loadState() {
 
 	}
@@ -345,28 +337,26 @@ public class BoardTree extends Observable
 		String str;
 
 		str = DRAFTS_STR.replaceAll("X", Integer.toString(waitings));
-		str = str.replaceAll(       "Y", Integer.toString(postings));
+		str = str.replaceAll("Y", Integer.toString(postings));
 
 		draftsState.setText(str);
 	}
 
 	private Board currentlySelected = null;
 
-	/**
-	 * seems to be called twice
-	 */
+	/** seems to be called twice */
 	public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 
-		Board b = ((Board)list.getSelectedValue());
+		Board b = ((Board) list.getSelectedValue());
 
 		for (Iterator it = actions.iterator();
-		     it.hasNext();) {
-			((BoardManagementHelper.BoardAction)it.next()).setTarget(b);
+			 it.hasNext(); ) {
+			((BoardManagementHelper.BoardAction) it.next()).setTarget(b);
 		}
-		
+
 		if (b == currentlySelected)
 			return;
-		
+
 		currentlySelected = b;
 
 		setChanged();
@@ -375,13 +365,15 @@ public class BoardTree extends Observable
 		list.requestFocus();
 	}
 
-
 	public void mouseClicked(final MouseEvent e) {
 
 	}
 
-	public void mouseEntered(final MouseEvent e) { }
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseEntered(final MouseEvent e) {
+	}
+
+	public void mouseExited(final MouseEvent e) {
+	}
 
 	public void mousePressed(final MouseEvent e) {
 		showPopupMenu(e);
@@ -392,7 +384,7 @@ public class BoardTree extends Observable
 	}
 
 	protected void showPopupMenu(final MouseEvent e) {
-		if(e.isPopupTrigger()) {
+		if (e.isPopupTrigger()) {
 			rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}

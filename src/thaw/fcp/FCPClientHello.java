@@ -6,32 +6,37 @@ import java.util.Observer;
 import thaw.core.Logger;
 
 /**
- * http://wiki.freenetproject.org/FreenetFCPSpec2Point0
- * See "ClientHello" and "NodeHello".
- * Note: This query disconnect you if node answer CloseConnectionDuplicateClientName
- *       and start() returns false.
+ * http://wiki.freenetproject.org/FreenetFCPSpec2Point0 See "ClientHello" and
+ * "NodeHello". Note: This query disconnect you if node answer
+ * CloseConnectionDuplicateClientName and start() returns false.
  */
 public class FCPClientHello implements FCPQuery, Observer {
+
 	public final static int NODEHELLO_TIMEOUT = 60; /* in seconds */
 
 	private final static String FCP_EXPECTED_VERSION = "2.0";
+
 	private String id;
 
 	private String connectionId;
+
 	private String nodeFCPVersion;
+
 	private String nodeVersion;
+
 	private String nodeName = null;
+
 	private boolean testnet = false; /* Hmm, in fact, we shouldn't have to bother about this one */
+
 	private int nmbCompressionCodecs = -1;
+
 	private String[] codecs;
 
 	private boolean receiveAnswer = false;
 
 	private final FCPQueryManager queryManager;
 
-	/**
-	 * Need to know the id of the application (see FCP specs).
-	 */
+	/** Need to know the id of the application (see FCP specs). */
 	public FCPClientHello(final FCPQueryManager queryManager, final String id) {
 		this.id = id;
 		this.queryManager = queryManager;
@@ -61,10 +66,7 @@ public class FCPClientHello implements FCPQuery, Observer {
 		return nmbCompressionCodecs;
 	}
 
-
-	/**
-	 * Warning: This query is blocking (only this one) !
-	 */
+	/** Warning: This query is blocking (only this one) ! */
 	public boolean start() {
 
 		queryManager.getConnection().registerClientHello(this);
@@ -77,19 +79,18 @@ public class FCPClientHello implements FCPQuery, Observer {
 
 		queryManager.addObserver(this);
 
-		if(!queryManager.writeMessage(message)) {
+		if (!queryManager.writeMessage(message)) {
 			Logger.warning(this, "Unable to say hello ... ;(");
 			queryManager.deleteObserver(this);
 			return false;
 		}
 
-
 		int count = 0;
 
-		while(!receiveAnswer && count < (NODEHELLO_TIMEOUT*2)) {
+		while (!receiveAnswer && count < (NODEHELLO_TIMEOUT * 2)) {
 			try {
 				Thread.sleep(500);
-			} catch(final java.lang.InterruptedException e) {
+			} catch (final java.lang.InterruptedException e) {
 				/* \_o< */
 			}
 			count++;
@@ -98,9 +99,9 @@ public class FCPClientHello implements FCPQuery, Observer {
 		/* Cover our bases in case a timeout occurred...  Usually redundant. */
 		queryManager.deleteObserver(this);
 
-		if(nodeName != null) {
-			Logger.info(this, "Hello "+nodeName+", I'm Thaw :)");
-		} else if (count >= (NODEHELLO_TIMEOUT*2)) {
+		if (nodeName != null) {
+			Logger.info(this, "Hello " + nodeName + ", I'm Thaw :)");
+		} else if (count >= (NODEHELLO_TIMEOUT * 2)) {
 			Logger.warning(this, "Unable to connect, timeout ...");
 			return false;
 		} else {
@@ -111,16 +112,15 @@ public class FCPClientHello implements FCPQuery, Observer {
 		return true;
 	}
 
-
 	public void update(final Observable o, final Object arg) {
-		if(arg == null)
+		if (arg == null)
 			return;
 
-		final FCPMessage answer = (FCPMessage)arg;
+		final FCPMessage answer = (FCPMessage) arg;
 
-		if(o == queryManager) {
+		if (o == queryManager) {
 
-			if("NodeHello".equals( answer.getMessageName() )) {
+			if ("NodeHello".equals(answer.getMessageName())) {
 				Logger.info(this, "Received a nodeHello");
 
 				connectionId = answer.getValue("ConnectionIdentifier");
@@ -138,47 +138,43 @@ public class FCPClientHello implements FCPQuery, Observer {
 				queryManager.deleteObserver(this);
 
 				receiveAnswer = true;
-				synchronized(this) {
+				synchronized (this) {
 					notify();
 				}
 			}
 
-			if("CloseConnectionDuplicateClientName".equals( answer.getMessageName() )) {
+			if ("CloseConnectionDuplicateClientName".equals(answer.getMessageName())) {
 				/* Damn ... ! */
 				Logger.warning(this, "According to the node, Thaw ID is already used. Please change it in the configuration (in advanced mode)");
 				queryManager.deleteObserver(this);
 				receiveAnswer = true;
-				synchronized(this) {
+				synchronized (this) {
 					notify();
 				}
 			}
 		}
 
-		if(!receiveAnswer) {
-			Logger.warning(this, "This message wasn't for us ?! : "+answer.getMessageName());
+		if (!receiveAnswer) {
+			Logger.warning(this, "This message wasn't for us ?! : " + answer.getMessageName());
 		}
 	}
 
-	/**
-	 * Not used.
-	 */
+	/** Not used. */
 	public boolean stop() {
 		return true;
 	}
 
-
 	public int getQueryType() {
 		return 0;
 	}
-
 
 	public String getConnectionId() {
 		return connectionId;
 	}
 
 	public String getCodec(int i) {
-		if(i < nmbCompressionCodecs) {
-			return codecs[i+2].split("\\(")[0];
+		if (i < nmbCompressionCodecs) {
+			return codecs[i + 2].split("\\(")[0];
 		} else {
 			return "";
 		}

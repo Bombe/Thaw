@@ -1,52 +1,53 @@
 package thaw.gui;
 
-
-import javax.swing.table.TableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Component;
-import javax.swing.ImageIcon;
 import java.util.Vector;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import thaw.core.Config;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
-
-import thaw.fcp.FreenetURIHelper;
+import thaw.core.ThawThread;
 import thaw.fcp.FCPTransferQuery;
-
+import thaw.fcp.FreenetURIHelper;
 
 /**
- * Inherits from JTable:
- *  Just add to usual JTable the capacity to store the columns sizes
- * in the thaw configuration
+ * Inherits from JTable: Just add to usual JTable the capacity to store the
+ * columns sizes in the thaw configuration
  */
 public class Table extends JTable implements TableColumnModelListener, ThawRunnable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3653294061426267455L;
+
 	public final static Color COLOR_ONE = Color.WHITE;
+
 	public final static Color COLOR_TWO = new Color(240, 240, 240);
 
 	private Config config;
+
 	private String configPrefix;
 
 	public final static int TIME_BEFORE_SAVING = 500; /* in ms */
+
 	private boolean hasChanged = false;
+
 	private Thread savingThread;
 
 	public Table(Config config, String prefix) {
@@ -56,7 +57,6 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		setAsListener();
 	}
 
-
 	public Table(Config config, String prefix, int numRows, int numColumns) {
 		super(numRows, numColumns);
 		setDefaultRenderer();
@@ -64,14 +64,12 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		setAsListener();
 	}
 
-
 	public Table(Config config, String prefix, Object[][] data, Object[] columnNames) {
 		super(data, columnNames);
 		setDefaultRenderer();
 		setConfigPrefix(config, prefix);
 		setAsListener();
 	}
-
 
 	public Table(Config config, String prefix, TableModel model) {
 		super(model);
@@ -81,7 +79,7 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 	}
 
 	public Table(Config config, String prefix,
-		     TableModel model, TableColumnModel cModel) {
+				 TableModel model, TableColumnModel cModel) {
 		super(model, cModel);
 		setDefaultRenderer();
 		setConfigPrefix(config, prefix);
@@ -89,14 +87,13 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 	}
 
 	public Table(Config config, String prefix,
-		     TableModel model, TableColumnModel cModel,
-		     ListSelectionModel lModel) {
+				 TableModel model, TableColumnModel cModel,
+				 ListSelectionModel lModel) {
 		super(model, cModel, lModel);
 		setDefaultRenderer();
 		setConfigPrefix(config, prefix);
 		setAsListener();
 	}
-
 
 	public Table(Config config, String prefix, Vector data, Vector columns) {
 		super(data, columns);
@@ -119,14 +116,13 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		renderer = new DefaultRenderer();
 		setDefaultRenderer(getColumnClass(0), renderer);
 
-		((DefaultTableCellRenderer)getTableHeader().getDefaultRenderer()).setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+		((DefaultTableCellRenderer) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 	}
 
-
-
 	/**
-	 * @param prefix prefix used in the configuration file to make the diff with
-	 *        with the other tables
+	 * @param prefix
+	 * 		prefix used in the configuration file to make the diff with with the other
+	 * 		tables
 	 */
 	public void setConfigPrefix(Config config, String prefix) {
 		this.configPrefix = prefix;
@@ -134,12 +130,10 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		loadColumnSizes();
 	}
 
-
 	public void setColumnModel(TableColumnModel m) {
 		super.setColumnModel(m);
 		loadColumnSizes();
 	}
-
 
 	public void setModel(TableModel m) {
 		super.setModel(m);
@@ -148,20 +142,22 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 			loadColumnSizes();
 	}
 
-
 	protected void setAsListener() {
 		super.getColumnModel().addColumnModelListener(this);
 	}
 
-
 	public static class DefaultRenderer extends DefaultTableCellRenderer {
+
 		private final static long serialVersionUID = 20060821;
 
 		private boolean statusInProgressBars = true;
+
 		private int columnWithKeys = -1;
 
 		private JLabel labelRenderer;
+
 		private TransferProgressBar transferProgressBarRenderer;
+
 		private JTextArea textAreaRenderer;
 
 		public DefaultRenderer() {
@@ -182,10 +178,7 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 			columnWithKeys = c;
 		}
 
-
-		/**
-		 * @return null if default color
-		 */
+		/** @return null if default color */
 		public static Color setBackground(Component c, int row, boolean isSelected) {
 			if (!isSelected) {
 				if (row % 2 == 0) {
@@ -203,14 +196,14 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		}
 
 		public Component getTableCellRendererComponent(final JTable table, Object value,
-							       final boolean isSelected, final boolean hasFocus,
-							       final int row, final int column) {
+													   final boolean isSelected, final boolean hasFocus,
+													   final int row, final int column) {
 
 			if (value == null)
 				value = "";
 
 			if (value instanceof FCPTransferQuery) {
-				final FCPTransferQuery query = (FCPTransferQuery)value;
+				final FCPTransferQuery query = (FCPTransferQuery) value;
 
 				//final JProgressBar bar = new TransferProgressBar(query, statusInProgressBars);
 
@@ -223,28 +216,29 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 			Component cell;
 
 			if (value instanceof ImageIcon) {
-				labelRenderer.setIcon((ImageIcon)value);
+				labelRenderer.setIcon((ImageIcon) value);
 				return labelRenderer;
-			} if (value instanceof JPanel) {
-				cell = (Component)value;
-			} else if(value instanceof Long) {
+			}
+			if (value instanceof JPanel) {
+				cell = (Component) value;
+			} else if (value instanceof Long) {
 
 				cell = super.getTableCellRendererComponent(table,
-									   thaw.gui.GUIHelper.getPrintableSize(((Long)value).longValue()),
-									   isSelected, hasFocus, row, column);
+						thaw.gui.GUIHelper.getPrintableSize(((Long) value).longValue()),
+						isSelected, hasFocus, row, column);
 
-			} else if (value instanceof String && ((String)value).indexOf("\n") >= 0) {
-				textAreaRenderer.setText((String)value);
+			} else if (value instanceof String && ((String) value).indexOf("\n") >= 0) {
+				textAreaRenderer.setText((String) value);
 
 				if (table.getRowHeight(row) < textAreaRenderer.getPreferredSize().getHeight())
-					table.setRowHeight((int)textAreaRenderer.getPreferredSize().getHeight());
+					table.setRowHeight((int) textAreaRenderer.getPreferredSize().getHeight());
 
 				cell = textAreaRenderer;
 
 			} else {
 				cell = super.getTableCellRendererComponent(table, value,
-									   isSelected, hasFocus,
-									   row, column);
+						isSelected, hasFocus,
+						row, column);
 
 			}
 
@@ -252,9 +246,8 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 
 			cell.setForeground(Color.BLACK);
 
-
 			if (column == columnWithKeys && value instanceof String) {
-				String key = (String)value;
+				String key = (String) value;
 				if (FreenetURIHelper.isObsolete(key))
 					cell.setForeground(Color.RED);
 			}
@@ -298,16 +291,15 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 
 		int nmb = m.getColumnCount();
 
-		for (int i = 0 ; i < nmb ; i++) {
+		for (int i = 0; i < nmb; i++) {
 			TableColumn c = m.getColumn(i);
-			String size = config.getValue(configPrefix+"_col_width_"+Integer.toString(i));
+			String size = config.getValue(configPrefix + "_col_width_" + Integer.toString(i));
 
 			if (size != null && !("".equals(size))) {
 				c.setPreferredWidth(Integer.parseInt(size));
 			}
 		}
 	}
-
 
 	public void saveColumnSizes() {
 		hasChanged = true;
@@ -318,14 +310,13 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		}
 	}
 
-
 	public void run() {
 		do {
 			hasChanged = false;
 
 			try {
 				Thread.sleep(TIME_BEFORE_SAVING);
-			} catch(java.lang.InterruptedException e) {
+			} catch (java.lang.InterruptedException e) {
 				/* \_o< */
 			}
 
@@ -334,7 +325,7 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 				reallySaveColumnSize();
 				return;
 			}
-		} while(hasChanged);
+		} while (hasChanged);
 
 	}
 
@@ -342,15 +333,14 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		/* can't stop */
 	}
 
-
 	public void reallySaveColumnSize() {
 		TableColumnModel m = super.getColumnModel();
 
 		int nmb = m.getColumnCount();
 
-		for (int i = 0 ; i < nmb ; i++) {
+		for (int i = 0; i < nmb; i++) {
 			TableColumn c = m.getColumn(i);
-			config.setValue(configPrefix+"_col_width_"+Integer.toString(i),
+			config.setValue(configPrefix + "_col_width_" + Integer.toString(i),
 					Integer.toString(c.getWidth()));
 		}
 	}

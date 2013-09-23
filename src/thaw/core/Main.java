@@ -1,21 +1,17 @@
 package thaw.core;
 
-import java.util.Locale;
-
-import javax.swing.UIManager;
-import java.util.Vector;
-import java.util.Iterator;
-
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
-
-
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import javax.swing.UIManager;
 
 /**
  * Main class. Only used to display some informations and init the core.
@@ -25,35 +21,27 @@ import java.io.FileOutputStream;
 public class Main {
 
 	public final static int
-	_major  = 0,
-	_minor  = 8,
-	_update = 5;
+			_major = 0,
+			_minor = 8,
+			_update = 5;
 
 	public final static String
-	VERSION = Main._major + "." + Main._minor + "." + Main._update;
+			VERSION = Main._major + "." + Main._minor + "." + Main._update;
 
-
-	/**
-	 * Look &amp; feel use by GUI front end
-	 */
+	/** Look &amp; feel use by GUI front end */
 	private static String lookAndFeel = null;
 
-
-	/**
-	 * Locale (null = default)
-	 */
+	/** Locale (null = default) */
 	private static String locale = null;
 
-
 	private Main() {
-
 	}
-
 
 	/**
 	 * Used to start the program
 	 *
-	 * @param args "-?", "-help", "--help", "/?", "/help", "-lf lookandfeel"
+	 * @param args
+	 * 		"-?", "-help", "--help", "/?", "/help", "-lf lookandfeel"
 	 */
 	public static void main(final String[] args) {
 		Core core;
@@ -62,7 +50,7 @@ public class Main {
 
 		Main.parseCommandLine(args);
 
-		if(Main.locale != null)
+		if (Main.locale != null)
 			I18n.setLocale(new Locale(Main.locale));
 
 		core = new Core();
@@ -77,13 +65,11 @@ public class Main {
 		core.initAll();
 	}
 
-
-
-
 	/**
 	 * This method parses the command line arguments
 	 *
-	 * @param args the arguments
+	 * @param args
+	 * 		the arguments
 	 */
 	private static void parseCommandLine(final String[] args) {
 
@@ -91,16 +77,16 @@ public class Main {
 
 		try {
 			while (args.length > count) {
-				if ("-?".equals( args[count] ) || "-help".equals( args[count] )
-						|| "--help".equals( args[count] )
-						|| "/?".equals( args[count] )
-						|| "/help".equals( args[count] )) {
+				if ("-?".equals(args[count]) || "-help".equals(args[count])
+						|| "--help".equals(args[count])
+						|| "/?".equals(args[count])
+						|| "/help".equals(args[count])) {
 					Main.showHelp();
 					count++;
-				} else if ("-lf".equals( args[count] )) {
+				} else if ("-lf".equals(args[count])) {
 					Main.lookAndFeel = args[count + 1];
 					count = count + 2;
-				} else if ("-lc".equals( args[count] )) {
+				} else if ("-lc".equals(args[count])) {
 					Main.locale = args[count + 1];
 					count = count + 2;
 				} else {
@@ -125,8 +111,8 @@ public class Main {
 		System.out.println("        These ones are currently available:");
 		Vector feels = thaw.plugins.ThemeSelector.getPossibleThemes();
 
-		for (Iterator it = feels.iterator() ; it.hasNext(); ) {
-			String str = (String)it.next();
+		for (Iterator it = feels.iterator(); it.hasNext(); ) {
+			String str = (String) it.next();
 
 			System.out.println("           " + str);
 		}
@@ -141,24 +127,20 @@ public class Main {
 		System.exit(0);
 	}
 
-
-	/**
-	 * need a non-static context
-	 */
+	/** need a non-static context */
 	public void extractFileFromJar(String src, String dst) {
 		try {
 			String realHome = this.getClass().getProtectionDomain().
-				getCodeSource().getLocation().toString();
+					getCodeSource().getLocation().toString();
 
 			String home = java.net.URLDecoder.decode(realHome.substring(5), "UTF-8");
 
-			Logger.info(this, "Extracting : "+realHome+" ; "+src+" ; "+dst);
+			Logger.info(this, "Extracting : " + realHome + " ; " + src + " ; " + dst);
 
 			ZipFile jar = new ZipFile(home);
 			ZipEntry entry = jar.getEntry(src);
 
 			File jarFile = new File(dst);
-
 
 			InputStream in = new BufferedInputStream(jar.getInputStream(entry));
 			OutputStream out = new BufferedOutputStream(new FileOutputStream(jarFile));
@@ -167,7 +149,7 @@ public class Main {
 
 			int nBytes;
 
-			while( (nBytes = in.read(buffer)) > 0) {
+			while ((nBytes = in.read(buffer)) > 0) {
 				out.write(buffer, 0, nBytes);
 			}
 
@@ -176,10 +158,10 @@ public class Main {
 			in.close();
 
 			return;
-		} catch(java.io.IOException e) {
-			Logger.warning(this, "Can't extract '"+src+"' because : "+e.toString());
+		} catch (java.io.IOException e) {
+			Logger.warning(this, "Can't extract '" + src + "' because : " + e.toString());
 			if (e.getCause() != null)
-				Logger.warning(this, "Cause : "+e.getCause().toString());
+				Logger.warning(this, "Cause : " + e.getCause().toString());
 			e.printStackTrace();
 		}
 
@@ -187,18 +169,17 @@ public class Main {
 		//System.exit(1);
 	}
 
-
 	public final static String[] DEPS = new String[] {
-		"hsqldb.jar",
-		"BouncyCastle.jar",
+			"hsqldb.jar",
+			"BouncyCastle.jar",
 	};
 
 	public static void extractDeps() {
 		Main main = new Main();
 
 		/* we erase each time the files to be sure that they are always up to date */
-		for (int i = 0 ; i < DEPS.length ; i++) {
-			main.extractFileFromJar("lib/"+DEPS[i], DEPS[i]);
+		for (int i = 0; i < DEPS.length; i++) {
+			main.extractFileFromJar("lib/" + DEPS[i], DEPS[i]);
 		}
 	}
 

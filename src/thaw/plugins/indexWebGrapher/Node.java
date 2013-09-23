@@ -1,34 +1,37 @@
 package thaw.plugins.indexWebGrapher;
 
-import java.util.Vector;
-import java.util.Iterator;
-
-import java.awt.Graphics;
 import java.awt.Color;
+import java.awt.Graphics;
+import java.util.Iterator;
+import java.util.Vector;
 
 import thaw.gui.GUIHelper;
-
 
 public class Node implements Comparable {
 
 	public final static int RADIUS = 4;
 
 	private int id;
+
 	private int indexId;
+
 	private String indexName;
+
 	private String indexKey;
 
 	private Vector linkTo;
+
 	private Vector linkedFrom;
 
 	/**
-	 * @param indexId -1 if none
+	 * @param indexId
+	 * 		-1 if none
 	 */
 	public Node(int id,
-		    int indexId,
-		    String indexName,
-		    String indexKey,
-		    GraphPanel graphPanel) {
+				int indexId,
+				String indexName,
+				String indexKey,
+				GraphPanel graphPanel) {
 		this.id = id;
 		this.indexId = indexId;
 		this.indexName = indexName;
@@ -39,7 +42,6 @@ public class Node implements Comparable {
 
 		graphPanel.registerNode(this);
 	}
-
 
 	public int getId() {
 		return id;
@@ -75,11 +77,11 @@ public class Node implements Comparable {
 	}
 
 	/**
-	 * we want the nodes with the higher number of
-	 * links first => we consider them smaller
+	 * we want the nodes with the higher number of links first => we consider them
+	 * smaller
 	 */
 	public int compareTo(final Object o) {
-		final Node node = (Node)o;
+		final Node node = (Node) o;
 
 		if (node.getLinkCount() < getLinkCount())
 			return -1;
@@ -89,15 +91,15 @@ public class Node implements Comparable {
 		return 0;
 	}
 
-
 	private boolean posSet = false;
+
 	private double x = -1;
+
 	private double y = -1;
 
 	public boolean isPositionSet() {
 		return posSet;
 	}
-
 
 	public void setPosition(double x, double y) {
 		posSet = true;
@@ -113,61 +115,65 @@ public class Node implements Comparable {
 		return y;
 	}
 
-
 	private double velocityX = 0.0;
+
 	private double velocityY = 0.0;
 
-	public final static double TIMESTEP                = 0.001;
-	public final static int NMB_STEPS                  = 50000;
-	public final static double FACTOR_ATTRACTION       = 0.5;
-	public final static double FACTOR_REPULSION        = 1;
-	public final static double REPULSE_LIMIT           = 10000;
-	public final static double FACTOR_DECELERATION     = 1.1;
-	public final static double FACTOR_INITIAL_DISTANCE = 5;
-	public final static double MIN_KINETIC             = 0.1; /* will stop if < */
+	public final static double TIMESTEP = 0.001;
 
-	/**
-	 * attracted by its peers/neightbours
-	 */
+	public final static int NMB_STEPS = 50000;
+
+	public final static double FACTOR_ATTRACTION = 0.5;
+
+	public final static double FACTOR_REPULSION = 1;
+
+	public final static double REPULSE_LIMIT = 10000;
+
+	public final static double FACTOR_DECELERATION = 1.1;
+
+	public final static double FACTOR_INITIAL_DISTANCE = 5;
+
+	public final static double MIN_KINETIC = 0.1; /* will stop if < */
+
+	/** attracted by its peers/neightbours */
 	private double[] attraction(Node node) {
 		double attrX = 0.0;
 		double attrY = 0.0;
 
-		attrX = (node.getX() - x)*FACTOR_ATTRACTION;
-		attrY = (node.getY() - y)*FACTOR_ATTRACTION;
+		attrX = (node.getX() - x) * FACTOR_ATTRACTION;
+		attrY = (node.getY() - y) * FACTOR_ATTRACTION;
 
-		return new double[] {attrX, attrY};
+		return new double[] { attrX, attrY };
 	}
 
-
-	/**
-	 * repulsed by all the node != peers / neightbours
-	 */
+	/** repulsed by all the node != peers / neightbours */
 	private double[] repulsion(Node node) {
 		double repX = 0.0;
 		double repY = 0.0;
 
 		if (x != node.getX()) {
-			repX = (1/(x-node.getX())*FACTOR_REPULSION);
+			repX = (1 / (x - node.getX()) * FACTOR_REPULSION);
 		}
 
 		if (y != node.getY()) {
-			repY = (1/(y-node.getY())*FACTOR_REPULSION);
+			repY = (1 / (y - node.getY()) * FACTOR_REPULSION);
 		}
 
+		if (repX > REPULSE_LIMIT)
+			repX = REPULSE_LIMIT;
+		if (repY > REPULSE_LIMIT)
+			repY = REPULSE_LIMIT;
+		if (repX < -REPULSE_LIMIT)
+			repX = -REPULSE_LIMIT;
+		if (repY < -REPULSE_LIMIT)
+			repY = -REPULSE_LIMIT;
 
-		if (repX > REPULSE_LIMIT) repX = REPULSE_LIMIT;
-		if (repY > REPULSE_LIMIT) repY = REPULSE_LIMIT;
-		if (repX < -REPULSE_LIMIT) repX = -REPULSE_LIMIT;
-		if (repY < -REPULSE_LIMIT) repY = -REPULSE_LIMIT;
-
-
-		return new double[] {repX, repY};
+		return new double[] { repX, repY };
 	}
-
 
 	/**
 	 * see http://en.wikipedia.org/wiki/Force-based_algorithms
+	 *
 	 * @return velocity
 	 */
 	public double computeVelocity(Vector nodeList) {
@@ -175,58 +181,54 @@ public class Node implements Comparable {
 		double netForceY = 0.0;
 
                /* repulsion */
-               for (Iterator it = nodeList.iterator();
-                    it.hasNext();) {
-                       Node node = (Node)it.next();
+		for (Iterator it = nodeList.iterator();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 
-
-		        if (node == this)
+			if (node == this)
 				continue;
 
 			double[] repuls = repulsion(node);
 			netForceX += repuls[0];
 			netForceY += repuls[1];
-               }
+		}
 
 	       /* attraction */
-	       for (Iterator it = linkTo.iterator();
-                    it.hasNext();) {
-                       Node node = (Node)it.next();
+		for (Iterator it = linkTo.iterator();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 
-                       if (node == this)
-                               continue;
+			if (node == this)
+				continue;
 
-                       double[] attr = attraction(node);
-                       netForceX += attr[0];
-                       netForceY += attr[1];
-	       }
+			double[] attr = attraction(node);
+			netForceX += attr[0];
+			netForceY += attr[1];
+		}
 
 	       /* attraction */
-	       for (Iterator it = linkedFrom.iterator();
-                    it.hasNext();) {
-                       Node node = (Node)it.next();
+		for (Iterator it = linkedFrom.iterator();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 
-                       if (node == this || linkTo.indexOf(node) >= 0)
-                               continue;
+			if (node == this || linkTo.indexOf(node) >= 0)
+				continue;
 
-                       double[] attr = attraction(node);
-                       netForceX += attr[0];
-                       netForceY += attr[1];
-               }
+			double[] attr = attraction(node);
+			netForceX += attr[0];
+			netForceY += attr[1];
+		}
 
+		velocityX = velocityX / FACTOR_DECELERATION;
+		velocityY = velocityY / FACTOR_DECELERATION;
 
-               velocityX = velocityX/FACTOR_DECELERATION;
-               velocityY = velocityY/FACTOR_DECELERATION;
+		velocityX += netForceX;
+		velocityY += netForceY;
 
-               velocityX += netForceX;
-               velocityY += netForceY;
-
-	       return Math.sqrt( Math.pow(velocityX,2) + Math.pow(velocityY, 2));
+		return Math.sqrt(Math.pow(velocityX, 2) + Math.pow(velocityY, 2));
 	}
 
-	/**
-	 * @return true if moved
-	 */
+	/** @return true if moved */
 	public boolean applyVelocity() {
 		if (velocityX == 0 && velocityY == 0)
 			return false;
@@ -236,13 +238,12 @@ public class Node implements Comparable {
 		return true;
 	}
 
-
 	public int getNmbUnplacedNeightbours() {
 		int unplaced = 0;
 
 		for (Iterator it = linkTo.iterator();
-		     it.hasNext(); ) {
-			Node node = (Node)it.next();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 
 			if (!node.isPositionSet())
 				unplaced++;
@@ -251,32 +252,29 @@ public class Node implements Comparable {
 		return unplaced;
 	}
 
-
-	/**
-	 * Recursivity : Dirty, but easier :P
-	 */
+	/** Recursivity : Dirty, but easier :P */
 	public void setInitialNeightbourPositions() {
 		int unplaced = 0;
 
-		if ( (unplaced = getNmbUnplacedNeightbours()) == 0)
+		if ((unplaced = getNmbUnplacedNeightbours()) == 0)
 			return;
 
-		double step = (2*Math.PI) / unplaced;
+		double step = (2 * Math.PI) / unplaced;
 
 		double current = 0;
 
 		for (Iterator it = linkTo.iterator();
-		     it.hasNext();) {
-			Node node = (Node)it.next();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 
 			if (!node.isPositionSet()) {
 				int i = unplaced + node.getNmbUnplacedNeightbours();
 
-				double diffX = Math.cos(current) * (FACTOR_INITIAL_DISTANCE*(i+1));
-				double diffY = Math.sin(current) * (FACTOR_INITIAL_DISTANCE*(i+1));
+				double diffX = Math.cos(current) * (FACTOR_INITIAL_DISTANCE * (i + 1));
+				double diffY = Math.sin(current) * (FACTOR_INITIAL_DISTANCE * (i + 1));
 
 				node.setPosition(x + diffX,
-						 y + diffY);
+						y + diffY);
 
 				node.setInitialNeightbourPositions();
 
@@ -286,7 +284,6 @@ public class Node implements Comparable {
 
 		return;
 	}
-
 
 	public boolean linkTo(Node node) {
 		return (linkTo.indexOf(node) >= 0);
@@ -303,19 +300,18 @@ public class Node implements Comparable {
 	}
 
 	public double getXPixel(double zoom, int zeroX) {
-		return (double)((int)(x*zoom) + zeroX);
+		return (double) ((int) (x * zoom) + zeroX);
 	}
 
 	public double getYPixel(double zoom, int zeroY) {
-		return (double)((int)(y*zoom) + zeroY);
+		return (double) ((int) (y * zoom) + zeroY);
 	}
 
-
 	public void paintTaNodeFaceDeNoeud(Graphics g, double zoom,
-					   int zeroX, int zeroY) {
+									   int zeroX, int zeroY) {
 
-		int realX = (int)(x*zoom);
-		int realY = (int)(y*zoom);
+		int realX = (int) (x * zoom);
+		int realY = (int) (y * zoom);
 
 		if (selected)
 			g.setColor(Color.ORANGE);
@@ -323,29 +319,28 @@ public class Node implements Comparable {
 			g.setColor(Color.GRAY);
 
 		for (Iterator it = linkTo.iterator();
-		     it.hasNext();) {
-			Node target = (Node)it.next();
+			 it.hasNext(); ) {
+			Node target = (Node) it.next();
 
-			int targetX = (int)(target.getX()*zoom);
-			int targetY = (int)(target.getY()*zoom);
+			int targetX = (int) (target.getX() * zoom);
+			int targetY = (int) (target.getY() * zoom);
 
 			if (target.isSelected()) {
 				g.setColor(Color.CYAN);
 			}
 
-			if ( (target.isSelected() || selected)
-			     && target.linkTo(this) ) {
+			if ((target.isSelected() || selected)
+					&& target.linkTo(this)) {
 				g.setColor(Color.PINK);
 			}
 
 			//g.drawLine(realX+zeroX, realY+zeroY, targetX+zeroX, targetY+zeroY);
-			GUIHelper.paintArrow(g, targetX+zeroX, targetY+zeroY,
-								realX+zeroX, realY+zeroY);
+			GUIHelper.paintArrow(g, targetX + zeroX, targetY + zeroY,
+					realX + zeroX, realY + zeroY);
 
 			if (target.isSelected())
 				g.setColor(Color.GRAY);
 		}
-
 
 		if (selected)
 			g.setColor(Color.RED);
@@ -354,22 +349,21 @@ public class Node implements Comparable {
 		else
 			g.setColor(Color.GREEN);
 
-		g.fillOval( realX - RADIUS + zeroX,
-			    realY - RADIUS + zeroY,
-			    2*RADIUS,
-			    2*RADIUS);
-
+		g.fillOval(realX - RADIUS + zeroX,
+				realY - RADIUS + zeroY,
+				2 * RADIUS,
+				2 * RADIUS);
 
 		if (selected) {
 			g.setColor(Color.BLACK);
 
 			g.drawString(indexName,
-				     realX + zeroX,
-				     realY + zeroY - 10);
+					realX + zeroX,
+					realY + zeroY - 10);
 		}
 	}
 
 	public String toString() {
-		return Double.toString(x) + " - " + Double.toString(y) + " ; "+ indexName;
+		return Double.toString(x) + " - " + Double.toString(y) + " ; " + indexName;
 	}
 }

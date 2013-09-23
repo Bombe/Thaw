@@ -1,12 +1,14 @@
 package thaw.core;
 
 public class ThawThread implements ThawRunnable {
+
 	private final static ThawThreadManager threads = new ThawThreadManager();
 
 	private Object parent;
-	private ThawRunnable target;
-	private String name;
 
+	private ThawRunnable target;
+
+	private String name;
 
 	public ThawThread(ThawRunnable target, String name) {
 		this(target, name, null);
@@ -19,19 +21,19 @@ public class ThawThread implements ThawRunnable {
 	}
 
 	public void run() {
-		Logger.info(this, "Starting thread '"+name+"' ...");
+		Logger.info(this, "Starting thread '" + name + "' ...");
 
-		synchronized(threads) {
+		synchronized (threads) {
 			threads.add(this);
 		}
 
 		target.run();
 
-		synchronized(threads) {
+		synchronized (threads) {
 			threads.remove(this);
 		}
 
-		Logger.info(this, "Thread '"+name+"' finished");
+		Logger.info(this, "Thread '" + name + "' finished");
 
 		if (threads.count() == 0) {
 			Logger.notice(this, "All Thaw threads are stopped");

@@ -1,16 +1,14 @@
 package thaw.plugins;
 
 import java.util.Vector;
-
 import javax.swing.JButton;
 
 import thaw.core.Logger;
 import thaw.gui.MainWindow;
 
-/**
- * Not a plugin ! Just an helper for the plugins !
- */
+/** Not a plugin ! Just an helper for the plugins ! */
 public class ToolbarModifier {
+
 	private MainWindow mainWindow = null;
 
 	private final Vector<JButton> buttons; /* JButtons */
@@ -37,7 +35,8 @@ public class ToolbarModifier {
 	}
 
 	/**
-	 * @param position if == -1, then the button is put at the end
+	 * @param position
+	 * 		if == -1, then the button is put at the end
 	 */
 	public void addButtonToTheToolbar(final JButton button, int position) {
 		if (button != null)
@@ -94,9 +93,7 @@ public class ToolbarModifier {
 			Logger.error(this, "MainWindow not SET !");
 	}
 
-	/**
-	 * Don't forget to call it when the plugin is stopped !
-	 */
+	/** Don't forget to call it when the plugin is stopped ! */
 	public void purgeButtonList() {
 		hideButtonsInTheToolbar();
 		buttons.clear();

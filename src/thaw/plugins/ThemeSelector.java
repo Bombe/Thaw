@@ -1,38 +1,34 @@
 package thaw.plugins;
 
-import javax.swing.JPanel;
-import javax.swing.JList;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-
-import javax.swing.UIManager;
-
 import java.awt.BorderLayout;
-
-import java.util.Observer;
 import java.util.Observable;
-
+import java.util.Observer;
 import java.util.Vector;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-import thaw.core.I18n;
 import thaw.core.Core;
-import thaw.core.ThawThread;
+import thaw.core.I18n;
 import thaw.core.ThawRunnable;
-
+import thaw.core.ThawThread;
 
 public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionListener {
 
 	private Core core;
 
 	private JPanel panel = null;
+
 	private JList themeList = null;
+
 	private Vector themes = null;
 
 	public final static String[] buggyLnf = new String[] {
-		"com.sun.java.swing.plaf.gtk.GTKLookAndFeel"
+			"com.sun.java.swing.plaf.gtk.GTKLookAndFeel"
 	};
 
 	public ThemeSelector() {
@@ -40,9 +36,9 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 	}
 
 	public static void addToVector(Vector v, String s) {
-		for (int i = 0 ; i < buggyLnf.length ; i++) {
+		for (int i = 0; i < buggyLnf.length; i++) {
 			if (buggyLnf[i].equals(s))
-				s += " ("+I18n.getMessage("thaw.common.buggy")+")";
+				s += " (" + I18n.getMessage("thaw.common.buggy") + ")";
 		}
 
 		if (v.indexOf(s) < 0)
@@ -53,10 +49,10 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		Vector list = new Vector();
 
 		final UIManager.LookAndFeelInfo[] feels =
-			UIManager.getInstalledLookAndFeels();
+				UIManager.getInstalledLookAndFeels();
 
 		for (int i = 0; i < feels.length; i++) {
-		        addToVector(list, feels[i].getClassName());
+			addToVector(list, feels[i].getClassName());
 		}
 
 		addToVector(list, "net.infonode.gui.laf.InfoNodeLookAndFeel");
@@ -83,12 +79,11 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		core.getConfigWindow().addObserver(this);
 
 		core.getConfigWindow().addTab(I18n.getMessage("thaw.plugin.themeSelector.theme"),
-					      thaw.gui.IconBox.minLookAndFeel,
-					      panel);
+				thaw.gui.IconBox.minLookAndFeel,
+				panel);
 
 		return true;
 	}
-
 
 	public void stop() {
 		core.getConfigWindow().deleteObserver(this);
@@ -99,11 +94,9 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		return I18n.getMessage("thaw.plugin.themeSelector.themeSelector");
 	}
 
-
 	public javax.swing.ImageIcon getIcon() {
 		return thaw.gui.IconBox.lookAndFeel;
 	}
-
 
 	public void resetSelection() {
 		String theme = core.getConfig().getValue("lookAndFeel");
@@ -111,9 +104,9 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		if (theme == null)
 			theme = UIManager.getSystemLookAndFeelClassName();
 
-		for (int i = 0 ; i < buggyLnf.length ; i++) {
+		for (int i = 0; i < buggyLnf.length; i++) {
 			if (buggyLnf[i].equals(theme))
-				theme += " ("+I18n.getMessage("thaw.common.buggy")+")";
+				theme += " (" + I18n.getMessage("thaw.common.buggy") + ")";
 		}
 
 		themeList.setSelectedValue(theme, true);
@@ -129,21 +122,20 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		th.start();
 	}
 
-
 	public void update(Observable o, Object arg) {
 		if (o == core.getConfigWindow()) {
 			if (themeList.getSelectedValue() != null) {
-				String[] str = ((String)themeList.getSelectedValue()).split(" ");
+				String[] str = ((String) themeList.getSelectedValue()).split(" ");
 				core.getConfig().setValue("lookAndFeel",
-							  str[0]);
+						str[0]);
 				resetSelection();
 			}
 
 		}
 	}
 
-
 	private class ThemeSetter implements ThawRunnable {
+
 		private String theme;
 
 		public ThemeSetter(String t) {
@@ -157,11 +149,10 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		public void stop() { /* \_o< */ }
 	}
 
-
 	public void valueChanged(ListSelectionEvent e) {
 		if (e.getFirstIndex() >= 0
-		    && themes.get(e.getFirstIndex()) != null) {
-			String[] str = ((String)themeList.getSelectedValue()).split(" ");
+				&& themes.get(e.getFirstIndex()) != null) {
+			String[] str = ((String) themeList.getSelectedValue()).split(" ");
 			Thread th = new Thread(new ThawThread(new ThemeSetter(str[0]), "Theme setter", this));
 			th.start();
 		}

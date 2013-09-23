@@ -1,29 +1,30 @@
 package thaw.core;
 
-import java.awt.GridLayout;
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JButton;
 import javax.swing.JTextField;
-import javax.swing.JComboBox;
-
-import java.util.Locale;
 
 import thaw.gui.ConfigWindow;
 import thaw.gui.FileChooser;
 
 /**
- * Creates and manages the panel containing all the things to configure related to Thaw and only Thaw.
+ * Creates and manages the panel containing all the things to configure related
+ * to Thaw and only Thaw.
  */
 public class ThawConfigPanel implements Observer, ActionListener {
+
 	private Core core;
+
 	private JPanel thawConfigPanel = null;
 
 	private JCheckBox advancedModeBox = null;
@@ -31,16 +32,19 @@ public class ThawConfigPanel implements Observer, ActionListener {
 	private boolean advancedMode;
 
 	private JLabel tmpDirLabel;
+
 	private JTextField tmpDirField;
+
 	private JButton tmpDirButton;
 
 	private JLabel langLabel;
+
 	private JComboBox langBox;
 
 	public ThawConfigPanel(final ConfigWindow configWindow, final Core core) {
 		this.core = core;
 
-		if(core.getConfig().getValue("advancedMode") == null)
+		if (core.getConfig().getValue("advancedMode") == null)
 			core.getConfig().setValue("advancedMode", "false");
 
 		advancedMode = Boolean.valueOf(core.getConfig().getValue("advancedMode")).booleanValue();
@@ -69,9 +73,9 @@ public class ThawConfigPanel implements Observer, ActionListener {
 		JPanel tempDirPanel = new JPanel(new BorderLayout());
 
 		tempDirPanel.add(tmpDirField,
-				 BorderLayout.CENTER);
+				BorderLayout.CENTER);
 		tempDirPanel.add(tmpDirButton,
-				 BorderLayout.EAST);
+				BorderLayout.EAST);
 		thawConfigPanel.add(tempDirPanel);
 
 		/* lang */
@@ -92,13 +96,12 @@ public class ThawConfigPanel implements Observer, ActionListener {
 		configWindow.addObserver(this);
 	}
 
-
 	public JPanel getPanel() {
 		return thawConfigPanel;
 	}
 
 	private void setLang() {
-		for (int i = 0 ; i < I18n.supportedLocales.length; i++) {
+		for (int i = 0; i < I18n.supportedLocales.length; i++) {
 			if (I18n.supportedLocales[i].getLanguage().equals(I18n.getLocale().getLanguage()))
 				langBox.setSelectedItem(I18n.supportedLocales[i]);
 		}
@@ -122,9 +125,8 @@ public class ThawConfigPanel implements Observer, ActionListener {
 		tmpDirField.setText(file.getPath());
 	}
 
-
 	public void update(final Observable o, final Object arg) {
-		if(arg == core.getConfigWindow().getOkButton()) {
+		if (arg == core.getConfigWindow().getOkButton()) {
 			advancedMode = advancedModeBox.isSelected();
 			core.getConfig().setValue("advancedMode", Boolean.toString(advancedMode));
 
@@ -133,12 +135,12 @@ public class ThawConfigPanel implements Observer, ActionListener {
 			tmpDirField.setText(System.getProperty("java.io.tmpdir"));
 
 			core.getConfig().setValue("lang",
-						  ((Locale)langBox.getSelectedItem()).getLanguage());
+					((Locale) langBox.getSelectedItem()).getLanguage());
 
 			setAdvancedOptionsVisibility(advancedMode);
 		}
 
-		if(arg == core.getConfigWindow().getCancelButton()) {
+		if (arg == core.getConfigWindow().getCancelButton()) {
 			advancedModeBox.setSelected(advancedMode);
 
 			tmpDirField.setText(System.getProperty("java.io.tmpdir"));

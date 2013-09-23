@@ -3,6 +3,7 @@ package thaw.plugins.index;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import thaw.core.Logger;
 import thaw.plugins.Hsqldb;
 
@@ -11,6 +12,7 @@ public class SearchResult implements FileAndLinkList {
 	private String[] search = null;
 
 	private Hsqldb db;
+
 	private IndexTreeNode node;
 
 	public SearchResult(final Hsqldb hsqldb, final String search, final IndexTreeNode node) {
@@ -19,15 +21,14 @@ public class SearchResult implements FileAndLinkList {
 		db = hsqldb;
 	}
 
-
 	public String getWhereClause(boolean hasFilename) {
 		String where = null;
 		String column = hasFilename ? "filename" : "publicKey";
 
 		if (node instanceof IndexFolder) {
 			if (node.getId() >= 0) {
-				where = "indexParent IN "+
-					"(SELECT indexParents.indexId FROM indexParents WHERE indexParents.folderId = ?)";
+				where = "indexParent IN " +
+						"(SELECT indexParents.indexId FROM indexParents WHERE indexParents.folderId = ?)";
 			}
 		}
 
@@ -35,11 +36,11 @@ public class SearchResult implements FileAndLinkList {
 			where = "indexParent = ? ";
 		}
 
-		for (int i = 0 ; i < search.length ; i++) {
+		for (int i = 0; i < search.length; i++) {
 			if (where == null) {
-				where = " LOWER("+column+") LIKE ?";
+				where = " LOWER(" + column + ") LIKE ?";
 			} else {
-				where+=" AND LOWER("+column+") LIKE ?";
+				where += " AND LOWER(" + column + ") LIKE ?";
 			}
 		}
 
@@ -51,13 +52,13 @@ public class SearchResult implements FileAndLinkList {
 
 		i = 1;
 
-		if ( (node instanceof Index)
-		     || node.getId() >= 0 ) {
+		if ((node instanceof Index)
+				|| node.getId() >= 0) {
 			st.setInt(i, node.getId());
 			i++;
 		}
 
-		for (j = 0 ; j < search.length ; j++) {
+		for (j = 0; j < search.length; j++) {
 			st.setString(i, "%" + search[j].toLowerCase() + "%");
 			i++;
 		}
@@ -70,76 +71,76 @@ public class SearchResult implements FileAndLinkList {
 
 		java.util.LinkedList v = new java.util.LinkedList();
 
-		synchronized(db.dbLock) {
+		synchronized (db.dbLock) {
 			try {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT id, filename, publicKey, localPath, mime, size, indexParent "+
-									 "FROM files "+
-									 "WHERE "+getWhereClause(true)+" ORDER by "+col+ (asc ? "" : " DESC"));
+				st = db.getConnection().prepareStatement("SELECT id, filename, publicKey, localPath, mime, size, indexParent " +
+						"FROM files " +
+						"WHERE " + getWhereClause(true) + " ORDER by " + col + (asc ? "" : " DESC"));
 
 				fillInStatement(st);
 
 				ResultSet set = st.executeQuery();
 
-				while(set.next()) {
+				while (set.next()) {
 					v.add(new File(db,
-						       set.getInt("id"),
-						       set.getString("filename"),
-						       set.getString("publicKey"),
-						       (set.getString("localPath") != null ? new java.io.File(set.getString("localPath")) : null),
-						       set.getString("mime"),
-						       set.getLong("size"),
-						       set.getInt("indexParent")));
+							set.getInt("id"),
+							set.getString("filename"),
+							set.getString("publicKey"),
+							(set.getString("localPath") != null ? new java.io.File(set.getString("localPath")) : null),
+							set.getString("mime"),
+							set.getLong("size"),
+							set.getInt("indexParent")));
 				}
-				
+
 				st.close();
 
-			} catch(SQLException e) {
-				Logger.error(this, "Error while searching: "+e.toString());
+			} catch (SQLException e) {
+				Logger.error(this, "Error while searching: " + e.toString());
 			}
 		}
 
-		return (File[])v.toArray(new File[0]);
+		return (File[]) v.toArray(new File[0]);
 	}
 
 	public Link[] getLinkList(String col, boolean asc) {
 		java.util.LinkedList v = new java.util.LinkedList();
 
-		synchronized(db.dbLock) {
+		synchronized (db.dbLock) {
 			try {
 				PreparedStatement st;
 
 				st = db.getConnection().prepareStatement("SELECT links.id AS id, " +
-														 " links.publicKey AS publicKey, "+
-														 " links.blackListed AS blacklisted," +
-														 " links.indexParent AS indexParent, "+
-														 " categories.name AS categoryName "+
-														 " FROM links LEFT OUTER JOIN categories "+
-														 " ON links.category = categories.id "+
-														 "WHERE "+getWhereClause(false));
+						" links.publicKey AS publicKey, " +
+						" links.blackListed AS blacklisted," +
+						" links.indexParent AS indexParent, " +
+						" categories.name AS categoryName " +
+						" FROM links LEFT OUTER JOIN categories " +
+						" ON links.category = categories.id " +
+						"WHERE " + getWhereClause(false));
 				fillInStatement(st);
 				ResultSet set = st.executeQuery();
 
-				while(set.next()) {
+				while (set.next()) {
 					if (!set.getBoolean("blackListed")) {
 						v.add(new Link(db,
-							       set.getInt("id"),
-							       set.getString("publicKey"),
-							       set.getString("categoryName"),
-							       false,
-							       set.getInt("indexParent") ));
+								set.getInt("id"),
+								set.getString("publicKey"),
+								set.getString("categoryName"),
+								false,
+								set.getInt("indexParent")));
 					}
 				}
-				
+
 				st.close();
 
-			} catch(SQLException e) {
-				Logger.error(this, "Error while searching: "+e.toString());
+			} catch (SQLException e) {
+				Logger.error(this, "Error while searching: " + e.toString());
 			}
 		}
 
-		return (Link[])v.toArray(new Link[0]);
+		return (Link[]) v.toArray(new Link[0]);
 	}
 
 }

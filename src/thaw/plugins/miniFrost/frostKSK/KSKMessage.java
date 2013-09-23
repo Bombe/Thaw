@@ -1,66 +1,73 @@
 package thaw.plugins.miniFrost.frostKSK;
 
-import java.util.Vector;
-import java.util.Observer;
-import java.util.Observable;
-
 import java.io.File;
-
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Vector;
 
-import java.sql.*;
-
-
-import thaw.fcp.*;
-
-import thaw.core.Logger;
 import thaw.core.I18n;
-
+import thaw.core.Logger;
+import thaw.fcp.FCPClientGet;
+import thaw.fcp.FCPQueueManager;
 import thaw.plugins.Hsqldb;
-import thaw.plugins.signatures.Identity;
 import thaw.plugins.miniFrost.interfaces.Message;
+import thaw.plugins.signatures.Identity;
 
-/**
- * only notify when the message has been fully parsed
- */
+/** only notify when the message has been fully parsed */
 public class KSKMessage
-	extends Observable
-	implements Message, Observer {
+		extends Observable
+		implements Message, Observer {
 
-	public final static int FCP_PRIORITY    = 2; /* below 2, the node doesn't react ?! */
+	public final static int FCP_PRIORITY = 2; /* below 2, the node doesn't react ?! */
 
 	public final static int FCP_MAX_RETRIES = 1; /* we don't have time to loose, in the worst case,
-						      * we will come back later
+							  * we will come back later
 						      */
-	public final static int FCP_MAX_SIZE    = 32*1024;
 
+	public final static int FCP_MAX_SIZE = 32 * 1024;
 
 	/* content is not kept in memory (at least not here) */
-	private int            id;
-	private String         idStr;
-	private String         inReplyToStr;
-	private String         subject;
-	private KSKAuthor      author;
-	private java.util.Date date;
-	private int            rev;
-	private boolean        read;
-	private boolean        archived;
-	private Identity       encryptedFor;
-	private KSKBoard       board;
+	private int id;
 
+	private String idStr;
+
+	private String inReplyToStr;
+
+	private String subject;
+
+	private KSKAuthor author;
+
+	private java.util.Date date;
+
+	private int rev;
+
+	private boolean read;
+
+	private boolean archived;
+
+	private Identity encryptedFor;
+
+	private KSKBoard board;
 
 	public KSKMessage(KSKBoard board,
-			  java.util.Date date, int rev) {
-		this.board     = board;
-		this.date      = date;
-		this.rev       = rev;
+					  java.util.Date date, int rev) {
+		this.board = board;
+		this.date = date;
+		this.rev = rev;
 	}
 
 	private Hsqldb db;
 
 	private boolean downloading = false; /* put back to false only after parsing */
+
 	private boolean successfullyDownloaded = false;
+
 	private boolean successfullyParsed = false;
+
 	private FCPQueueManager queueManager = null;
 
 	private String key = null;
@@ -68,23 +75,23 @@ public class KSKMessage
 	public void download(FCPQueueManager queueManager, Hsqldb db) {
 		this.db = db;
 		this.queueManager = queueManager;
-		
+
 		downloading = true;
 
 		key = board.getDownloadKey(date, rev);
 
-		Logger.info(this, "Fetching : "+key);
+		Logger.info(this, "Fetching : " + key);
 
 		FCPClientGet get = new FCPClientGet.Builder(queueManager)
-													.setKey(key)
-													.setPriority(FCP_PRIORITY)
-													.setPersistence(FCPClientGet.PERSISTENCE_UNTIL_DISCONNECT)
-													.setGlobalQueue(false)
-													.setMaxRetries(FCP_MAX_RETRIES)
-													.setDestinationDir(System.getProperty("java.io.tmpdir"))
-													.setMaxSize(FCP_MAX_SIZE)
-													.setNoDDA(true)
-													.build();
+				.setKey(key)
+				.setPriority(FCP_PRIORITY)
+				.setPersistence(FCPClientGet.PERSISTENCE_UNTIL_DISCONNECT)
+				.setGlobalQueue(false)
+				.setMaxRetries(FCP_MAX_RETRIES)
+				.setDestinationDir(System.getProperty("java.io.tmpdir"))
+				.setMaxSize(FCP_MAX_SIZE)
+				.setNoDDA(true)
+				.build();
 		get.setNoRedirectionFlag(true);
 		get.addObserver(this);
 
@@ -92,39 +99,39 @@ public class KSKMessage
 	}
 
 	public void update(Observable o, Object param) {
-		FCPClientGet get = (FCPClientGet)o;
+		FCPClientGet get = (FCPClientGet) o;
 
 		if (!get.isFinished())
 			return;
-		
+
 		if (!get.isSuccessful()) {
 
 			int code = get.getGetFailedCode();
-			
+
 			if (code == 21 /* Too big */) {
 
-				Logger.warning(this, "MiniFrost: Invalid key: "+key);
+				Logger.warning(this, "MiniFrost: Invalid key: " + key);
 				successfullyDownloaded = true;
-				
+
 				board.addInvalidSlot(date, rev);
-				
+
 			} else if (get.getProtocolErrorCode() == 4 /* URI parse error */
-				|| get.getProtocolErrorCode() == 20 /* URL parse error */
-			    || code == 20 /* Invalid URI */) {
-				Logger.warning(this, "MiniFrost: Invalid key: "+key);
+					|| get.getProtocolErrorCode() == 20 /* URL parse error */
+					|| code == 20 /* Invalid URI */) {
+				Logger.warning(this, "MiniFrost: Invalid key: " + key);
 				successfullyDownloaded = true;
 			} else if (get.getProtocolErrorCode() >= 0) {
 				Logger.warning(this,
-					       "MiniFrost: Unknown protocol error (code="+
-					       Integer.toString(get.getProtocolErrorCode())+"). Please report.");
+						"MiniFrost: Unknown protocol error (code=" +
+								Integer.toString(get.getProtocolErrorCode()) + "). Please report.");
 				successfullyDownloaded = true;
 			} else if (code == 13 /* dnd */
-			    || code == 14 /* route not found */
-			    || code == 20 /* jflesch is stupid */) {
-				Logger.info(this, key+" not found");
+					|| code == 14 /* route not found */
+					|| code == 20 /* jflesch is stupid */) {
+				Logger.info(this, key + " not found");
 				successfullyDownloaded = false;
 			} else {
-				Logger.notice(this, "Problem with "+key + " ; code : "+Integer.toString(code));
+				Logger.notice(this, "Problem with " + key + " ; code : " + Integer.toString(code));
 				successfullyDownloaded = true;
 			}
 
@@ -132,42 +139,42 @@ public class KSKMessage
 			successfullyParsed = false;
 		} else {
 
-			Logger.info(this, key+" found => parsing");
+			Logger.info(this, key + " found => parsing");
 
 			KSKMessageParser parser = new KSKMessageParser();
-			
+
 			if (!parser.loadFile(new File(get.getPath()), db)) {
 				/* invalid slot */
-				Logger.notice(this, " message: '"+board.getName()+"'"
-							+" - "+date.toString()
-							+" - "+Integer.toString(rev));
-					
+				Logger.notice(this, " message: '" + board.getName() + "'"
+						+ " - " + date.toString()
+						+ " - " + Integer.toString(rev));
+
 				board.addInvalidSlot(date, rev);
-				
+
 				new File(get.getPath()).delete();
-				
+
 				successfullyDownloaded = true;
-				downloading            = false;
-				successfullyParsed     = false;
+				downloading = false;
+				successfullyParsed = false;
 				read = false;
-				
+
 			} else if (parser.checkSignature(db)
-			    && parser.filter(board.getFactory().getPlugin().getRegexpBlacklist())
-			    && parser.insert(db, board.getId(),
-					     date, rev, board.getName())) {
-				
+					&& parser.filter(board.getFactory().getPlugin().getRegexpBlacklist())
+					&& parser.insert(db, board.getId(),
+					date, rev, board.getName())) {
+
 				if (parser.getTrustListPublicKey() != null) {
 					board.getFactory().getWoT().addTrustList(parser.getIdentity(),
-															parser.getTrustListPublicKey(),
-															parser.getDate());
+							parser.getTrustListPublicKey(),
+							parser.getDate());
 				}
 
 				new File(get.getPath()).delete();
 
 				Logger.info(this, "Parsing ok");
 				successfullyDownloaded = true;
-				downloading            = false;
-				successfullyParsed     = true;
+				downloading = false;
+				successfullyParsed = true;
 				read = parser.mustBeDisplayedAsRead();
 
 			} else {
@@ -176,12 +183,12 @@ public class KSKMessage
 
 				Logger.notice(this, "Unable to parse.");
 				successfullyDownloaded = true;
-				downloading            = false;
-				successfullyParsed     = false;
+				downloading = false;
+				successfullyParsed = false;
 				read = true;
 			}
 		}
-		
+
 		get.stop();
 		queueManager.remove(get);
 
@@ -189,27 +196,25 @@ public class KSKMessage
 		notifyObservers();
 	}
 
-
 	public boolean isDownloading() {
 		return downloading;
 	}
 
 	/**
-	 * @return true if the FCPClientGet didn't end on a 'Data not found',
-	 *              a 'Route not found', etc
+	 * @return true if the FCPClientGet didn't end on a 'Data not found', a 'Route
+	 *         not found', etc
 	 */
 	public boolean isSuccessful() {
 		return successfullyDownloaded;
 	}
 
 	/**
-	 * @return true if the message was correctly parsed
-	 * Note: it returns false if the signature was invalid.
+	 * @return true if the message was correctly parsed Note: it returns false if
+	 *         the signature was invalid.
 	 */
 	public boolean isParsable() {
 		return successfullyParsed;
 	}
-
 
 	public String getMsgId() {
 		return idStr;
@@ -219,27 +224,26 @@ public class KSKMessage
 		return inReplyToStr;
 	}
 
-
 	public KSKMessage(int id, String idStr,
-			  String inReplyToStr,
-			  String subject, String nick,
-			  int sigId, Identity identity,
-			  java.util.Date date, int rev,
-			  boolean read, boolean archived,
-			  Identity encryptedFor,
-			  KSKBoard board) {
-		this.id           = id;
-		this.idStr        = idStr;
+					  String inReplyToStr,
+					  String subject, String nick,
+					  int sigId, Identity identity,
+					  java.util.Date date, int rev,
+					  boolean read, boolean archived,
+					  Identity encryptedFor,
+					  KSKBoard board) {
+		this.id = id;
+		this.idStr = idStr;
 		this.inReplyToStr = inReplyToStr;
-		this.subject      = subject;
+		this.subject = subject;
 
-		this.author       = new KSKAuthor(nick, identity);
+		this.author = new KSKAuthor(nick, identity);
 
-		this.date         = date;
-		this.rev          = rev;
-		this.read         = read;
-		this.archived     = archived;
-		this.board        = board;
+		this.date = date;
+		this.rev = rev;
+		this.read = read;
+		this.archived = archived;
+		this.board = board;
 		this.encryptedFor = encryptedFor;
 	}
 
@@ -256,20 +260,19 @@ public class KSKMessage
 	}
 
 	public int compareTo(Object o) {
-		if (getDate() == null && ((Message)o).getDate() != null)
+		if (getDate() == null && ((Message) o).getDate() != null)
 			return -1;
 
-		if (getDate() != null && ((Message)o).getDate() == null)
+		if (getDate() != null && ((Message) o).getDate() == null)
 			return 1;
 
-		if (getDate() == null && ((Message)o).getDate() == null)
+		if (getDate() == null && ((Message) o).getDate() == null)
 			return 0;
 
-		int c = getDate().compareTo( ((Message)o).getDate());
+		int c = getDate().compareTo(((Message) o).getDate());
 
 		return -1 * c;
 	}
-
 
 	public int getRev() {
 		return rev;
@@ -300,20 +303,20 @@ public class KSKMessage
 		try {
 			Hsqldb db = board.getFactory().getDb();
 
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages "+
-									 "SET read = ? "+
-									 "WHERE id = ?");
+				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages " +
+						"SET read = ? " +
+						"WHERE id = ?");
 				st.setBoolean(1, read);
 				st.setInt(2, id);
 
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Can't update read status because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Can't update read status because : " + e.toString());
 		}
 	}
 
@@ -326,23 +329,22 @@ public class KSKMessage
 		try {
 			Hsqldb db = board.getFactory().getDb();
 
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages "+
-									 "SET archived = ? "+
-									 "WHERE id = ?");
+				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages " +
+						"SET archived = ? " +
+						"WHERE id = ?");
 				st.setBoolean(1, archived);
 				st.setInt(2, id);
 
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Can't update archived status because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Can't update archived status because : " + e.toString());
 		}
 	}
-
 
 	protected Vector parseMessage(final String fullMsg) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd - HH:mm:ss");
@@ -364,11 +366,11 @@ public class KSKMessage
 			return null;
 		}
 
-		for (int i = 0 ; i < split.length ; i++) {
+		for (int i = 0; i < split.length; i++) {
 			split[i] = split[i].trim();
 		}
 
-		for (int i = 1 ; i < split.length ; i += 3) {
+		for (int i = 1; i < split.length; i += 3) {
 			/* expect 3 elements */
 
 			if ((i + 2) >= split.length) {
@@ -376,40 +378,37 @@ public class KSKMessage
 				return null;
 			}
 
-			String author  = split[i];
-			String dateStr = split[i+1].replaceAll("GMT", "");
-			String msg     = split[i+2];
+			String author = split[i];
+			String dateStr = split[i + 1].replaceAll("GMT", "");
+			String msg = split[i + 2];
 
 			java.util.Date date = sdf.parse(dateStr, new java.text.ParsePosition(0));
 
 			if (date == null) {
-				Logger.notice(this, "Unable to parse the date : "+dateStr);
+				Logger.notice(this, "Unable to parse the date : " + dateStr);
 				return null;
 			}
 
 			v.add(new KSKSubMessage(new KSKAuthor(author, null),
-						date, msg));
+					date, msg));
 
 		}
 
-
 		return v;
 	}
-
-
 
 	public String getRawMessage() {
 		try {
 			Hsqldb db = board.getFactory().getDb();
 
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT content "+
-									 "FROM frostKSKMessages "+
-									 "WHERE id = ? "+
-									 "LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT content " +
+						"FROM frostKSKMessages " +
+						"WHERE id = ? " +
+						"LIMIT 1");
 				st.setInt(1, id);
 
 				ResultSet set = st.executeQuery();
@@ -423,22 +422,21 @@ public class KSKMessage
 				st.close();
 				return s;
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Error while getting the messages : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Error while getting the messages : " + e.toString());
 			return null;
 		}
 	}
 
-
 	private void setAuthorAndDate(Vector subMsgs, KSKAuthor author,
-				      java.util.Date date) {
+								  java.util.Date date) {
 
 		// we browse the vector by starting with the last element
 		// so we can't use an iterator
 		// the goal is to find the corresponding KSKAuthor
 		// and replace it by ours (ours has its identity set)
-		for (int i = subMsgs.size()-1; i >= 0 ; i--) {
-			KSKSubMessage sub = (KSKSubMessage)subMsgs.get(i);
+		for (int i = subMsgs.size() - 1; i >= 0; i--) {
+			KSKSubMessage sub = (KSKSubMessage) subMsgs.get(i);
 
 			if (author.toString().equals(sub.getAuthor().toString())) {
 				sub.setAuthor(author);
@@ -449,11 +447,10 @@ public class KSKMessage
 
 		// we didn't find it, so we force it on the last message
 		Logger.notice(this, "KSKAuthor forced on the last sub-messages");
-		KSKSubMessage lastMsg = (KSKSubMessage)subMsgs.get(subMsgs.size()-1);
+		KSKSubMessage lastMsg = (KSKSubMessage) subMsgs.get(subMsgs.size() - 1);
 		lastMsg.setAuthor(author);
 		lastMsg.setDate(date);
 	}
-
 
 	/** no caching */
 	public Vector getSubMessages() {
@@ -465,17 +462,17 @@ public class KSKMessage
 				Logger.error(this, "No ref to the corresponding board ?!");
 			else if (board.getFactory() == null)
 				Logger.error(this, "Can't access the board factory ?!");
-			
+
 			Hsqldb db = board.getFactory().getDb();
 
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT content "+
-									 "FROM frostKSKMessages "+
-									 "WHERE id = ? "+
-									 "LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT content " +
+						"FROM frostKSKMessages " +
+						"WHERE id = ? " +
+						"LIMIT 1");
 				st.setInt(1, id);
 
 				ResultSet set = st.executeQuery();
@@ -486,11 +483,11 @@ public class KSKMessage
 				}
 
 				content = set.getString("content");
-				
+
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Error while getting the messages : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Error while getting the messages : " + e.toString());
 			return null;
 		}
 
@@ -503,23 +500,22 @@ public class KSKMessage
 			if (v == null || (v.size()) <= 0) {
 				parsed = false;
 			} else {
-				setAuthorAndDate(v, ((KSKAuthor)getSender()), getDate());
+				setAuthorAndDate(v, ((KSKAuthor) getSender()), getDate());
 			}
 
-		} catch(Exception e) { /* dirty, but should work */
-			Logger.error(this, "Error while parsing : "+e.toString());
+		} catch (Exception e) { /* dirty, but should work */
+			Logger.error(this, "Error while parsing : " + e.toString());
 			parsed = false;
 		}
 
 		if (!parsed) {
 			Logger.warning(this, "Unable to parse the message ?! returning raw content");
 			v = new Vector();
-			v.add(new KSKSubMessage((KSKAuthor)getSender(),
-						getDate(),
-						"==== "+I18n.getMessage("thaw.plugin.miniFrost.rawMessage")+" ===="
-						+"\n\n"+content));
+			v.add(new KSKSubMessage((KSKAuthor) getSender(),
+					getDate(),
+					"==== " + I18n.getMessage("thaw.plugin.miniFrost.rawMessage") + " ===="
+							+ "\n\n" + content));
 		}
-
 
 		return v;
 	}
@@ -528,78 +524,74 @@ public class KSKMessage
 		return id;
 	}
 
-
 	public Vector getAttachments() {
 		return KSKAttachmentFactory.getAttachments(this,
-							   board.getFactory(),
-							   board.getFactory().getDb());
+				board.getFactory(),
+				board.getFactory().getDb());
 
 	}
-
 
 	public boolean equals(Object o) {
 		if (!(o instanceof KSKMessage))
 			return false;
 
-		return (((KSKMessage)o).getId() == id);
+		return (((KSKMessage) o).getId() == id);
 	}
-
 
 	public static boolean destroyAll(KSKBoard board, Hsqldb db) {
 		if (!KSKFileAttachment.destroyAll(board, db)
-		    || !KSKBoardAttachment.destroyAll(board, db))
+				|| !KSKBoardAttachment.destroyAll(board, db))
 			return false;
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				/* to avoid the problems with the constraints */
-				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages SET "+
-									 "inReplyTo = NULL");
+				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages SET " +
+						"inReplyTo = NULL");
 				st.execute();
 				st.close();
 
-				st = db.getConnection().prepareStatement("DELETE FROM frostKSKMessages "+
-									 "WHERE boardId = ?");
+				st = db.getConnection().prepareStatement("DELETE FROM frostKSKMessages " +
+						"WHERE boardId = ?");
 				st.setInt(1, board.getId());
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(null, "Can't destroy the board messages because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(null, "Can't destroy the board messages because : " + e.toString());
 			return false;
 		}
 
 		return true;
 	}
 
-
 	public boolean destroy(Hsqldb db) {
 
 		if (!KSKFileAttachment.destroy(this, db)
-		    || !KSKBoardAttachment.destroy(this, db))
+				|| !KSKBoardAttachment.destroy(this, db))
 			return false;
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				/* to avoid the integrity constraint violations */
-				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages SET "+
-									 "inReplyTo = NULL WHERE inReplyTo = ?");
+				st = db.getConnection().prepareStatement("UPDATE frostKSKMessages SET " +
+						"inReplyTo = NULL WHERE inReplyTo = ?");
 				st.setInt(1, id);
 				st.execute();
 				st.close();
 
-				st = db.getConnection().prepareStatement("DELETE FROM frostKSKMessages "+
-									 "WHERE id = ?");
+				st = db.getConnection().prepareStatement("DELETE FROM frostKSKMessages " +
+						"WHERE id = ?");
 				st.setInt(1, id);
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(null, "Can't destroy the message "+Integer.toString(id)+" because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(null, "Can't destroy the message " + Integer.toString(id) + " because : " + e.toString());
 			return false;
 		}
 

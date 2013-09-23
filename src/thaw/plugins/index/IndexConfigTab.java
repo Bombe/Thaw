@@ -1,46 +1,46 @@
 package thaw.plugins.index;
 
-import java.awt.GridLayout;
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.util.Observable;
+import java.util.Observer;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JButton;
-
-import java.util.Observer;
-import java.util.Observable;
 
 import thaw.core.Config;
-import thaw.gui.ConfigWindow;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.gui.ConfigWindow;
 
-/**
- * in the config window
- */
+/** in the config window */
 public class IndexConfigTab implements ActionListener, Observer {
+
 	private ConfigWindow configWindow;
+
 	private Config config;
 
 	private JPanel panel;
 
 	private JCheckBox autorefreshActivated;
+
 	private JTextField refreshInterval;
+
 	private JTextField indexPerRefresh;
 
 	private JCheckBox loadOnTheFly;
 
 	private JCheckBox fetchNegative;
+
 	private JCheckBox fetchComments;
 
 	private JButton editBlackList;
 
 	private IndexBrowserPanel indexBrowser;
-
 
 	public IndexConfigTab(ConfigWindow configWindow, Config config, IndexBrowserPanel indexBrowser) {
 		this.configWindow = configWindow;
@@ -60,10 +60,9 @@ public class IndexConfigTab implements ActionListener, Observer {
 
 		loadOnTheFly = new JCheckBox(I18n.getMessage("thaw.plugin.index.loadOnTheFly"));
 
-
 		autorefreshActivated.addActionListener(this);
 
-		editBlackList = new JButton(I18n.getMessage("thaw.plugin.index.editBlackList")+ " ...");
+		editBlackList = new JButton(I18n.getMessage("thaw.plugin.index.editBlackList") + " ...");
 		editBlackList.addActionListener(this);
 
 		JPanel editBlackListPanel = new JPanel(new BorderLayout());
@@ -95,21 +94,18 @@ public class IndexConfigTab implements ActionListener, Observer {
 		fetchComments.addActionListener(this);
 	}
 
-
 	public void addTab() {
 		configWindow.addObserver(this);
 		configWindow.addTab(I18n.getMessage("thaw.plugin.index.indexes"),
-				    thaw.gui.IconBox.minIndex,
-				    panel);
+				thaw.gui.IconBox.minIndex,
+				panel);
 	}
-
 
 	public void removeTab() {
 		configWindow.deleteObserver(this);
 		saveValues();
 		configWindow.removeTab(panel);
 	}
-
 
 	public void updateTextFieldState() {
 		refreshInterval.setEnabled(autorefreshActivated.isSelected());
@@ -137,7 +133,6 @@ public class IndexConfigTab implements ActionListener, Observer {
 				nmbIndexInt = Integer.parseInt(config.getValue("nmbIndexesPerRefreshInterval"));
 			}
 
-
 			if (config.getValue("loadIndexTreeOnTheFly") != null) {
 				loadOnTheFlyBoolean = Boolean.valueOf(config.getValue("loadIndexTreeOnTheFly")).booleanValue();
 			}
@@ -150,10 +145,9 @@ public class IndexConfigTab implements ActionListener, Observer {
 				fetchCommentsBoolean = Boolean.valueOf(config.getValue("indexFetchComments")).booleanValue();
 			}
 
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			Logger.error(this, "Error while parsing config !");
 		}
-
 
 		autorefreshActivated.setSelected(activated);
 		refreshInterval.setText(Integer.toString(refreshIntervalInt));
@@ -162,7 +156,6 @@ public class IndexConfigTab implements ActionListener, Observer {
 		fetchNegative.setSelected(fetchNegativeBoolean);
 		fetchComments.setSelected(fetchCommentsBoolean);
 	}
-
 
 	public void saveValues() {
 		config.setValue("indexAutoRefreshActivated",
@@ -194,13 +187,13 @@ public class IndexConfigTab implements ActionListener, Observer {
 		}
 
 		if (e.getSource() == editBlackList) {
-		        indexBrowser.getBlackList().displayPanel();
-		        configWindow.close();
-		        return;
+			indexBrowser.getBlackList().displayPanel();
+			configWindow.close();
+			return;
 		}
 
 		if (e.getSource() == fetchComments
-		    || e.getSource() == fetchNegative) {
+				|| e.getSource() == fetchNegative) {
 
 			/*
 			if (!fetchNegative.isSelected()
@@ -210,7 +203,7 @@ public class IndexConfigTab implements ActionListener, Observer {
 			}
 			*/
 
-		        return;
+			return;
 		}
 	}
 

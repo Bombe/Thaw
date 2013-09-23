@@ -9,7 +9,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
 import java.util.Vector;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -18,41 +17,47 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.event.TableModelEvent;
 
-import thaw.core.I18n;
 import thaw.core.Config;
+import thaw.core.I18n;
+import thaw.fcp.FCPQueueManager;
 import thaw.gui.IconBox;
 import thaw.gui.Table;
-import thaw.fcp.FCPQueueManager;
 import thaw.plugins.ToolbarModifier;
-
 
 public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 	private JPanel panel;
+
 	private Table table;
 
 	private LinkListModel linkListModel = null;
-	private LinkList      linkList = null;
+
+	private LinkList linkList = null;
 
 	private IndexBrowserPanel indexBrowser;
 
 	private JPopupMenu rightClickMenu;
+
 	private Vector rightClickActions;
+
 	private JMenuItem gotoItem;
+
 	private JMenuItem gotoCorrespondingItem;
 
 	private ToolbarModifier toolbarModifier;
+
 	private Vector toolbarActions;
 
 	private int[] selectedRows;
 
 	private Link firstSelectedLink = null;
+
 	private int firstSelectedLinkCorrespondingIndexId = -1; /* hmm .. I should make it shorter ... */
 
 	private final static String unknownStr = I18n.getMessage("thaw.common.unknown");
 
-	public LinkTable (final FCPQueueManager queueManager, IndexBrowserPanel indexBrowser,
-			  		Config config) {
+	public LinkTable(final FCPQueueManager queueManager, IndexBrowserPanel indexBrowser,
+					 Config config) {
 		this.indexBrowser = indexBrowser;
 
 		linkListModel = new LinkListModel();
@@ -82,17 +87,17 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		 *  If you add an index from the link list instead of the unknown index list,
 		 *  it's added in the same folder than the index instead of "recently added".
 		 *  ==> addToParent == false
-		 */	
+		 */
 		item = new JMenuItem(I18n.getMessage("thaw.plugin.index.addIndexesFromLink"), IconBox.minAdd);
 		button = new JButton(IconBox.indexReuse);
 		button.setToolTipText(I18n.getMessage("thaw.plugin.index.addIndexesFromLink"));
 		toolbarActions.add(new LinkManagementHelper.IndexAdder(button, queueManager,
-								       indexBrowser, false));
+				indexBrowser, false));
 
 		toolbarModifier.addButtonToTheToolbar(button);
 		rightClickMenu.add(item);
 		rightClickActions.add(new LinkManagementHelper.IndexAdder(item, queueManager,
-									  indexBrowser, false));
+				indexBrowser, false));
 
 		item = new JMenuItem(I18n.getMessage("thaw.plugin.index.copyKeys"), IconBox.minCopy);
 		rightClickMenu.add(item);
@@ -105,7 +110,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		toolbarModifier.addButtonToTheToolbar(button);
 		rightClickMenu.add(item);
 		rightClickActions.add(new LinkManagementHelper.LinkRemover(indexBrowser, item));
-		
+
 		item = new JMenuItem(I18n.getMessage("thaw.plugin.index.editBlackList"));
 		rightClickMenu.add(item);
 		rightClickActions.add(new LinkManagementHelper.BlackListDisplayer(item, indexBrowser.getBlackList()));
@@ -118,7 +123,6 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		rightClickMenu.add(item);
 		rightClickActions.add(new LinkManagementHelper.ToBlackListAdder(item, indexBrowser));
 
-
 		gotoItem = new JMenuItem(I18n.getMessage("thaw.plugin.index.gotoIndex"));
 		rightClickMenu.add(gotoItem);
 		gotoItem.addActionListener(this);
@@ -129,7 +133,6 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 		updateRightClickMenu(null);
 	}
-
 
 	public ToolbarModifier getToolbarModifier() {
 		return toolbarModifier;
@@ -143,11 +146,11 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		LinkManagementHelper.LinkAction action;
 
 		firstSelectedLink = selectedLinks != null && selectedLinks.size() > 0 ?
-			((Link)selectedLinks.get(0)) : null;
+				((Link) selectedLinks.get(0)) : null;
 
 		for (final Iterator it = rightClickActions.iterator();
-		     it.hasNext(); ) {
-			action = (LinkManagementHelper.LinkAction)it.next();
+			 it.hasNext(); ) {
+			action = (LinkManagementHelper.LinkAction) it.next();
 			action.setTarget(selectedLinks);
 		}
 
@@ -155,22 +158,22 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 		if (firstSelectedLink != null)
 			firstSelectedLinkCorrespondingIndexId =
-				Index.isAlreadyKnown(indexBrowser.getDb(),
-						     firstSelectedLink.getPublicKey());
+					Index.isAlreadyKnown(indexBrowser.getDb(),
+							firstSelectedLink.getPublicKey());
 		else
 			firstSelectedLinkCorrespondingIndexId = -1;
 
 		gotoCorrespondingItem.setEnabled((linkList != null)
-						 && !(linkList instanceof Index)
-						 && firstSelectedLinkCorrespondingIndexId >= 0);
+				&& !(linkList instanceof Index)
+				&& firstSelectedLinkCorrespondingIndexId >= 0);
 	}
 
 	protected void updateToolbar(final Vector selectedLinks) {
 		LinkManagementHelper.LinkAction action;
 
 		for (final Iterator it = toolbarActions.iterator();
-		     it.hasNext(); ) {
-			action = (LinkManagementHelper.LinkAction)it.next();
+			 it.hasNext(); ) {
+			action = (LinkManagementHelper.LinkAction) it.next();
 			action.setTarget(selectedLinks);
 		}
 	}
@@ -180,8 +183,8 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		final Link[] srcList = linkListModel.getLinks();
 		final Vector links = new Vector();
 
-		for(int i = 0 ; i < selectedRows.length ; i++) {
-			final Link link = (Link)srcList[selectedRows[i]];
+		for (int i = 0; i < selectedRows.length; i++) {
+			final Link link = (Link) srcList[selectedRows[i]];
 			links.add(link);
 		}
 
@@ -217,25 +220,32 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		if ((e.getButton() == MouseEvent.BUTTON3)
-		   && (linkList != null)) {
+				&& (linkList != null)) {
 			updateRightClickMenu(selection);
 			rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}
 
-	public void mouseEntered(final MouseEvent e) { }
+	public void mouseEntered(final MouseEvent e) {
+	}
 
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseExited(final MouseEvent e) {
+	}
 
-	public void mousePressed(final MouseEvent e) { }
+	public void mousePressed(final MouseEvent e) {
+	}
 
-	public void mouseReleased(final MouseEvent e) { }
+	public void mouseReleased(final MouseEvent e) {
+	}
 
-	public void keyPressed(final KeyEvent e) { }
+	public void keyPressed(final KeyEvent e) {
+	}
 
-	public void keyReleased(final KeyEvent e) { }
+	public void keyReleased(final KeyEvent e) {
+	}
 
-	public void keyTyped(final KeyEvent e) { }
+	public void keyTyped(final KeyEvent e) {
+	}
 
 	public void actionPerformed(final ActionEvent e) {
 
@@ -266,8 +276,8 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		linkListModel.refresh();
 	}
 
-
 	public class LinkListModel extends javax.swing.table.AbstractTableModel implements java.util.Observer {
+
 		private static final long serialVersionUID = 1L;
 
 		public Vector columnNames;
@@ -311,22 +321,25 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public String getColumnName(final int column) {
-			return (String)columnNames.get(column);
+			return (String) columnNames.get(column);
 		}
 
 		public Object getValueAt(final int row, final int column) {
-			final thaw.plugins.index.Link link = (thaw.plugins.index.Link)links[row];
+			final thaw.plugins.index.Link link = (thaw.plugins.index.Link) links[row];
 
-			switch(column) {
-			case(0): return link.getIndexName();
-			case(1): return (link.getCategory() != null ? link.getCategory() : unknownStr);
+			switch (column) {
+				case (0):
+					return link.getIndexName();
+				case (1):
+					return (link.getCategory() != null ? link.getCategory() : unknownStr);
 				//case(2): return link.getPublicKey();
-			default: return null;
+				default:
+					return null;
 			}
 		}
 
 		public void refresh() {
-			if(linkList != null) {
+			if (linkList != null) {
 				links = linkList.getLinkList(null, false);
 			} else
 				links = null;
@@ -345,7 +358,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public void update(final java.util.Observable o, final Object param) {
-			if(param instanceof thaw.plugins.index.Link) {
+			if (param instanceof thaw.plugins.index.Link) {
 
 				//link.deleteObserver(this);
 				//link.addObserver(this);

@@ -1,31 +1,30 @@
 package thaw.plugins.miniFrost;
 
-import javax.swing.JDialog;
-import javax.swing.JPanel;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Iterator;
+import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import java.awt.GridLayout;
-import java.awt.BorderLayout;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import java.util.Vector;
-import java.util.Iterator;
 
 import thaw.core.I18n;
 import thaw.core.Logger;
-
 import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.BoardFactory;
 
-
 public class BoardSelecter implements ActionListener {
+
 	private static int DIALOG_SIZE_X = 200;
+
 	private static int DIALOG_SIZE_Y = 500;
 
 	private MiniFrostPanel mainPanel;
+
 	private Object parentWindow;
 
 	protected BoardSelecter() {
@@ -33,16 +32,17 @@ public class BoardSelecter implements ActionListener {
 	}
 
 	/**
-	 * @param parentWindow must be a java.awt.Dialog or a java.awt.Frame
+	 * @param parentWindow
+	 * 		must be a java.awt.Dialog or a java.awt.Frame
 	 */
 	protected BoardSelecter(MiniFrostPanel mainPanel,
-				Object parentWindow) {
+							Object parentWindow) {
 		this.mainPanel = mainPanel;
 		this.parentWindow = parentWindow;
 	}
 
-
 	private JButton okButton;
+
 	private JButton cancelButton;
 
 	private boolean cancelled;
@@ -54,23 +54,22 @@ public class BoardSelecter implements ActionListener {
 		JDialog dialog;
 
 		if (parentWindow instanceof java.awt.Frame)
-			dialog = new JDialog((java.awt.Frame)parentWindow,
-					     I18n.getMessage("thaw.plugin.miniFrost.boards"));
+			dialog = new JDialog((java.awt.Frame) parentWindow,
+					I18n.getMessage("thaw.plugin.miniFrost.boards"));
 		else if (parentWindow instanceof java.awt.Dialog)
-			dialog = new JDialog((java.awt.Dialog)parentWindow,
-					     I18n.getMessage("thaw.plugin.miniFrost.boards"));
+			dialog = new JDialog((java.awt.Dialog) parentWindow,
+					I18n.getMessage("thaw.plugin.miniFrost.boards"));
 		else {
-			Logger.error(this, "Unknow type for the parameter 'parentWindow' : "+parentWindow.getClass().getName());
+			Logger.error(this, "Unknow type for the parameter 'parentWindow' : " + parentWindow.getClass().getName());
 			return null;
 		}
-
 
 		dialog.getContentPane().setLayout(new BorderLayout());
 
 		/* boards */
 		BoardFactory[] factories = mainPanel.getPluginCore().getFactories();
 
-		for (int i = 0 ; i < factories.length ; i++) {
+		for (int i = 0; i < factories.length; i++) {
 			/* ignore special boards */
 			if (factories[i] instanceof SpecialBoardFactory)
 				continue;
@@ -89,8 +88,8 @@ public class BoardSelecter implements ActionListener {
 		JPanel checkBoxPanel = new JPanel(new GridLayout(boards.size(), 1));
 
 		for (Iterator it = boards.iterator();
-		     it.hasNext();) {
-			JCheckBox box = new JCheckBox(((Board)it.next()).toString(), false);
+			 it.hasNext(); ) {
+			JCheckBox box = new JCheckBox(((Board) it.next()).toString(), false);
 			checkBoxes.add(box);
 			checkBoxPanel.add(box);
 		}
@@ -111,14 +110,14 @@ public class BoardSelecter implements ActionListener {
 		dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
 		dialog.setSize(DIALOG_SIZE_X,
-			       DIALOG_SIZE_Y);
+				DIALOG_SIZE_Y);
 		dialog.setVisible(true);
 
 		try {
-			synchronized(this) {
+			synchronized (this) {
 				this.wait();
 			}
-		} catch(InterruptedException e) {
+		} catch (InterruptedException e) {
 			/* \_o< */
 		}
 
@@ -134,8 +133,8 @@ public class BoardSelecter implements ActionListener {
 			Iterator boardsIt = boards.iterator();
 
 			while (checkBoxIt.hasNext() && boardsIt.hasNext()) {
-				JCheckBox box = (JCheckBox)checkBoxIt.next();
-				Board board = (Board)boardsIt.next();
+				JCheckBox box = (JCheckBox) checkBoxIt.next();
+				Board board = (Board) boardsIt.next();
 
 				if (box.isSelected())
 					selected.add(board);
@@ -148,7 +147,7 @@ public class BoardSelecter implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		cancelled = !(e.getSource() == okButton);
 
-		synchronized(this) {
+		synchronized (this) {
 			this.notifyAll();
 		}
 	}
@@ -163,6 +162,5 @@ public class BoardSelecter implements ActionListener {
 
 		return v;
 	}
-
 
 }

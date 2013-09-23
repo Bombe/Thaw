@@ -1,63 +1,60 @@
 package thaw.plugins.miniFrost;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTextPane;
-import javax.swing.BorderFactory;
-
 import java.awt.BorderLayout;
-import java.awt.Rectangle;
-import java.awt.Dimension;
-
 import java.awt.Color;
-
-import java.awt.event.ActionListener;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.Element;
-
-import thaw.plugins.miniFrost.interfaces.Author;
-import thaw.plugins.miniFrost.interfaces.SubMessage;
-
-import javax.swing.JComponent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.event.MouseInputAdapter;
-
-import java.awt.Cursor;
 import java.util.Vector;
-import thaw.gui.IconBox;
-import thaw.plugins.signatures.Identity;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Element;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
 import thaw.core.I18n;
 import thaw.core.Logger;
-
+import thaw.gui.IconBox;
+import thaw.plugins.miniFrost.interfaces.Author;
+import thaw.plugins.miniFrost.interfaces.SubMessage;
+import thaw.plugins.signatures.Identity;
 
 public class SubMessagePanel extends JPanel implements ActionListener {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6169263783555144522L;
+
 	private JButton upDownButton;
+
 	private boolean retracted;
+
 	private SubMessage msg;
 
 	private JComponent area;
+
 	private MessagePanel messagePanel;
 
 	public SubMessagePanel(MessagePanel messagePanel, SubMessage msg, boolean retracted) {
 
-		super(new BorderLayout(5,5));
+		super(new BorderLayout(5, 5));
 
 		this.messagePanel = messagePanel;
-		this.retracted=retracted;
+		this.retracted = retracted;
 		this.msg = msg;
 
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -70,13 +67,12 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 		AuthorPanel authorLabel = new AuthorPanel(msg.getAuthor());
 		//authorLabel.setPreferredSize(new java.awt.Dimension(400, 15));
 
-
 		upDownButton = new JButton("", (retracted ? IconBox.minDown : IconBox.minUp));
 		upDownButton.addActionListener(this);
 
 		JPanel rightPanel = new JPanel(new BorderLayout(5, 5));
 		rightPanel.add(dateLabel, BorderLayout.CENTER);
-		rightPanel.add(upDownButton,BorderLayout.EAST);
+		rightPanel.add(upDownButton, BorderLayout.EAST);
 
 		headPanel.add(authorLabel, BorderLayout.CENTER);
 		headPanel.add(rightPanel, BorderLayout.EAST);
@@ -94,14 +90,17 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 	}
 
-
 	protected class AuthorPanel extends JPanel implements ActionListener {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = -2716998589145595737L;
+
 		private JComboBox box = null;
+
 		private JLabel nick;
+
 		private Author author;
 
 		public AuthorPanel(Author author) {
@@ -109,15 +108,15 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 			this.author = author;
 
-			nick = new JLabel(" "+author.toString(false));
+			nick = new JLabel(" " + author.toString(false));
 
 			add(nick, BorderLayout.CENTER);
 
 			if (author.getIdentity() != null
-			    && author.getIdentity().getPrivateKey() == null) {
+					&& author.getIdentity().getPrivateKey() == null) {
 
 				if (author.getIdentity().getTrustLevel()
-				    == Identity.trustLevelInt[0]) /* if dev */
+						== Identity.trustLevelInt[0]) /* if dev */
 					box = new JComboBox(Identity.trustLevelStr);
 				else
 					box = new JComboBox(Identity.trustLevelUserStr);
@@ -140,7 +139,7 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			author.getIdentity().setTrustLevel((String)box.getSelectedItem());
+			author.getIdentity().setTrustLevel((String) box.getSelectedItem());
 			box.setForeground(author.getIdentity().getTrustLevelColor());
 			nick.setForeground(author.getIdentity().getTrustLevelColor());
 
@@ -150,41 +149,36 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 		}
 	}
 
-
-
 	private class TextPanel extends JTextPane {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 560297574100382846L;
-
 
 		public TextPanel() {
 			super();
 		}
 
 		private Rectangle rect(javax.swing.text.Position p)
-			throws javax.swing.text.BadLocationException
-			{
-				int off = p.getOffset();
-				Rectangle r = modelToView(off>0 ? off-1 : off);
-				return r;
-			}
-
+				throws javax.swing.text.BadLocationException {
+			int off = p.getOffset();
+			Rectangle r = modelToView(off > 0 ? off - 1 : off);
+			return r;
+		}
 
 		public Dimension getPreferredSize() {
 			try {
 				Rectangle start =
-					rect(getDocument().getStartPosition());
+						rect(getDocument().getStartPosition());
 				Rectangle end =
-					rect(getDocument().getEndPosition());
-				if (start==null || end==null) {
+						rect(getDocument().getEndPosition());
+				if (start == null || end == null) {
 					return super.getPreferredSize();
 				}
 				int height = end.y + end.height - start.y + 4;
 
-				return new Dimension(messagePanel.getScrollPane().getWidth()-30, height);
+				return new Dimension(messagePanel.getScrollPane().getWidth() - 30, height);
 
 			} catch (javax.swing.text.BadLocationException e) {
 				return super.getPreferredSize();
@@ -193,27 +187,21 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 	}
 
-
 	public final static String[][] RECOGNIZED_KEYS = {
-		{ "KSK@", " " /* or eol */ },
-		{ "CHK@", null /* eol */ },
-		{ "USK@", ".frdx" },
+			{ "KSK@", " " /* or eol */ },
+			{ "CHK@", null /* eol */ },
+			{ "USK@", ".frdx" },
 	};
 
 	public final static String KEY_ATTRIBUTE = "key";
 
-
 	private Vector keys = null;
-
 
 	public Vector getKeys() {
 		return keys;
 	}
 
-
-	/**
-	 * inspired by frost code
-	 */
+	/** inspired by frost code */
 	private StyledDocument parseText(String txt) {
 
 		keys = new Vector();
@@ -229,13 +217,12 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 		keyAttrs.addAttribute(StyleConstants.Underline, Boolean.TRUE);
 		keyAttrs.addAttribute(StyleConstants.Foreground, Color.BLUE);
 
-
-		for (int i = 0 ; i < split.length ; i++) { /* foreach line */
+		for (int i = 0; i < split.length; i++) { /* foreach line */
 			String startStr = null; /* before the key */
 			String keyStr = null; /* the key */
 			String endStr = null; /* after the key */
 
-			for (int j = 0 ; j < RECOGNIZED_KEYS.length ; j++) { /* foreach key type */
+			for (int j = 0; j < RECOGNIZED_KEYS.length; j++) { /* foreach key type */
 
 				int startKeyInt = split[i].indexOf(RECOGNIZED_KEYS[j][0]);
 
@@ -256,8 +243,8 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 					}
 
 					if (keyEndInt < 0
-					    && RECOGNIZED_KEYS[j][1] != null
-					    && !" ".equals(RECOGNIZED_KEYS[j][1])) {
+							&& RECOGNIZED_KEYS[j][1] != null
+							&& !" ".equals(RECOGNIZED_KEYS[j][1])) {
 						startStr = null;
 						continue; /* will try to find another key */
 					}
@@ -270,11 +257,9 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 						endStr = null;
 					}
 
-
 					break; /* we got a key */
 				}
 			}
-
 
 			try {
 				/* insertString() will generate Elements and insert them in the document */
@@ -288,7 +273,7 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 				if (keyStr != null) {
 					keys.add(keyStr);
 
-					SimpleAttributeSet cloned = (SimpleAttributeSet)keyAttrs.clone();
+					SimpleAttributeSet cloned = (SimpleAttributeSet) keyAttrs.clone();
 
 					cloned.addAttribute(KEY_ATTRIBUTE, new KeyLinkAction(keyStr));
 
@@ -298,10 +283,10 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 				if (endStr != null)
 					doc.insertString(doc.getLength(), endStr, noAttrs);
 
-				if (i != split.length-1)
+				if (i != split.length - 1)
 					doc.insertString(doc.getLength(), "\n", noAttrs);
-			} catch(javax.swing.text.BadLocationException e) {
-				Logger.error(this, "Error while parsing the text: "+e.toString()+" ; A line will be missing");
+			} catch (javax.swing.text.BadLocationException e) {
+				Logger.error(this, "Error while parsing the text: " + e.toString() + " ; A line will be missing");
 				e.printStackTrace();
 			}
 		}
@@ -310,8 +295,8 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 	}
 
-
 	protected class KeyLinkAction {
+
 		private String key;
 
 		public KeyLinkAction(String key) {
@@ -324,9 +309,10 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 	}
 
-
 	protected class TextMouseMotionListener extends MouseInputAdapter {
+
 		private TextPanel txtArea;
+
 		private StyledDocument doc;
 
 		public TextMouseMotionListener(TextPanel txtArea, StyledDocument doc) {
@@ -334,19 +320,20 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 			this.doc = doc;
 		}
 
-                public void mouseMoved(MouseEvent e) {
-                        Element elem = doc.getCharacterElement(txtArea.viewToModel(e.getPoint()));
-                        AttributeSet as = elem.getAttributes();
-                        if(StyleConstants.isUnderline(as))
-                                txtArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        else
-                                txtArea.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                }
-        }
-
+		public void mouseMoved(MouseEvent e) {
+			Element elem = doc.getCharacterElement(txtArea.viewToModel(e.getPoint()));
+			AttributeSet as = elem.getAttributes();
+			if (StyleConstants.isUnderline(as))
+				txtArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			else
+				txtArea.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
+	}
 
 	protected class TextClickListener extends MouseAdapter {
+
 		private TextPanel txtArea;
+
 		private StyledDocument doc;
 
 		public TextClickListener(TextPanel txtArea, StyledDocument doc) {
@@ -354,12 +341,12 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 			this.doc = doc;
 		}
 
-		public void mouseClicked( MouseEvent e ) {
+		public void mouseClicked(MouseEvent e) {
 			Element elem = doc.getCharacterElement(txtArea.viewToModel(e.getPoint()));
 			AttributeSet as = elem.getAttributes();
-			KeyLinkAction fla = (KeyLinkAction)as.getAttribute(KEY_ATTRIBUTE);
+			KeyLinkAction fla = (KeyLinkAction) as.getAttribute(KEY_ATTRIBUTE);
 
-			if(fla != null)
+			if (fla != null)
 				fla.execute(e);
 		}
 	}
@@ -367,7 +354,7 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 	private JComponent getEditorPane(String txt) {
 		TextPanel a = new TextPanel();
 
-		a.setFont(a.getFont().deriveFont((float)13.5));
+		a.setFont(a.getFont().deriveFont((float) 13.5));
 		a.setEditable(false);
 		a.setBackground(Color.WHITE);
 
@@ -407,7 +394,6 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 		messagePanel.revalidate();
 	}
-
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == upDownButton) {

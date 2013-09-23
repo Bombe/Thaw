@@ -2,27 +2,24 @@ package thaw.plugins.miniFrost;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.AbstractButton;
-
-import java.util.Vector;
 import java.util.Iterator;
-
+import java.util.Vector;
+import javax.swing.AbstractButton;
 import javax.swing.JOptionPane;
 
 import thaw.core.I18n;
 import thaw.core.Logger;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
+import thaw.core.ThawThread;
 import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.BoardFactory;
-import thaw.plugins.miniFrost.interfaces.Message;
 import thaw.plugins.miniFrost.interfaces.Draft;
-
+import thaw.plugins.miniFrost.interfaces.Message;
 
 public class BoardManagementHelper {
 
 	public interface BoardAction extends ActionListener {
+
 		public void setTarget(Board board);
 	}
 
@@ -46,9 +43,9 @@ public class BoardManagementHelper {
 		}
 
 		public abstract void setTarget(Board board);
+
 		public abstract void apply();
 	}
-
 
 	public static class BoardTypeAsker {
 
@@ -59,7 +56,7 @@ public class BoardManagementHelper {
 
 			int toremove = 0;
 
-			for (int i = 0 ; i < fs.length ; i++)
+			for (int i = 0; i < fs.length; i++)
 				if (fs[i].toString() == null)
 					toremove++;
 
@@ -67,20 +64,20 @@ public class BoardManagementHelper {
 
 			int removed = 0;
 
-			for (int i = 0 ; i < fs.length ; i++) {
+			for (int i = 0; i < fs.length; i++) {
 				if (fs[i].toString() != null)
-					factories[i-removed] = fs[i];
+					factories[i - removed] = fs[i];
 				else
 					removed++;
 			}
 
-			selection = (BoardFactory)JOptionPane.showInputDialog(mainPanel.getPluginCore().getCore().getMainWindow().getMainFrame(),
-									      I18n.getMessage("thaw.plugin.miniFrost.selectType"),
-									      I18n.getMessage("thaw.plugin.miniFrost.selectType"),
-									      JOptionPane.QUESTION_MESSAGE,
-									      null, /* icon */
-									      factories,
-									      factories[0]);
+			selection = (BoardFactory) JOptionPane.showInputDialog(mainPanel.getPluginCore().getCore().getMainWindow().getMainFrame(),
+					I18n.getMessage("thaw.plugin.miniFrost.selectType"),
+					I18n.getMessage("thaw.plugin.miniFrost.selectType"),
+					JOptionPane.QUESTION_MESSAGE,
+					null, /* icon */
+					factories,
+					factories[0]);
 		}
 
 		public BoardFactory getSelection() {
@@ -88,8 +85,8 @@ public class BoardManagementHelper {
 		}
 	}
 
-
 	public static class BoardAdder extends BasicBoardAction {
+
 		private MiniFrostPanel mainPanel;
 
 		public BoardAdder(MiniFrostPanel mainPanel, AbstractButton source) {
@@ -100,7 +97,6 @@ public class BoardManagementHelper {
 			if (source != null)
 				source.addActionListener(this);
 		}
-
 
 		public void setTarget(Board board) {
 
@@ -119,14 +115,13 @@ public class BoardManagementHelper {
 		}
 	}
 
-
-
 	public static class MarkAllAsRead extends BasicBoardAction {
+
 		private MiniFrostPanel mainPanel;
+
 		private AbstractButton source;
 
 		private Board target;
-
 
 		public MarkAllAsRead(MiniFrostPanel mainPanel, AbstractButton source) {
 			super();
@@ -139,7 +134,6 @@ public class BoardManagementHelper {
 				source.setEnabled(false);
 			}
 		}
-
 
 		public void setTarget(Board board) {
 			if (source != null)
@@ -155,11 +149,11 @@ public class BoardManagementHelper {
 
 			/* quick and dirty */
 			Vector msgs = target.getMessages(null, Board.ORDER_DATE, true,
-							 false, false, true, Integer.MIN_VALUE);
+					false, false, true, Integer.MIN_VALUE);
 
 			for (Iterator it = msgs.iterator();
-			     it.hasNext();) {
-				((Message)it.next()).setRead(true);
+				 it.hasNext(); ) {
+				((Message) it.next()).setRead(true);
 			}
 
 			mainPanel.getMessageTreeTable().refresh();
@@ -167,14 +161,13 @@ public class BoardManagementHelper {
 		}
 	}
 
-
-
 	public static class NewMessage extends BasicBoardAction {
+
 		private MiniFrostPanel mainPanel;
+
 		private AbstractButton source;
 
 		private Board target;
-
 
 		public NewMessage(MiniFrostPanel mainPanel, AbstractButton source) {
 			super();
@@ -187,7 +180,6 @@ public class BoardManagementHelper {
 				source.setEnabled(false);
 			}
 		}
-
 
 		public void setTarget(Board board) {
 			if (source != null)
@@ -207,15 +199,13 @@ public class BoardManagementHelper {
 		}
 	}
 
-
-
-
 	public static class BoardRemover implements BoardAction {
+
 		private MiniFrostPanel mainPanel;
+
 		private AbstractButton source;
 
 		private Board target;
-
 
 		public BoardRemover(MiniFrostPanel mainPanel, AbstractButton source) {
 			this.mainPanel = mainPanel;
@@ -226,7 +216,6 @@ public class BoardManagementHelper {
 			if (source != null)
 				source.addActionListener(this);
 		}
-
 
 		public void setTarget(Board board) {
 			if (source != null)
@@ -245,14 +234,13 @@ public class BoardManagementHelper {
 		}
 	}
 
-
-
 	public static class BoardRefresher implements BoardAction {
+
 		private MiniFrostPanel mainPanel;
+
 		private AbstractButton source;
 
 		private Board target;
-
 
 		public BoardRefresher(MiniFrostPanel mainPanel, AbstractButton source) {
 			this.mainPanel = mainPanel;
@@ -263,7 +251,6 @@ public class BoardManagementHelper {
 			if (source != null)
 				source.addActionListener(this);
 		}
-
 
 		public void setTarget(Board board) {
 			if (source != null)
@@ -282,17 +269,15 @@ public class BoardManagementHelper {
 		}
 	}
 
-
 	public static class BoardNameDisplayer implements BoardAction {
-		private AbstractButton source;
 
+		private AbstractButton source;
 
 		public BoardNameDisplayer(AbstractButton source) {
 			this.source = source;
 
 			source.setEnabled(false);
 		}
-
 
 		public void setTarget(Board board) {
 			if (board == null) {

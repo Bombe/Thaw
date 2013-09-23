@@ -6,23 +6,25 @@ import java.sql.SQLException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import thaw.fcp.FreenetURIHelper;
 import thaw.core.Logger;
+import thaw.fcp.FreenetURIHelper;
 import thaw.plugins.Hsqldb;
 
 public class Link extends java.util.Observable implements Comparable, LinkContainer {
+
 	private int id;
+
 	private final Hsqldb db;
 
 	private String publicKey;
+
 	private String category;
 
 	private int parentId;
+
 	private Index parent = null;
 
 	private boolean blackListed = false;
-
 
 	public Link(final Hsqldb hsqldb, final int id) {
 		this.id = id;
@@ -31,9 +33,8 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		reloadDataFromDb(id);
 	}
 
-
 	public Link(final Hsqldb hsqldb, final int id, String publicKey, String category, boolean blackListed,
-		    int parentId) {
+				int parentId) {
 		this.id = id;
 		this.db = hsqldb;
 		this.publicKey = publicKey;
@@ -42,9 +43,8 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		this.category = category;
 	}
 
-
 	public Link(final Hsqldb hsqldb, final int id, String publicKey, String category, boolean blackListed,
-		    Index parent) {
+				Index parent) {
 		this.id = id;
 		this.db = hsqldb;
 		this.publicKey = publicKey;
@@ -54,21 +54,20 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		this.category = category;
 	}
 
-
 	public void reloadDataFromDb(int id) {
 		this.id = id;
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT links.publicKey AS publicKey, "+
-														" links.blackListed AS blacklisted," +
-														" links.indexParent AS indexParent, "+
-														" categories.name AS categoryName "+
-														" FROM links LEFT OUTER JOIN categories "+
-														" ON links.category = categories.id "+
-														" WHERE links.id = ? LIMIT 1");
+				st = db.getConnection().prepareStatement("SELECT links.publicKey AS publicKey, " +
+						" links.blackListed AS blacklisted," +
+						" links.indexParent AS indexParent, " +
+						" categories.name AS categoryName " +
+						" FROM links LEFT OUTER JOIN categories " +
+						" ON links.category = categories.id " +
+						" WHERE links.id = ? LIMIT 1");
 
 				st.setInt(1, id);
 
@@ -80,13 +79,13 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 					blackListed = rs.getBoolean("blackListed");
 					category = rs.getString("categoryName");
 				} else {
-					Logger.error(this, "Link '"+Integer.toString(id)+"' not found.");
+					Logger.error(this, "Link '" + Integer.toString(id) + "' not found.");
 				}
 
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Error while loading data for link '"+Integer.toString(id)+"': "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Error while loading data for link '" + Integer.toString(id) + "': " + e.toString());
 		}
 	}
 
@@ -100,11 +99,11 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 
 		return publicKey;
 	}
-	
+
 	public String getCategory() {
 		if (publicKey == null)
 			reloadDataFromDb(id);
-		
+
 		return category;
 	}
 
@@ -116,10 +115,10 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		key_b = l.getPublicKey();
 
 		if ((l == null)
-		    || (key_a == null)
-		    || (key_b == null)
-		    || (key_a.length() < 40)
-		    || (key_b.length() < 40))
+				|| (key_a == null)
+				|| (key_b == null)
+				|| (key_a.length() < 40)
+				|| (key_b.length() < 40))
 			return false;
 
 		key_a = FreenetURIHelper.getComparablePart(key_a);
@@ -134,12 +133,12 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 
 		if (o instanceof Link) {
 
-			final Link link = (Link)o;
+			final Link link = (Link) o;
 			return compare(link);
 
 		} else if (o instanceof Index) {
 
-			final Index index = (Index)o;
+			final Index index = (Index) o;
 			return compare(index);
 		}
 
@@ -154,10 +153,10 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		key_b = l.getPublicKey();
 
 		if ((l == null)
-		    || (getPublicKey() == null)
-		    || (l.getPublicKey() == null)
-		    || (getPublicKey().length() < 40)
-		    || (l.getPublicKey().length() < 40))
+				|| (getPublicKey() == null)
+				|| (l.getPublicKey() == null)
+				|| (getPublicKey().length() < 40)
+				|| (l.getPublicKey().length() < 40))
 			return false;
 
 		key_a = FreenetURIHelper.getComparablePart(key_a);
@@ -169,24 +168,22 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 
 	public void setParent(final Index index) {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("UPDATE links SET indexParent = ? "+
-									 "WHERE id = ?");
+				st = db.getConnection().prepareStatement("UPDATE links SET indexParent = ? " +
+						"WHERE id = ?");
 				st.setInt(1, index.getId());
 				st.setInt(2, id);
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Unable to set parent because: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Unable to set parent because: " + e.toString());
 		}
 	}
 
-	/**
-	 * @return the parent index in the tree if known, else null
-	 */
+	/** @return the parent index in the tree if known, else null */
 	public Index getTreeParent() {
 		if (parent != null)
 			return parent;
@@ -194,9 +191,7 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		return null;
 	}
 
-	/**
-	 * @return the parent index ; build a new one with its id if needed
-	 */
+	/** @return the parent index ; build a new one with its id if needed */
 	public Index getParent() {
 		if (parent != null)
 			return parent;
@@ -226,43 +221,39 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		return name;
 	}
 
-	/**
-	 * return the index name
-	 */
+	/** return the index name */
 	public String toString() {
 		String cat = getCategory();
-		
+
 		if (cat == null)
 			return getIndexName();
-		
-		return cat+"/"+getIndexName();
+
+		return cat + "/" + getIndexName();
 	}
 
 	public void setPublicKey(final String key) {
 		this.publicKey = key;
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("UPDATE links SET publicKey = ? "+
-									 "WHERE id = ?");
+				st = db.getConnection().prepareStatement("UPDATE links SET publicKey = ? " +
+						"WHERE id = ?");
 				st.setString(1, key);
 				st.setInt(2, id);
 				st.execute();
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Error while changing publicKey: "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Error while changing publicKey: " + e.toString());
 		}
 	}
 
-	/**
-	 * database related
-	 */
+	/** database related */
 	public void delete() {
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				st = db.getConnection().prepareStatement("DELETE FROM links WHERE id = ?");
@@ -271,12 +262,10 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 				st.execute();
 				st.close();
 			}
-		} catch(final SQLException e) {
-			Logger.error(this, "Unable to remove link because: "+e.toString());
+		} catch (final SQLException e) {
+			Logger.error(this, "Unable to remove link because: " + e.toString());
 		}
 	}
-
-
 
 	public Element getXML(final Document xmlDoc) {
 		final Element link = xmlDoc.createElement("index");
@@ -286,10 +275,7 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		return link;
 	}
 
-
-	/**
-	 * do a sql queries !
-	 */
+	/** do a sql queries ! */
 	public boolean isModifiable() {
 		Index index = getParent();
 
@@ -299,10 +285,9 @@ public class Link extends java.util.Observable implements Comparable, LinkContai
 		return index.isModifiable();
 	}
 
-
 	public int compareTo(Object o) {
 		if (o instanceof Link) {
-			return toString().toLowerCase().compareTo(((Link)o).toString().toLowerCase());
+			return toString().toLowerCase().compareTo(((Link) o).toString().toLowerCase());
 		}
 
 		return 0;

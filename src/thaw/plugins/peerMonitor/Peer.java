@@ -1,15 +1,14 @@
 package thaw.plugins.peerMonitor;
 
-
 import java.awt.Color;
-
 import java.util.Hashtable;
-
 
 public class Peer {
 
 	private String displayName = null;
+
 	private Color textColor = Color.BLACK;
+
 	private String identity = null;
 
 	private Hashtable parameters = null;
@@ -17,21 +16,20 @@ public class Peer {
 	public Peer(Hashtable parameters) {
 		this.parameters = parameters;
 
-		displayName = (String)parameters.get("myName");
+		displayName = (String) parameters.get("myName");
 
 		if (displayName == null)
-			displayName = (String)parameters.get("physical.udp");
+			displayName = (String) parameters.get("physical.udp");
 
-		identity = (String)parameters.get("identity");
+		identity = (String) parameters.get("identity");
 
-		String status = (String)parameters.get("volatile.status");
+		String status = (String) parameters.get("volatile.status");
 
-		for (int i = 0 ; i < PeerMonitorPanel.STR_STATUS.length ; i++) {
+		for (int i = 0; i < PeerMonitorPanel.STR_STATUS.length; i++) {
 			if (PeerMonitorPanel.STR_STATUS[i].equals(status))
 				setTextColor(PeerMonitorPanel.COLOR_STATUS[i]);
 		}
 	}
-
 
 	public void setTextColor(Color c) {
 		textColor = c;

@@ -3,7 +3,6 @@ package thaw.plugins.index;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -12,9 +11,11 @@ import javax.swing.JTextField;
 import thaw.core.I18n;
 
 public class SearchBar implements ActionListener {
+
 	private JPanel panel;
 
 	private JTextField userText;
+
 	private JButton validationButton;
 
 	private IndexBrowserPanel indexBrowser;
@@ -27,7 +28,7 @@ public class SearchBar implements ActionListener {
 
 		userText = new JTextField("");
 		validationButton = new JButton(I18n.getMessage("thaw.common.search"),
-					       thaw.gui.IconBox.minSearch);
+				thaw.gui.IconBox.minSearch);
 
 		final JLabel label = new JLabel(I18n.getMessage("thaw.plugin.index.search.label"));
 
@@ -61,8 +62,8 @@ public class SearchBar implements ActionListener {
 			node = indexBrowser.getIndexTree().getRoot();
 
 		final SearchResult sr = new SearchResult(indexBrowser.getDb(),
-							 userText.getText().trim(),
-							 node);
+				userText.getText().trim(),
+				node);
 		indexBrowser.getTables().setList(sr);
 	}
 

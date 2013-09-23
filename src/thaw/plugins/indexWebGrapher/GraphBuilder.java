@@ -1,33 +1,35 @@
 package thaw.plugins.indexWebGrapher;
 
-import java.sql.*;
-
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Vector;
 
-
-import thaw.plugins.IndexWebGrapher;
-import thaw.plugins.Hsqldb;
-
-import thaw.fcp.FreenetURIHelper;
 import thaw.core.Logger;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
-
+import thaw.core.ThawThread;
+import thaw.fcp.FreenetURIHelper;
+import thaw.plugins.Hsqldb;
+import thaw.plugins.IndexWebGrapher;
 
 public class GraphBuilder implements ThawRunnable {
 
 	private IndexWebGrapher plugin;
+
 	private GraphPanel graphPanel;
+
 	private final Hsqldb db;
 
 	private boolean faster;
+
 	private boolean finish;
+
 	private boolean stop;
 
 	public GraphBuilder(IndexWebGrapher plugin,
-			    GraphPanel panel,
-			    Hsqldb db) {
+						GraphPanel panel,
+						Hsqldb db) {
 		this.plugin = plugin;
 		this.graphPanel = panel;
 		this.db = db;
@@ -37,6 +39,7 @@ public class GraphBuilder implements ThawRunnable {
 	}
 
 	private class Refresher implements ThawRunnable {
+
 		public Refresher() {
 
 		}
@@ -53,7 +56,7 @@ public class GraphBuilder implements ThawRunnable {
 
 				try {
 					Thread.sleep(50);
-				} catch(InterruptedException e) {
+				} catch (InterruptedException e) {
 					/* \_o< */
 				}
 
@@ -64,7 +67,6 @@ public class GraphBuilder implements ThawRunnable {
 			/* \_o< */
 		}
 	}
-
 
 	public void run() {
 		Logger.info(this, "=== Starting ===");
@@ -77,17 +79,17 @@ public class GraphBuilder implements ThawRunnable {
 		graphPanel.reinit();
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
-				st = db.getConnection().prepareStatement("SELECT id, displayName, publicKey "+
-									 "FROM indexes");
+				st = db.getConnection().prepareStatement("SELECT id, displayName, publicKey " +
+						"FROM indexes");
 
 				ResultSet set = st.executeQuery();
 
 				int nmb = 0;
 
-				while(set.next()) {
+				while (set.next()) {
 					String key = set.getString("publicKey");
 
 					if (FreenetURIHelper.isObsolete(key))
@@ -95,19 +97,19 @@ public class GraphBuilder implements ThawRunnable {
 
 					/* will register itself in the graphPanel */
 					new Node(nmb,
-						 set.getInt("id") /* index id */,
-						 set.getString("displayName"),
-						 key,
-						 graphPanel);
+							set.getInt("id") /* index id */,
+							set.getString("displayName"),
+							key,
+							graphPanel);
 					nmb++;
 				}
-				
+
 				st.close();
 
-				Logger.info(this, Integer.toString(nmb)+" nodes loaded");
+				Logger.info(this, Integer.toString(nmb) + " nodes loaded");
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Can't load the nodes because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Can't load the nodes because : " + e.toString());
 			return;
 		}
 
@@ -117,20 +119,20 @@ public class GraphBuilder implements ThawRunnable {
 		Logger.info(this, "1) Loading links ...");
 
 		try {
-			synchronized(db.dbLock) {
+			synchronized (db.dbLock) {
 				PreparedStatement st;
 
 				st = db.getConnection().prepareStatement("SELECT publicKey FROM links WHERE indexParent = ?");
 
 				for (Iterator it = (new Vector(graphPanel.getNodeList())).iterator();
-				     it.hasNext(); ) {
-					Node node = (Node)it.next();
+					 it.hasNext(); ) {
+					Node node = (Node) it.next();
 
 					st.setInt(1, node.getIndexId());
 
 					ResultSet set = st.executeQuery();
 
-					while(set.next()) {
+					while (set.next()) {
 						String lnk = set.getString("publicKey");
 
 						if (FreenetURIHelper.isObsolete(lnk))
@@ -139,21 +141,21 @@ public class GraphBuilder implements ThawRunnable {
 						Node target = graphPanel.getNode(lnk);
 
 						if (target == null) {
-							target = new Node(graphPanel.getLastUsedId()+1,
-									  -1 /* indexId */,
-									  FreenetURIHelper.getFilenameFromKey(lnk).replaceAll(".frdx", ""),
-									  lnk,
-									  graphPanel);
+							target = new Node(graphPanel.getLastUsedId() + 1,
+									-1 /* indexId */,
+									FreenetURIHelper.getFilenameFromKey(lnk).replaceAll(".frdx", ""),
+									lnk,
+									graphPanel);
 						}
 
 						node.setLinkTo(target);
 					}
 				}
-				
+
 				st.close();
 			}
-		} catch(SQLException e) {
-			Logger.error(this, "Can't load the links because : "+e.toString());
+		} catch (SQLException e) {
+			Logger.error(this, "Can't load the links because : " + e.toString());
 			return;
 		}
 
@@ -175,12 +177,12 @@ public class GraphBuilder implements ThawRunnable {
 		double x = 0.0;
 
 		for (Iterator it = nodes.iterator();
-		     it.hasNext();) {
-			Node node = (Node)it.next();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 			if (!node.isPositionSet()) {
 				node.setPosition(x, 0.0);
 				node.setInitialNeightbourPositions();
-				x += ((Node.FACTOR_INITIAL_DISTANCE * node.getLinkCount())+1);
+				x += ((Node.FACTOR_INITIAL_DISTANCE * node.getLinkCount()) + 1);
 			}
 		}
 
@@ -190,7 +192,7 @@ public class GraphBuilder implements ThawRunnable {
 
 		try {
 			Thread.sleep(3000);
-		} catch(InterruptedException e) {
+		} catch (InterruptedException e) {
 			/* \_o< */
 		}
 
@@ -207,11 +209,11 @@ public class GraphBuilder implements ThawRunnable {
 		double sumKinetics = 0.0;
 		int nmbKinetics = 0;
 
-		for (int i = 0 ; i < Node.NMB_STEPS && !stop ; i++) {
+		for (int i = 0; i < Node.NMB_STEPS && !stop; i++) {
 			int currentStep = (6 * i) / Node.NMB_STEPS;
 
 			if (currentStep != lastStep) {
-				plugin.setProgress(currentStep+4);
+				plugin.setProgress(currentStep + 4);
 				lastStep = currentStep;
 			}
 
@@ -232,18 +234,18 @@ public class GraphBuilder implements ThawRunnable {
 				nmbKinetics++;
 			}
 
-			if (i != 0 && i%100 == 0) {
+			if (i != 0 && i % 100 == 0) {
 				Logger.info(this, "================================");
-				Logger.info(this, "- Step "+Integer.toString(i)+"/"+Node.NMB_STEPS);
-				Logger.info(this, "- Kinetic : "+Double.toString(totalKinetic));
-				Logger.info(this, "- Average kinetic : "+Double.toString(sumKinetics/nmbKinetics));
+				Logger.info(this, "- Step " + Integer.toString(i) + "/" + Node.NMB_STEPS);
+				Logger.info(this, "- Kinetic : " + Double.toString(totalKinetic));
+				Logger.info(this, "- Average kinetic : " + Double.toString(sumKinetics / nmbKinetics));
 			}
 
 			totalKinetic = 0.0;
 
 			for (Iterator it = nodes.iterator();
-			     it.hasNext();) {
-				Node node = (Node)it.next();
+				 it.hasNext(); ) {
+				Node node = (Node) it.next();
 				totalKinetic += node.computeVelocity(nodes);
 			}
 
@@ -255,8 +257,8 @@ public class GraphBuilder implements ThawRunnable {
 			boolean move = false;
 
 			for (Iterator it = nodes.iterator();
-			     it.hasNext();) {
-				Node node = (Node)it.next();
+				 it.hasNext(); ) {
+				Node node = (Node) it.next();
 				move |= node.applyVelocity();
 			}
 
@@ -279,8 +281,8 @@ public class GraphBuilder implements ThawRunnable {
 		Logger.info(this, "== Pouf, done ==");
 
 		for (Iterator it = nodes.iterator();
-		     it.hasNext();) {
-			Node node = (Node)it.next();
+			 it.hasNext(); ) {
+			Node node = (Node) it.next();
 			Logger.info(this, node.toString());
 		}
 
@@ -288,7 +290,6 @@ public class GraphBuilder implements ThawRunnable {
 
 		plugin.endOfProcess();
 	} /* /run */
-
 
 	public void setFasterFlag(boolean faster) {
 		this.faster = faster;

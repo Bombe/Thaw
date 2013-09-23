@@ -1,63 +1,70 @@
 package thaw.plugins.index;
 
 import java.awt.BorderLayout;
-
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
-import thaw.core.Core;
 import thaw.core.Config;
+import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
-import thaw.gui.MainWindow;
-
 import thaw.fcp.FCPQueueManager;
+import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
 
-
 public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListener {
+
 	private IndexTree indexTree;
+
 	private Tables tables;
+
 	private DetailPanel detailPanel;
+
 	private UnknownIndexList unknownList;
 
 	private BlackList blackList;
+
 	private CommentTab commentTab;
 
 	private JSplitPane split;
 
 	private JPanel listAndDetails;
+
 	private JSplitPane leftSplit;
 
 	private JPanel globalPanel;
 
 	private Hsqldb db;
+
 	private FCPQueueManager queueManager;
+
 	private Config config;
+
 	private MainWindow mainWindow;
+
 	private Core core;
 
 	public IndexBrowserPanel(final Hsqldb db, final Core core) {
 		this.db = db;
 		this.core = core;
 		this.queueManager = core.getQueueManager();
-		this.config       = core.getConfig();
-		this.mainWindow   = core.getMainWindow();
+		this.config = core.getConfig();
+		this.mainWindow = core.getMainWindow();
 
 		blackList = new BlackList(db, core, this);
 
 		unknownList = new UnknownIndexList(queueManager, this);
 
 		indexTree = new IndexTree(I18n.getMessage("thaw.plugin.index.indexes"),
-					  false, queueManager, this, config);
+				false, queueManager, this, config);
 
 		commentTab = new CommentTab(core.getConfig(),
-					    core.getQueueManager(),
-					    this);
+				core.getQueueManager(),
+				this);
 
 		leftSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-					   indexTree.getPanel(),
-					   unknownList.getPanel());
+				indexTree.getPanel(),
+				unknownList.getPanel());
 
 		listAndDetails = new JPanel();
 		listAndDetails.setLayout(new BorderLayout(10, 10));
@@ -69,20 +76,17 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 		listAndDetails.add(detailPanel.getPanel(), BorderLayout.SOUTH);
 
 		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				       leftSplit, listAndDetails);
+				leftSplit, listAndDetails);
 
 		indexTree.addTreeSelectionListener(this);
-
 
 		globalPanel = new JPanel(new BorderLayout());
 		globalPanel.add(split, BorderLayout.CENTER);
 	}
 
-
 	public Core getCore() {
 		return core;
 	}
-
 
 	public void restoreState() {
 		if (config.getValue("indexBrowserPanelSplitPosition") != null)
@@ -96,7 +100,7 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 		} else {
 			try {
 				leftSplit.setDividerLocation(Integer.parseInt(config.getValue("indexTreeUnknownListSplitLocation")));
-			} catch(java.lang.IllegalArgumentException e) { /* TODO: Find why it happens */
+			} catch (java.lang.IllegalArgumentException e) { /* TODO: Find why it happens */
 				Logger.error(this, "Exception while setting indexTree split location");
 			}
 		}
@@ -134,7 +138,6 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 		return commentTab;
 	}
 
-
 	public MainWindow getMainWindow() {
 		return mainWindow;
 	}
@@ -142,7 +145,6 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 	public BlackList getBlackList() {
 		return blackList;
 	}
-
 
 	public JPanel getPanel() {
 		return globalPanel;
@@ -165,14 +167,13 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 		tables.saveState();
 	}
 
-
 	protected void setList(final FileAndLinkList l) {
 		tables.setList(l);
 
 		detailPanel.setTarget(l);
 
 		if (l instanceof Index) {
-			commentTab.setIndex((Index)l);
+			commentTab.setIndex((Index) l);
 		} else {
 			commentTab.setIndex(null);
 		}
@@ -191,40 +192,37 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 
 		setList(null);
 
-		if(path == null) {
+		if (path == null) {
 			Logger.notice(this, "Path null ?");
 			return;
 		}
 
-		final IndexTreeNode node = (IndexTreeNode)(path.getLastPathComponent());
+		final IndexTreeNode node = (IndexTreeNode) (path.getLastPathComponent());
 
-		if(node == null) {
+		if (node == null) {
 			Logger.notice(this, "Node null ?");
 			return;
 		}
 
 		if (node instanceof FileAndLinkList) {
 			Logger.debug(this, "FileAndLinkList !");
-			setList((FileAndLinkList)node);
+			setList((FileAndLinkList) node);
 		} else {
 			if (node instanceof FileList) {
 				Logger.debug(this, "FileList !");
-				setFileList((FileList)node);
+				setFileList((FileList) node);
 			}
 
 			if (node instanceof LinkList) {
 				Logger.debug(this, "LinkList !");
-				setLinkList((LinkList)node);
+				setLinkList((LinkList) node);
 			}
 		}
 
 		tables.getSearchBar().clear();
 	}
 
-
-	/**
-	 * Called by IndexBrowser when the panel become visible
-	 */
+	/** Called by IndexBrowser when the panel become visible */
 	public void setVisible(boolean visibility) {
 		if (visibility) {
 			indexTree.getToolbarModifier().displayButtonsInTheToolbar();
@@ -236,7 +234,6 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 			unknownList.getToolbarModifier().hideButtonsInTheToolbar();
 		}
 	}
-
 
 	/**
 	 * will call IndexTree.selectIndex(id) and next tell to filetable and linktable

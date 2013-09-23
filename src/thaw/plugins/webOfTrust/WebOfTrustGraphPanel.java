@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -15,14 +14,17 @@ import thaw.plugins.Hsqldb;
 import thaw.plugins.signatures.Identity;
 
 public class WebOfTrustGraphPanel implements ActionListener {
+
 	private JPanel panel;
-	
+
 	private WebOfTrustGraph graph;
+
 	private JScrollPane sp;
-	
+
 	private JButton zoomMore;
+
 	private JButton zoomLess;
-	
+
 	public WebOfTrustGraphPanel(Hsqldb db) {
 		graph = new WebOfTrustGraph(db);
 		sp = new JScrollPane(graph);
@@ -36,9 +38,9 @@ public class WebOfTrustGraphPanel implements ActionListener {
 		zoomLess = new JButton("-");
 		zoomLess.addActionListener(this);
 		buttonPanel.add(zoomLess);
-		
+
 		JPanel northPanel = new JPanel(new BorderLayout());
-		
+
 		northPanel.add(new JLabel(I18n.getMessage("thaw.plugin.wot")), BorderLayout.WEST);
 		northPanel.add(new JLabel(""), BorderLayout.CENTER);
 		northPanel.add(buttonPanel, BorderLayout.EAST);
@@ -47,24 +49,24 @@ public class WebOfTrustGraphPanel implements ActionListener {
 		panel.add(northPanel, BorderLayout.NORTH);
 		panel.add(sp, BorderLayout.CENTER);
 	}
-	
+
 	public void refresh(Identity i) {
 		graph.redraw(i);
 	}
-	
+
 	public void setVisible(boolean v) {
 		graph.setVisible(v);
 	}
-	
+
 	public JPanel getPanel() {
-		return panel;		
+		return panel;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == zoomMore) {
-			graph.setZoom(graph.getZoom()*2);
+			graph.setZoom(graph.getZoom() * 2);
 		} else if (e.getSource() == zoomLess) {
-			graph.setZoom(graph.getZoom()/2);
+			graph.setZoom(graph.getZoom() / 2);
 		}
 	}
 }

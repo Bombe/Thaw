@@ -10,17 +10,12 @@ import thaw.core.Logger;
 
 public class KeyFileFilter {
 
-	/**
-	 * Only used to be able to call correctly functions of thaw.core.Logger
-	 */
+	/** Only used to be able to call correctly functions of thaw.core.Logger */
 	public KeyFileFilter() {
 
 	}
 
-
-	/**
-	 * @return Vector of Strings
-	 */
+	/** @return Vector of Strings */
 	public static Vector extractKeys(final File file) {
 		final Vector result = new Vector();
 
@@ -28,30 +23,28 @@ public class KeyFileFilter {
 
 		try {
 			fstream = new FileInputStream(file);
-		} catch(final java.io.FileNotFoundException e) {
-			Logger.warning(new KeyFileFilter(), "File not found exception for "+file.getPath());
+		} catch (final java.io.FileNotFoundException e) {
+			Logger.warning(new KeyFileFilter(), "File not found exception for " + file.getPath());
 			return null;
 		}
-
-
 
 		final BufferedReader in = new BufferedReader(new InputStreamReader(fstream));
 
 		try {
 			String line = null;
 
-			while((line = in.readLine()) != null) {
+			while ((line = in.readLine()) != null) {
 				final String[] pieces = line.split("[^- \\?.a-zA-Z0-9,~%@/'_]");
 
-				for(int i = 0 ; i < pieces.length ; i++) {
-					if(pieces[i].matches(".{3}@.*,.*"))
+				for (int i = 0; i < pieces.length; i++) {
+					if (pieces[i].matches(".{3}@.*,.*"))
 						result.add(pieces[i]);
 				}
 
 			}
 
-		} catch(final java.io.IOException e) {
-			Logger.warning(new KeyFileFilter(), "IOException while reading '"+file.getPath()+"' !");
+		} catch (final java.io.IOException e) {
+			Logger.warning(new KeyFileFilter(), "IOException while reading '" + file.getPath() + "' !");
 			return result;
 		}
 

@@ -1,10 +1,12 @@
 package thaw.fcp;
 
-import org.junit.Test;
 import junit.framework.TestCase;
+import org.junit.Test;
 
-public class FCPMessageTest extends TestCase{
+public class FCPMessageTest extends TestCase {
+
 	private FCPMessage defaultMessage;
+
 	public void setUp() {
 		defaultMessage = new FCPMessage();
 	}
@@ -64,30 +66,30 @@ public class FCPMessageTest extends TestCase{
 	}
 
 	@Test
-	public void testLoadFromRawMessageValidWithPayload(){
+	public void testLoadFromRawMessageValidWithPayload() {
 		defaultMessage.loadFromRawMessage(
 				"DataFound\n" +
-				"Global=true\n" +
-				"DataLength=37261\n" +
-				"EndMessage");
+						"Global=true\n" +
+						"DataLength=37261\n" +
+						"EndMessage");
 		assertEquals("Valid message, with payload", FCPMessage.MessageType.DataFound, defaultMessage.getMessageType());
 		assertEquals("Data payload", 37261, defaultMessage.getAmountOfDataWaiting());
 		assertEquals("Fields", 2, defaultMessage.getValues().size());
 	}
 
 	@Test
-	public void testLoadFromRawMessageValidWithoutPayload(){
+	public void testLoadFromRawMessageValidWithoutPayload() {
 		defaultMessage.loadFromRawMessage(
 				"DataFound\n" +
-				"Global=true\n" +
-				"EndMessage");
+						"Global=true\n" +
+						"EndMessage");
 		assertEquals("Valid message, without payload", FCPMessage.MessageType.DataFound, defaultMessage.getMessageType());
 		assertEquals("No data payload", 0, defaultMessage.getAmountOfDataWaiting());
 		assertEquals("Fields", 1, defaultMessage.getValues().size());
 	}
 
 	@Test
-	public void testLoadFromRawMessageEmptyMessage(){
+	public void testLoadFromRawMessageEmptyMessage() {
 		defaultMessage.loadFromRawMessage("");
 		assertEquals("Blank raw message", FCPMessage.MessageType.UNKNOWN_MESSAGE, defaultMessage.getMessageType());
 		assertEquals("No data payload", 0, defaultMessage.getAmountOfDataWaiting());
@@ -95,7 +97,7 @@ public class FCPMessageTest extends TestCase{
 	}
 
 	@Test
-	public void testLoadFromRawMessageNewlines(){
+	public void testLoadFromRawMessageNewlines() {
 		defaultMessage.loadFromRawMessage(" \n     \n \n");
 		assertEquals("Blank raw message", FCPMessage.MessageType.UNKNOWN_MESSAGE, defaultMessage.getMessageType());
 		assertEquals("No data payload", 0, defaultMessage.getAmountOfDataWaiting());
@@ -103,7 +105,7 @@ public class FCPMessageTest extends TestCase{
 	}
 
 	@Test
-	public void testLoadFromRawMessageNull(){
+	public void testLoadFromRawMessageNull() {
 		defaultMessage.loadFromRawMessage(null);
 		assertEquals("Null input", FCPMessage.MessageType.UNKNOWN_MESSAGE, defaultMessage.getMessageType());
 		assertEquals("No data payload", 0, defaultMessage.getAmountOfDataWaiting());
@@ -111,43 +113,43 @@ public class FCPMessageTest extends TestCase{
 	}
 
 	@Test
-	public void testLoadFromRawMessageWithMalformedField(){
+	public void testLoadFromRawMessageWithMalformedField() {
 		defaultMessage.loadFromRawMessage(
 				"DataFound\n" +
-				"=true\n" +
-				"EndMessage");
+						"=true\n" +
+						"EndMessage");
 		assertEquals("Malformed message", FCPMessage.MessageType.DataFound, defaultMessage.getMessageType());
 		assertEquals("Fields", 0, defaultMessage.getValues().size());
 	}
 
 	@Test
-	public void testLoadFromRawMessageWithEmptyValue(){
+	public void testLoadFromRawMessageWithEmptyValue() {
 		defaultMessage.loadFromRawMessage(
 				"DataFound\n" +
-				"Global=\n" +
-				"EndMessage");
+						"Global=\n" +
+						"EndMessage");
 		assertEquals("Valid message", FCPMessage.MessageType.DataFound, defaultMessage.getMessageType());
 		assertEquals("Fields", 1, defaultMessage.getValues().size());
 	}
 
 	@Test
-	public void testLoadFromRawMessageWithMalformedMessageType(){
+	public void testLoadFromRawMessageWithMalformedMessageType() {
 		defaultMessage.loadFromRawMessage(
 				"Global=true\n" +
-				"DataFound\n" +
-                "EndMessage");
+						"DataFound\n" +
+						"EndMessage");
 		assertEquals("Invalid message", FCPMessage.MessageType.UNKNOWN_MESSAGE, defaultMessage.getMessageType());
 		assertEquals("Fields", 0, defaultMessage.getValues().size());
 	}
 
 	@Test
-	public void testLoadFromRawMessageResetExistingMessage(){
+	public void testLoadFromRawMessageResetExistingMessage() {
 		FCPMessage message = new FCPMessage();
 		message.loadFromRawMessage(
 				"DataFound\n" +
-				"Global=true\n" +
-				"DataLength=37261\n" +
-				"EndMessage");
+						"Global=true\n" +
+						"DataLength=37261\n" +
+						"EndMessage");
 		message.loadFromRawMessage("");
 		assertEquals("Valid message, with payload", FCPMessage.MessageType.UNKNOWN_MESSAGE, defaultMessage.getMessageType());
 		assertEquals("Data payload", 0, defaultMessage.getAmountOfDataWaiting());

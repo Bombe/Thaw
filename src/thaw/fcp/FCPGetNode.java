@@ -1,49 +1,50 @@
 package thaw.fcp;
 
+import java.util.Hashtable;
 import java.util.Observable;
 import java.util.Observer;
 
-import java.util.Hashtable;
-
-
 public class FCPGetNode extends Observable implements FCPQuery, Observer {
+
 	public final static String[] refElements = {
-		"identity",
-		"location",
-		"testnet",
-		"myName",
-		"lastGoodVersion",
-		"sig",
-		"version",
-		"dsaPubKey.y",
-		"physical.udp",
-		"dsaGroup.g",
-		"dsaGroup.q",
-		"dsaGroup.p",
-		"ark.pubURI",
-		"ark.number",
-		"auth.negTypes"
+			"identity",
+			"location",
+			"testnet",
+			"myName",
+			"lastGoodVersion",
+			"sig",
+			"version",
+			"dsaPubKey.y",
+			"physical.udp",
+			"dsaGroup.g",
+			"dsaGroup.q",
+			"dsaGroup.p",
+			"ark.pubURI",
+			"ark.number",
+			"auth.negTypes"
 	};
 
 	private String ref;
 
 	public final static String maxMemElement = "volatile.maximumJavaMemory";
-	private long maxMem  = 134217728;
+
+	private long maxMem = 134217728;
 
 	public final static String usedMemElement = "volatile.usedJavaMemory";
+
 	private long usedMem = 0;
 
 	public final static String nmbThreadsElement = "volatile.runningThreadCount";
+
 	private int nmbThreads = 0;
 
-
 	private boolean withPrivate;
+
 	private boolean withVolatile;
 
 	private Hashtable allParameters;
 
 	private final FCPQueryManager queryManager;
-
 
 	public FCPGetNode(boolean withPrivate, boolean withVolatile, FCPQueryManager queryManager) {
 		this.withPrivate = withPrivate;
@@ -72,25 +73,22 @@ public class FCPGetNode extends Observable implements FCPQuery, Observer {
 		return 0;
 	}
 
-
-
-
 	public void update(Observable o, Object param) {
 
 		if (o instanceof FCPQueryManager) {
-			final FCPMessage msg = (FCPMessage)param;
+			final FCPMessage msg = (FCPMessage) param;
 
 			if (msg.getMessageName() == null
-			    || !msg.getMessageName().equals("NodeData"))
+					|| !msg.getMessageName().equals("NodeData"))
 				return;
 
 			ref = "";
 
-			for (int i = 0 ; i < refElements.length ; i++) {
+			for (int i = 0; i < refElements.length; i++) {
 				if (msg.getValue(refElements[i]) != null)
 					ref += refElements[i] + "=" +
-						msg.getValue(refElements[i])
-					+ "\n";
+							msg.getValue(refElements[i])
+							+ "\n";
 			}
 
 			ref += "End\n";
@@ -113,11 +111,7 @@ public class FCPGetNode extends Observable implements FCPQuery, Observer {
 		}
 	}
 
-
-	/**
-	 * Darknet ref.
-	 * Not really maintained anymore. Please report if outdated
-	 */
+	/** Darknet ref. Not really maintained anymore. Please report if outdated */
 	public String getRef() {
 		return ref;
 	}

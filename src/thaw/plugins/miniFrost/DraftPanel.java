@@ -1,81 +1,82 @@
 package thaw.plugins.miniFrost;
 
-import java.awt.GridLayout;
 import java.awt.BorderLayout;
-
-import javax.swing.JPanel;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-import javax.swing.JTextArea;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JList;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JFileChooser;
-
-import java.util.Iterator;
-import java.util.Vector;
-
-import java.awt.event.ActionListener;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-
+import java.awt.event.MouseListener;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import java.io.File;
-
+import java.util.Iterator;
+import java.util.Vector;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import thaw.core.I18n;
 import thaw.core.Logger;
-import thaw.core.ThawThread;
 import thaw.core.ThawRunnable;
-
-import thaw.gui.IconBox;
+import thaw.core.ThawThread;
 import thaw.gui.FileChooser;
-
-import thaw.plugins.signatures.Identity;
-import thaw.plugins.miniFrost.interfaces.Draft;
-import thaw.plugins.miniFrost.interfaces.Board;
+import thaw.gui.IconBox;
 import thaw.plugins.miniFrost.interfaces.Attachment;
-
+import thaw.plugins.miniFrost.interfaces.Board;
+import thaw.plugins.miniFrost.interfaces.Draft;
+import thaw.plugins.signatures.Identity;
 
 public class DraftPanel implements ActionListener, MouseListener {
+
 	public final static int ATTACHMENT_LIST_HEIGHT = 50;
 
 	private Draft draft;
+
 	private JPanel panel;
 
 	private MiniFrostPanel mainPanel;
 
 	private JLabel boardLabel;
+
 	private JComboBox authorBox;
+
 	private JTextField subjectField;
+
 	private JTextArea textArea;
+
 	private JComboBox recipientBox;
-	
+
 	private JButton cancelButton;
+
 	private JButton sendButton;
 
 	private JButton extractButton;
 
 	private JButton addAttachment;
+
 	private JList attachmentList;
 
 	private JPopupMenu attachmentRightClickMenu;
+
 	private JMenuItem attachmentRemove;
 
 	private JDialog dialog;
 
 	private final SimpleDateFormat gmtConverter;
-	private final SimpleDateFormat dateParser;
-	private final SimpleDateFormat messageDateFormat;
 
+	private final SimpleDateFormat dateParser;
+
+	private final SimpleDateFormat messageDateFormat;
 
 	public DraftPanel(MiniFrostPanel mainPanel) {
 		this.mainPanel = mainPanel;
@@ -86,21 +87,21 @@ public class DraftPanel implements ActionListener, MouseListener {
 		messageDateFormat = new SimpleDateFormat("yyyy.MM.dd - HH:mm:ss");
 
 		panel = new JPanel(new BorderLayout(5, 5));
-		
+
 		/* author box */
 
 		authorBox = new JComboBox();
 		authorBox.setEditable(true);
 		authorBox.setBackground(java.awt.Color.WHITE);
-		
+
 		subjectField = new JTextField("");
 		subjectField.setEditable(true);
-		
+
 		/* recipient box */
-		
+
 		recipientBox = new JComboBox();
-		
-		/* content will be updated when setDraft() will be called 
+
+		/* content will be updated when setDraft() will be called
 		 * to take into consideration people marked as GOOD recently
 		 */
 
@@ -108,7 +109,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 		textArea.setEditable(true);
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
-		textArea.setFont(textArea.getFont().deriveFont((float)13.5));
+		textArea.setFont(textArea.getFont().deriveFont((float) 13.5));
 
 		boardLabel = new JLabel("");
 		extractButton = new JButton(IconBox.minWindowNew);
@@ -118,10 +119,10 @@ public class DraftPanel implements ActionListener, MouseListener {
 		JPanel northPanel = new JPanel(new BorderLayout(5, 5));
 
 		JPanel headersPanel = new JPanel(new GridLayout(4, 1));
-		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.board")+": "));
-		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.author")+": "));
-		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.recipient")+": "));
-		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.subject")+": "));		
+		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.board") + ": "));
+		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.author") + ": "));
+		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.recipient") + ": "));
+		headersPanel.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.subject") + ": "));
 
 		JPanel valuesPanel = new JPanel(new GridLayout(4, 1));
 
@@ -137,7 +138,6 @@ public class DraftPanel implements ActionListener, MouseListener {
 		northPanel.add(headersPanel, BorderLayout.WEST);
 		northPanel.add(valuesPanel, BorderLayout.CENTER);
 
-
 		JPanel southPanel = new JPanel(new GridLayout(1, 2));
 
 		cancelButton = new JButton(I18n.getMessage("thaw.common.cancel"));
@@ -148,35 +148,33 @@ public class DraftPanel implements ActionListener, MouseListener {
 		southPanel.add(sendButton);
 		southPanel.add(cancelButton);
 
-
 		JPanel centerPanel = new JPanel(new BorderLayout(3, 3));
 
 		JPanel southCenterPanel = new JPanel(new BorderLayout(3, 3));
 		addAttachment = new JButton(IconBox.attachment);
 		addAttachment.addActionListener(this);
 		addAttachment.setPreferredSize(new java.awt.Dimension(ATTACHMENT_LIST_HEIGHT,
-								      ATTACHMENT_LIST_HEIGHT));
+				ATTACHMENT_LIST_HEIGHT));
 		attachmentList = new JList();
 		attachmentList.setCellRenderer(new AttachmentRenderer());
 		attachmentList.addMouseListener(this);
 		attachmentList.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		attachmentList.setPreferredSize(new java.awt.Dimension(ATTACHMENT_LIST_HEIGHT,
-								       ATTACHMENT_LIST_HEIGHT));
+				ATTACHMENT_LIST_HEIGHT));
 
 		JScrollPane attListScrollPanel = new JScrollPane(attachmentList);
 		attListScrollPanel.setPreferredSize(new java.awt.Dimension(ATTACHMENT_LIST_HEIGHT,
-									   ATTACHMENT_LIST_HEIGHT));
+				ATTACHMENT_LIST_HEIGHT));
 
-		southCenterPanel.add(addAttachment,  BorderLayout.WEST);
+		southCenterPanel.add(addAttachment, BorderLayout.WEST);
 		southCenterPanel.add(attListScrollPanel, BorderLayout.CENTER);
 
 		centerPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
 		centerPanel.add(southCenterPanel, BorderLayout.SOUTH);
 
-		panel.add(northPanel,  BorderLayout.NORTH );
+		panel.add(northPanel, BorderLayout.NORTH);
 		panel.add(centerPanel, BorderLayout.CENTER);
-		panel.add(southPanel,  BorderLayout.SOUTH );
-
+		panel.add(southPanel, BorderLayout.SOUTH);
 
 		attachmentRightClickMenu = new JPopupMenu();
 		attachmentRemove = new JMenuItem(I18n.getMessage("thaw.common.remove"));
@@ -190,10 +188,10 @@ public class DraftPanel implements ActionListener, MouseListener {
 		extractButton.setEnabled(false);
 	}
 
-
 	protected class AttachmentRenderer extends DefaultListCellRenderer {
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = -3102106806638714133L;
 
@@ -202,18 +200,17 @@ public class DraftPanel implements ActionListener, MouseListener {
 		}
 
 		public java.awt.Component getListCellRendererComponent(final JList list, Object value,
-								       final int index, final boolean isSelected,
-								       final boolean cellHasFocus) {
-			Attachment att = (Attachment)value;
+															   final int index, final boolean isSelected,
+															   final boolean cellHasFocus) {
+			Attachment att = (Attachment) value;
 
-			value = att.getPrintableType() + " : "+att.toString();
+			value = att.getPrintableType() + " : " + att.toString();
 
 			return super.getListCellRendererComponent(list, value,
-								  index, isSelected,
-								  cellHasFocus);
+					index, isSelected,
+					cellHasFocus);
 		}
 	}
-
 
 	public void setDraft(Draft draft) {
 		this.draft = draft;
@@ -225,43 +222,43 @@ public class DraftPanel implements ActionListener, MouseListener {
 		Vector ids = new Vector();
 		ids.add(I18n.getMessage("thaw.plugin.miniFrost.anonymous"));
 		ids.addAll(Identity.getYourIdentities(mainPanel.getDb()));
-		
+
 		authorBox.removeAllItems();
 
-		for (Iterator it = ids.iterator(); it.hasNext();)
+		for (Iterator it = ids.iterator(); it.hasNext(); )
 			authorBox.addItem(it.next());
-		
+
 		if (draft.getAuthorIdentity() != null)
 			authorBox.setSelectedItem(draft.getAuthorIdentity());
 		else if (draft.getAuthorNick() != null)
 			authorBox.setSelectedItem(draft.getAuthorNick());
 		else
 			authorBox.setSelectedIndex(0);
-		
+
 		/* recipient */
 		Vector nicePeople = new Vector();
 		nicePeople.add(I18n.getMessage("thaw.plugin.miniFrost.recipient.all"));
 		nicePeople.addAll(Identity.getIdentities(mainPanel.getDb(),
-												"trustLevel >= "+Integer.toString(Identity.trustLevelInt[1])));
-		
+				"trustLevel >= " + Integer.toString(Identity.trustLevelInt[1])));
+
 		recipientBox.removeAllItems();
-		
+
 		for (Iterator it = nicePeople.iterator(); it.hasNext(); ) {
 			recipientBox.addItem(it.next());
 		}
-		
+
 		recipientBox.setSelectedIndex(0);
-		
+
 		if (draft.getRecipient() != null) {
 			recipientBox.setSelectedItem(draft.getRecipient());
-			
+
 			if (!recipientBox.getSelectedItem().equals(draft.getRecipient())) {
 				/* then it means that the recipient wasn't in the list */
 				recipientBox.addItem(draft.getRecipient());
 				recipientBox.setSelectedItem(draft.getRecipient());
 			}
 		}
-			
+
 
 		/* subject */
 		subjectField.setText(draft.getSubject());
@@ -277,7 +274,6 @@ public class DraftPanel implements ActionListener, MouseListener {
 		refresh();
 	}
 
-
 	private void refreshAttachmentList() {
 		Vector v = null;
 
@@ -289,7 +285,6 @@ public class DraftPanel implements ActionListener, MouseListener {
 
 		attachmentList.setListData(v);
 	}
-
 
 	public void refresh() {
 		/* we don't want to erase by accident the current draft
@@ -309,40 +304,36 @@ public class DraftPanel implements ActionListener, MouseListener {
 		return panel;
 	}
 
-
 	public Date getGMTDate() {
 		/* dirty way to obtain the GMT date */
 		String dateStr = gmtConverter.format(new Date());
 
 		try {
 			return dateParser.parse(dateStr);
-		} catch(java.text.ParseException e) {
+		} catch (java.text.ParseException e) {
 			Logger.warning(null, "DraftPanel : Can't get the GMT date => will use the local time");
 			return new Date();
 		}
 	}
 
-	/**
-	 * Don't do the replacements in the text.
-	 * Don't call Draft.setDate()
-	 */
+	/** Don't do the replacements in the text. Don't call Draft.setDate() */
 	public void fillInDraft() {
 		/* author */
 
 		if (authorBox.getSelectedItem() instanceof Identity) {
 			draft.setAuthor(authorBox.getSelectedItem().toString(),
-					(Identity)authorBox.getSelectedItem());
+					(Identity) authorBox.getSelectedItem());
 		} else {
 			String nick = authorBox.getSelectedItem().toString();
 			nick = nick.replaceAll("@", "_");
 
 			draft.setAuthor(nick, null);
 		}
-		
+
 		/* recipient */
-		
+
 		if (recipientBox.getSelectedItem() instanceof Identity)
-			draft.setRecipient((Identity)recipientBox.getSelectedItem());
+			draft.setRecipient((Identity) recipientBox.getSelectedItem());
 		else
 			draft.setRecipient(null);
 
@@ -356,21 +347,21 @@ public class DraftPanel implements ActionListener, MouseListener {
 		draft.setText(txt);
 	}
 
-
 	private JMenuItem addBoard = null;
+
 	private JMenuItem addFile = null;
 
-
 	private class BoardAdder implements ThawRunnable {
+
 		public BoardAdder() {
 
 		}
 
 		public void run() {
 			Vector boards = BoardSelecter.askBoardList(mainPanel,
-								   ((dialog != null) ?
-								    (Object)dialog :
-								    (Object)mainPanel.getPluginCore().getCore().getMainWindow().getMainFrame()));
+					((dialog != null) ?
+							(Object) dialog :
+							(Object) mainPanel.getPluginCore().getCore().getMainWindow().getMainFrame()));
 
 			if (boards == null) {
 				Logger.info(this, "Cancelled");
@@ -378,8 +369,8 @@ public class DraftPanel implements ActionListener, MouseListener {
 			}
 
 			for (Iterator it = boards.iterator();
-			     it.hasNext();) {
-				draft.addAttachment((Board)it.next());
+				 it.hasNext(); ) {
+				draft.addAttachment((Board) it.next());
 			}
 
 			refreshAttachmentList();
@@ -389,6 +380,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 	}
 
 	private class FileAdder implements ThawRunnable {
+
 		public FileAdder() {
 
 		}
@@ -416,8 +408,8 @@ public class DraftPanel implements ActionListener, MouseListener {
 			}
 
 			for (Iterator it = files.iterator();
-			     it.hasNext(); ) {
-				draft.addAttachment((File)it.next());
+				 it.hasNext(); ) {
+				draft.addAttachment((File) it.next());
 			}
 
 			refreshAttachmentList();
@@ -425,8 +417,6 @@ public class DraftPanel implements ActionListener, MouseListener {
 
 		public void stop() { /* \_o< */ }
 	}
-
-
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == addAttachment) {
@@ -440,8 +430,8 @@ public class DraftPanel implements ActionListener, MouseListener {
 			addFile.addActionListener(this);
 
 			menu.show(addAttachment,
-				  addAttachment.getWidth()/2,
-				  addAttachment.getHeight()/2);
+					addAttachment.getWidth() / 2,
+					addAttachment.getHeight() / 2);
 			return;
 
 		} else if (e.getSource() == addBoard) {
@@ -465,7 +455,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 			Object[] selection = attachmentList.getSelectedValues();
 
 			for (Object attachment : selection) {
-				draft.removeAttachment((Attachment)attachment);
+				draft.removeAttachment((Attachment) attachment);
 			}
 
 			refreshAttachmentList();
@@ -476,7 +466,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 			fillInDraft();
 
 			JDialog newDialog = new JDialog(mainPanel.getPluginCore().getCore().getMainWindow().getMainFrame(),
-						     I18n.getMessage("thaw.plugin.miniFrost.draft"));
+					I18n.getMessage("thaw.plugin.miniFrost.draft"));
 			newDialog.getContentPane().setLayout(new GridLayout(1, 1));
 
 			DraftPanel panel = new DraftPanel(mainPanel, newDialog);
@@ -524,7 +514,8 @@ public class DraftPanel implements ActionListener, MouseListener {
 			/* POST */
 			draft.post(mainPanel.getPluginCore().getCore().getQueueManager());
 
-		} if (e.getSource() == cancelButton) {
+		}
+		if (e.getSource() == cancelButton) {
 
 		}
 
@@ -537,13 +528,15 @@ public class DraftPanel implements ActionListener, MouseListener {
 		}
 	}
 
-
 	public void mouseClicked(final MouseEvent e) {
 
 	}
 
-	public void mouseEntered(final MouseEvent e) { }
-	public void mouseExited(final MouseEvent e) { }
+	public void mouseEntered(final MouseEvent e) {
+	}
+
+	public void mouseExited(final MouseEvent e) {
+	}
 
 	public void mousePressed(final MouseEvent e) {
 		showPopupMenu(e);
@@ -554,7 +547,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 	}
 
 	protected void showPopupMenu(final MouseEvent e) {
-		if(e.isPopupTrigger()) {
+		if (e.isPopupTrigger()) {
 			attachmentRightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}

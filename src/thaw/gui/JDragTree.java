@@ -52,7 +52,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
@@ -67,320 +66,286 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 	private static final long serialVersionUID = 1L;
 
 	//	DropTargetListener interface object...
-	private class CDropTargetListener implements DropTargetListener
-	{
+	private class CDropTargetListener implements DropTargetListener {
 
-		 // Fields...
-		 private TreePath        _pathLast       = null;
-		 private final Rectangle2D     _raCueLine      = new Rectangle2D.Float();
-		 private Rectangle2D     _raGhost        = new Rectangle2D.Float();
-		 private Color           _colorCueLine;
-		 private Point           _ptLast         = new Point();
-		 private javax.swing.Timer           _timerHover;
-		 private int             _nLeftRight     = 0;    // Cumulative left/right mouse movement
+		// Fields...
+		private TreePath _pathLast = null;
 
-		 // Constructor...
-		 public CDropTargetListener()
-		 {
-			 _colorCueLine = new Color(
-					 SystemColor.controlShadow.getRed(),
-					 SystemColor.controlShadow.getGreen(),
-					 SystemColor.controlShadow.getBlue(),
-					 64
-				   );
+		private final Rectangle2D _raCueLine = new Rectangle2D.Float();
 
-			 // Set up a hover timer, so that a node will be automatically expanded or collapsed
-			 // if the user lingers on it for more than a short time
-			 _timerHover = new javax.swing.Timer(1000, new ActionListener()
-			 {
-				 public void actionPerformed(final ActionEvent e)
-				 {
-					 _nLeftRight = 0;    // Reset left/right movement trend
-					 if (isRootPath(_pathLast))
-						 return; // Do nothing if we are hovering over the root node
-					 if (JDragTree.this.isExpanded(_pathLast))
-						 collapsePath(_pathLast);
-					 else
-						 expandPath(_pathLast);
-				 }
-			 });
-			 _timerHover.setRepeats(false);  // Set timer to one-shot mode
-		 }
+		private Rectangle2D _raGhost = new Rectangle2D.Float();
 
-		 // DropTargetListener interface
-		 public void dragEnter(final DropTargetDragEvent e)
-		 {
-			 if (!isDragAcceptable(e))
-				 e.rejectDrag();
-			 else
-				 e.acceptDrag(e.getDropAction());
-		 }
+		private Color _colorCueLine;
 
-		 public void dragExit(final DropTargetEvent e)
-		 {
-			 if (!DragSource.isDragImageSupported())
-			 {
-				 JDragTree.this.repaint(_raGhost.getBounds());
-			 }
-		 }
+		private Point _ptLast = new Point();
 
-		 /**
-		 * This is where the ghost image is drawn
-		 */
-		 public void dragOver(final DropTargetDragEvent e)
-		 {
-             if( (e==null) || (_raGhost == null) || (_ptLast == null) ||
-                 (_ptOffset == null) || (_imgGhost == null) || (_raCueLine == null) )
+		private javax.swing.Timer _timerHover;
+
+		private int _nLeftRight = 0;    // Cumulative left/right mouse movement
+
+		// Constructor...
+		public CDropTargetListener() {
+			_colorCueLine = new Color(
+					SystemColor.controlShadow.getRed(),
+					SystemColor.controlShadow.getGreen(),
+					SystemColor.controlShadow.getBlue(),
+					64
+			);
+
+			// Set up a hover timer, so that a node will be automatically expanded or collapsed
+			// if the user lingers on it for more than a short time
+			_timerHover = new javax.swing.Timer(1000, new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					_nLeftRight = 0;    // Reset left/right movement trend
+					if (isRootPath(_pathLast))
+						return; // Do nothing if we are hovering over the root node
+					if (JDragTree.this.isExpanded(_pathLast))
+						collapsePath(_pathLast);
+					else
+						expandPath(_pathLast);
+				}
+			});
+			_timerHover.setRepeats(false);  // Set timer to one-shot mode
+		}
+
+		// DropTargetListener interface
+		public void dragEnter(final DropTargetDragEvent e) {
+			if (!isDragAcceptable(e))
+				e.rejectDrag();
+			else
+				e.acceptDrag(e.getDropAction());
+		}
+
+		public void dragExit(final DropTargetEvent e) {
+			if (!DragSource.isDragImageSupported()) {
+				JDragTree.this.repaint(_raGhost.getBounds());
+			}
+		}
+
+		/** This is where the ghost image is drawn */
+		public void dragOver(final DropTargetDragEvent e) {
+			if ((e == null) || (_raGhost == null) || (_ptLast == null) ||
+					(_ptOffset == null) || (_imgGhost == null) || (_raCueLine == null))
 				return;
-			 // Even if the mouse is not moving, this method is still invoked 10 times per second
-			 final Point pt = e.getLocation();
-             if(pt==null)
+			// Even if the mouse is not moving, this method is still invoked 10 times per second
+			final Point pt = e.getLocation();
+			if (pt == null)
 				return;
-			 if (pt.equals(_ptLast))
-				 return;
-
-			 // Try to determine whether the user is flicking the cursor right or left
-			 final int nDeltaLeftRight = pt.x - _ptLast.x;
-			 if ( ((_nLeftRight > 0) && (nDeltaLeftRight < 0)) || ((_nLeftRight < 0) && (nDeltaLeftRight > 0)) )
-				 _nLeftRight = 0;
-			 _nLeftRight += nDeltaLeftRight;
-			 _ptLast = pt;
-			 final Graphics2D g2 = (Graphics2D) getGraphics();
-             if( g2 == null )
+			if (pt.equals(_ptLast))
 				return;
 
-			 // If a drag image is not supported by the platform, then draw my own drag image
-			 if (!DragSource.isDragImageSupported())
-			 {
-				 JDragTree.this.paintImmediately(_raGhost.getBounds()); // Rub out the last ghost image and cue line
-				 // And remember where we are about to draw the new ghost image
-				 _raGhost.setRect(pt.x - _ptOffset.x, pt.y - _ptOffset.y, _imgGhost.getWidth(), _imgGhost.getHeight());
-				 g2.drawImage(_imgGhost, AffineTransform.getTranslateInstance(_raGhost.getX(), _raGhost.getY()), null);
-			 }
-			 else    // Just rub out the last cue line
-				 JDragTree.this.paintImmediately(_raCueLine.getBounds());
+			// Try to determine whether the user is flicking the cursor right or left
+			final int nDeltaLeftRight = pt.x - _ptLast.x;
+			if (((_nLeftRight > 0) && (nDeltaLeftRight < 0)) || ((_nLeftRight < 0) && (nDeltaLeftRight > 0)))
+				_nLeftRight = 0;
+			_nLeftRight += nDeltaLeftRight;
+			_ptLast = pt;
+			final Graphics2D g2 = (Graphics2D) getGraphics();
+			if (g2 == null)
+				return;
 
-			 final TreePath path = getClosestPathForLocation(pt.x, pt.y);
-			 if (!(path == _pathLast))
-			 {
-				 _nLeftRight = 0;    // We've moved up or down, so reset left/right movement trend
-				 _pathLast = path;
-				 _timerHover.restart();
-			 }
+			// If a drag image is not supported by the platform, then draw my own drag image
+			if (!DragSource.isDragImageSupported()) {
+				JDragTree.this.paintImmediately(_raGhost.getBounds()); // Rub out the last ghost image and cue line
+				// And remember where we are about to draw the new ghost image
+				_raGhost.setRect(pt.x - _ptOffset.x, pt.y - _ptOffset.y, _imgGhost.getWidth(), _imgGhost.getHeight());
+				g2.drawImage(_imgGhost, AffineTransform.getTranslateInstance(_raGhost.getX(), _raGhost.getY()), null);
+			} else    // Just rub out the last cue line
+				JDragTree.this.paintImmediately(_raCueLine.getBounds());
 
-			 // In any case draw (over the ghost image if necessary) a cue line indicating where a drop will occur
-			 final Rectangle raPath = getPathBounds(path);
-			 _raCueLine.setRect(0,  raPath.y+(int)raPath.getHeight(), getWidth(), 2);
+			final TreePath path = getClosestPathForLocation(pt.x, pt.y);
+			if (!(path == _pathLast)) {
+				_nLeftRight = 0;    // We've moved up or down, so reset left/right movement trend
+				_pathLast = path;
+				_timerHover.restart();
+			}
 
-			 g2.setColor(_colorCueLine);
-			 g2.fill(_raCueLine);
+			// In any case draw (over the ghost image if necessary) a cue line indicating where a drop will occur
+			final Rectangle raPath = getPathBounds(path);
+			_raCueLine.setRect(0, raPath.y + (int) raPath.getHeight(), getWidth(), 2);
 
-			 // And include the cue line in the area to be rubbed out next time
-			 _raGhost = _raGhost.createUnion(_raCueLine);
+			g2.setColor(_colorCueLine);
+			g2.fill(_raCueLine);
 
-			 // Do this if you want to prohibit dropping onto the drag source
-			 if (path.equals(_pathSource))
-				 e.rejectDrag();
-			 else
-				 e.acceptDrag(e.getDropAction());
-		 }
+			// And include the cue line in the area to be rubbed out next time
+			_raGhost = _raGhost.createUnion(_raCueLine);
 
-		 public void dropActionChanged(final DropTargetDragEvent e)
-		 {
-			 if (!isDragAcceptable(e))
-				 e.rejectDrag();
-			 else
-				 e.acceptDrag(e.getDropAction());
-		 }
+			// Do this if you want to prohibit dropping onto the drag source
+			if (path.equals(_pathSource))
+				e.rejectDrag();
+			else
+				e.acceptDrag(e.getDropAction());
+		}
 
-		 public void drop(final DropTargetDropEvent e)
-		 {
-			 _timerHover.stop(); // Prevent hover timer from doing an unwanted expandPath or collapsePath
+		public void dropActionChanged(final DropTargetDragEvent e) {
+			if (!isDragAcceptable(e))
+				e.rejectDrag();
+			else
+				e.acceptDrag(e.getDropAction());
+		}
 
-			 if (!isDropAcceptable(e))
-			 {
-				 e.rejectDrop();
-				 return;
-			 }
+		public void drop(final DropTargetDropEvent e) {
+			_timerHover.stop(); // Prevent hover timer from doing an unwanted expandPath or collapsePath
 
-			 e.acceptDrop(e.getDropAction());
+			if (!isDropAcceptable(e)) {
+				e.rejectDrop();
+				return;
+			}
 
-			 final Transferable transferable = e.getTransferable();
+			e.acceptDrop(e.getDropAction());
 
-			 final DataFlavor[] flavors = transferable.getTransferDataFlavors();
+			final Transferable transferable = e.getTransferable();
 
-			 for (int i = 0; i < flavors.length; i++ )
-			 {
-				 final DataFlavor flavor = flavors[i];
-				 if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType))
-				 {
-					 try
-					 {
-						 final Point pt = e.getLocation();
-						 final TreePath pathTarget = getClosestPathForLocation(pt.x, pt.y);
-						 final TreePath pathSource = (TreePath) transferable.getTransferData(flavor);
+			final DataFlavor[] flavors = transferable.getTransferDataFlavors();
 
-						 if( (pathTarget == null) || (pathSource == null) )
-						 {
-							 e.dropComplete(false);
-							 return;
-						 }
+			for (int i = 0; i < flavors.length; i++) {
+				final DataFlavor flavor = flavors[i];
+				if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType)) {
+					try {
+						final Point pt = e.getLocation();
+						final TreePath pathTarget = getClosestPathForLocation(pt.x, pt.y);
+						final TreePath pathSource = (TreePath) transferable.getTransferData(flavor);
 
-						 final MutableTreeNode sourceNode = (MutableTreeNode)pathSource.getLastPathComponent();
-						 final MutableTreeNode oldParent = (MutableTreeNode)sourceNode.getParent();
+						if ((pathTarget == null) || (pathSource == null)) {
+							e.dropComplete(false);
+							return;
+						}
 
-						 final MutableTreeNode targetNode = (MutableTreeNode)pathTarget.getLastPathComponent();
-						 final MutableTreeNode newParent = (MutableTreeNode)targetNode.getParent();
+						final MutableTreeNode sourceNode = (MutableTreeNode) pathSource.getLastPathComponent();
+						final MutableTreeNode oldParent = (MutableTreeNode) sourceNode.getParent();
 
-						 if( !sourceNode.isLeaf() && (targetNode.getParent() == sourceNode) )
-						 {
-							 // trying to drag a folder into its own childs
-							 e.dropComplete(false);
-							 return;
-						 }
+						final MutableTreeNode targetNode = (MutableTreeNode) pathTarget.getLastPathComponent();
+						final MutableTreeNode newParent = (MutableTreeNode) targetNode.getParent();
 
-						 final DefaultTreeModel model = (DefaultTreeModel)getModel();
-						 final TreePath pathNewChild = null;
+						if (!sourceNode.isLeaf() && (targetNode.getParent() == sourceNode)) {
+							// trying to drag a folder into its own childs
+							e.dropComplete(false);
+							return;
+						}
 
-						 if( targetNode.isLeaf() || JDragTree.this.isCollapsed(pathTarget) )
-						 {
-							 // collapsed tree node or leaf
-							 // dropped on a leaf, insert into leaf's parent AFTER leaf
-							 int idx = newParent.getIndex(targetNode);
-							 if( idx < 0 )
-							 {
-								 JDragTree.logger.warning("child not found in parent!!!");
-								 e.dropComplete(false);
-								 return;
-							 }
-							 else
-							 {
-								 idx++; // insert AFTER targetNode
+						final DefaultTreeModel model = (DefaultTreeModel) getModel();
+						final TreePath pathNewChild = null;
 
-								 // remove node from oldParent ...
-								 final Object[] removedChilds = { sourceNode };
-								 final int[] childIndices = { oldParent.getIndex(sourceNode) };
-								 sourceNode.removeFromParent();
-								 model.nodesWereRemoved( oldParent, childIndices, removedChilds );
+						if (targetNode.isLeaf() || JDragTree.this.isCollapsed(pathTarget)) {
+							// collapsed tree node or leaf
+							// dropped on a leaf, insert into leaf's parent AFTER leaf
+							int idx = newParent.getIndex(targetNode);
+							if (idx < 0) {
+								JDragTree.logger.warning("child not found in parent!!!");
+								e.dropComplete(false);
+								return;
+							} else {
+								idx++; // insert AFTER targetNode
 
-								 // ... and insert into newParent
-								 if( idx >= newParent.getChildCount() )
-								 {
-									 //newParent.add( sourceNode );
-									 newParent.insert(sourceNode, newParent.getChildCount());
-									 final int insertedIndex[] = { newParent.getChildCount()-1 };
-									 model.nodesWereInserted( newParent, insertedIndex );
-								 }
-								 else
-								 {
-									 newParent.insert(sourceNode, idx);
-									 final int insertedIndex[] = { idx };
-									 model.nodesWereInserted( newParent, insertedIndex );
-								 }
-							 }
-						 }
-						 else
-						 {
-							 // expanded node, insert UNDER the node (before first child)
-							 // remove node from oldParent ...
-							 final Object[] removedChilds = { sourceNode };
-							 final int[] childIndices = { oldParent.getIndex(sourceNode) };
-							 sourceNode.removeFromParent();
-							 model.nodesWereRemoved( oldParent, childIndices, removedChilds );
-							 // ... and add to newParent
-							 targetNode.insert( sourceNode, 0 );
-							 final int insertedIndex[] = { 0 };
-							 model.nodesWereInserted( targetNode, insertedIndex );
-						 }
+								// remove node from oldParent ...
+								final Object[] removedChilds = { sourceNode };
+								final int[] childIndices = { oldParent.getIndex(sourceNode) };
+								sourceNode.removeFromParent();
+								model.nodesWereRemoved(oldParent, childIndices, removedChilds);
 
-						 if (pathNewChild != null)
-							 setSelectionPath(pathNewChild); // Mark this as the selected path in the tree
-						 break; // No need to check remaining flavors
-					 }
-					 catch (final UnsupportedFlavorException ufe)
-					 {
-						 JDragTree.logger.log(Level.SEVERE, "Exception thrown in drop(DropTargetDropEvent e)", ufe);
-						 e.dropComplete(false);
-						 return;
-					 }
-					 catch (final IOException ioe)
-					 {
-						 JDragTree.logger.log(Level.SEVERE, "Exception thrown in drop(DropTargetDropEvent e)", ioe);
-						 e.dropComplete(false);
-						 return;
-					 }
-				 }
-			 }
-			 e.dropComplete(true);
-		 }
+								// ... and insert into newParent
+								if (idx >= newParent.getChildCount()) {
+									//newParent.add( sourceNode );
+									newParent.insert(sourceNode, newParent.getChildCount());
+									final int insertedIndex[] = { newParent.getChildCount() - 1 };
+									model.nodesWereInserted(newParent, insertedIndex);
+								} else {
+									newParent.insert(sourceNode, idx);
+									final int insertedIndex[] = { idx };
+									model.nodesWereInserted(newParent, insertedIndex);
+								}
+							}
+						} else {
+							// expanded node, insert UNDER the node (before first child)
+							// remove node from oldParent ...
+							final Object[] removedChilds = { sourceNode };
+							final int[] childIndices = { oldParent.getIndex(sourceNode) };
+							sourceNode.removeFromParent();
+							model.nodesWereRemoved(oldParent, childIndices, removedChilds);
+							// ... and add to newParent
+							targetNode.insert(sourceNode, 0);
+							final int insertedIndex[] = { 0 };
+							model.nodesWereInserted(targetNode, insertedIndex);
+						}
 
-		 // Helpers...
-		 public boolean isDragAcceptable(final DropTargetDragEvent e)
-		 {
-			 // Only accept COPY or MOVE gestures (ie LINK is not supported)
-			 if ((e.getDropAction() & DnDConstants.ACTION_MOVE) == 0)
-				 return false;
+						if (pathNewChild != null)
+							setSelectionPath(pathNewChild); // Mark this as the selected path in the tree
+						break; // No need to check remaining flavors
+					} catch (final UnsupportedFlavorException ufe) {
+						JDragTree.logger.log(Level.SEVERE, "Exception thrown in drop(DropTargetDropEvent e)", ufe);
+						e.dropComplete(false);
+						return;
+					} catch (final IOException ioe) {
+						JDragTree.logger.log(Level.SEVERE, "Exception thrown in drop(DropTargetDropEvent e)", ioe);
+						e.dropComplete(false);
+						return;
+					}
+				}
+			}
+			e.dropComplete(true);
+		}
 
-			 // Only accept this particular flavor
-			 if (!e.isDataFlavorSupported(JDragTree.TREEPATH_FLAVOR))
-				 return false;
+		// Helpers...
+		public boolean isDragAcceptable(final DropTargetDragEvent e) {
+			// Only accept COPY or MOVE gestures (ie LINK is not supported)
+			if ((e.getDropAction() & DnDConstants.ACTION_MOVE) == 0)
+				return false;
 
-			 // Do this if you want to prohibit dropping onto the drag source...
-			 final Point pt = e.getLocation();
-			 final TreePath path = getClosestPathForLocation(pt.x, pt.y);
-			 if((path == null) || path.equals(_pathSource))
-				 return false;
+			// Only accept this particular flavor
+			if (!e.isDataFlavorSupported(JDragTree.TREEPATH_FLAVOR))
+				return false;
 
-			 return true;
-		 }
+			// Do this if you want to prohibit dropping onto the drag source...
+			final Point pt = e.getLocation();
+			final TreePath path = getClosestPathForLocation(pt.x, pt.y);
+			if ((path == null) || path.equals(_pathSource))
+				return false;
 
-		 public boolean isDropAcceptable(final DropTargetDropEvent e)
-		 {
-			 // Only accept COPY or MOVE gestures (ie LINK is not supported)
-			 if ((e.getDropAction() & DnDConstants.ACTION_MOVE) == 0)
-				 return false;
+			return true;
+		}
 
-			 // Only accept this particular flavor
-			 if (!e.isDataFlavorSupported(JDragTree.TREEPATH_FLAVOR))
-				 return false;
+		public boolean isDropAcceptable(final DropTargetDropEvent e) {
+			// Only accept COPY or MOVE gestures (ie LINK is not supported)
+			if ((e.getDropAction() & DnDConstants.ACTION_MOVE) == 0)
+				return false;
 
-			 // Do this if you want to prohibit dropping onto the drag source...
-			 final Point pt = e.getLocation();
-			 final TreePath path = getClosestPathForLocation(pt.x, pt.y);
-			 if( (path == null) || path.equals(_pathSource))
-				 return false;
+			// Only accept this particular flavor
+			if (!e.isDataFlavorSupported(JDragTree.TREEPATH_FLAVOR))
+				return false;
 
-			 return true;
-		 }
+			// Do this if you want to prohibit dropping onto the drag source...
+			final Point pt = e.getLocation();
+			final TreePath path = getClosestPathForLocation(pt.x, pt.y);
+			if ((path == null) || path.equals(_pathSource))
+				return false;
+
+			return true;
+		}
 	}
 
 	/**
-	* This represents a TreePath (a node in a JTree) that can be transferred between a drag source and a drop target.
-	*/
-	private class CTransferableTreePath implements Transferable
-	{
-		private TreePath        _path;
-		/**
-		* Constructs a transferrable tree path object for the specified path.
-		*/
-		public CTransferableTreePath(final TreePath path)
-		{
+	 * This represents a TreePath (a node in a JTree) that can be transferred
+	 * between a drag source and a drop target.
+	 */
+	private class CTransferableTreePath implements Transferable {
+
+		private TreePath _path;
+
+		/** Constructs a transferrable tree path object for the specified path. */
+		public CTransferableTreePath(final TreePath path) {
 			_path = path;
 		}
 
 		// Transferable interface methods...
-		public DataFlavor[] getTransferDataFlavors()
-		{
+		public DataFlavor[] getTransferDataFlavors() {
 			return _flavors;
 		}
 
-		public boolean isDataFlavorSupported(final DataFlavor flavor)
-		{
+		public boolean isDataFlavorSupported(final DataFlavor flavor) {
 			return java.util.Arrays.asList(_flavors).contains(flavor);
 		}
 
-		public synchronized Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException
-		{
+		public synchronized Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException {
 			if (flavor.isMimeTypeEqual(JDragTree.TREEPATH_FLAVOR.getMimeType()))
 				return _path;
 			else
@@ -390,28 +355,28 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 
 	private static final Logger logger = Logger.getLogger(JDragTree.class.getName());
 
-	private TreePath        _pathSource;                // The path being dragged
-	private BufferedImage   _imgGhost;                  // The 'drag image'
-	private final Point           _ptOffset = new Point();    // Where, in the drag image, the mouse was clicked
+	private TreePath _pathSource;                // The path being dragged
+
+	private BufferedImage _imgGhost;                  // The 'drag image'
+
+	private final Point _ptOffset = new Point();    // Where, in the drag image, the mouse was clicked
 
 	// The type of DnD object being dragged...
 	public final static DataFlavor TREEPATH_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType, "TreePath");
-	private final DataFlavor[]    _flavors = { JDragTree.TREEPATH_FLAVOR };
+
+	private final DataFlavor[] _flavors = { JDragTree.TREEPATH_FLAVOR };
 
 	private DragSource dragSource = null;
+
 	private DragGestureRecognizer dgRecognizer = null;
 
-	/**
-	 * @param root
-	 */
+	/** @param root */
 	public JDragTree(final TreeNode root) {
 		super(root);
 		initialize();
 	}
 
-	/**
-	 * @param root
-	 */
+	/** @param root */
 	public JDragTree(final TreeModel model) {
 		super(model);
 		initialize();
@@ -421,8 +386,8 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 		// install drag n drop support
 		dragSource = DragSource.getDefaultDragSource();
 		dgRecognizer = dragSource.createDefaultDragGestureRecognizer(this,
-																	 DnDConstants.ACTION_MOVE,
-																	 this);
+				DnDConstants.ACTION_MOVE,
+				this);
 		// don't act on right mouse button
 		dgRecognizer.setSourceActions(dgRecognizer.getSourceActions() & ~InputEvent.BUTTON3_MASK & ~InputEvent.BUTTON2_MASK);
 		new DropTarget(this, new CDropTargetListener());
@@ -432,31 +397,29 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 	 * @param path
 	 * @return
 	 */
-	private boolean isRootPath(final TreePath path)
-	{
+	private boolean isRootPath(final TreePath path) {
 		return isRootVisible() && (getRowForPath(path) == 0);
 	}
 
 	// DragSourceListener interface methods
-	public void dragDropEnd(final DragSourceDropEvent e)
-	{
+	public void dragDropEnd(final DragSourceDropEvent e) {
 		this.repaint();
 	}
 
-	public void dragEnter(final DragSourceDragEvent e) {}
+	public void dragEnter(final DragSourceDragEvent e) {
+	}
 
-	public void dragExit(final DragSourceEvent e) {}
+	public void dragExit(final DragSourceEvent e) {
+	}
 
 	// DragGestureListener interface method
-	public void dragGestureRecognized(final DragGestureEvent e)
-	{
+	public void dragGestureRecognized(final DragGestureEvent e) {
 		//we should make sure we aren't in edit mode
-		final InputEvent ievent=e.getTriggerEvent();
-		if( ievent instanceof MouseEvent )
-		{
+		final InputEvent ievent = e.getTriggerEvent();
+		if (ievent instanceof MouseEvent) {
 			//even though I tell dgRecognizer to ignore the the right mouse button,
 			// it thinks the RMB starts a drag event...argh
-			if( (((MouseEvent)ievent).getModifiers() & InputEvent.BUTTON3_MASK) != 0 )
+			if ((((MouseEvent) ievent).getModifiers() & InputEvent.BUTTON3_MASK) != 0)
 				return;
 		}
 
@@ -470,23 +433,23 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 
 		// Work out the offset of the drag point from the TreePath bounding rectangle origin
 		final Rectangle raPath = getPathBounds(path);
-		_ptOffset.setLocation(ptDragOrigin.x-raPath.x, ptDragOrigin.y-raPath.y);
+		_ptOffset.setLocation(ptDragOrigin.x - raPath.x, ptDragOrigin.y - raPath.y);
 
 		// Get the cell renderer (which is a JLabel) for the path being dragged
 		final JLabel lbl = (JLabel) getCellRenderer().getTreeCellRendererComponent
-								(
-									this,                                           // tree
-									path.getLastPathComponent(),                    // value
-									false,                                          // isSelected   (dont want a colored background)
-									this.isExpanded(path),                               // isExpanded
-									getModel().isLeaf(path.getLastPathComponent()), // isLeaf
-									0,                                              // row          (not important for rendering)
-									false                                           // hasFocus     (dont want a focus rectangle)
-								);
-		lbl.setSize((int)raPath.getWidth(), (int)raPath.getHeight()); // <-- The layout manager would normally do this
+				(
+						this,                                           // tree
+						path.getLastPathComponent(),                    // value
+						false,                                          // isSelected   (dont want a colored background)
+						this.isExpanded(path),                               // isExpanded
+						getModel().isLeaf(path.getLastPathComponent()), // isLeaf
+						0,                                              // row          (not important for rendering)
+						false                                           // hasFocus     (dont want a focus rectangle)
+				);
+		lbl.setSize((int) raPath.getWidth(), (int) raPath.getHeight()); // <-- The layout manager would normally do this
 
 		// Get a buffered image of the selection for dragging a ghost image
-		_imgGhost = new BufferedImage((int)raPath.getWidth(), (int)raPath.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
+		_imgGhost = new BufferedImage((int) raPath.getWidth(), (int) raPath.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
 		final Graphics2D g2 = _imgGhost.createGraphics();
 
 		// Ask the cell renderer to paint itself into the BufferedImage
@@ -496,10 +459,10 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 		// Now paint a gradient UNDER the ghosted JLabel text (but not under the icon if any)
 		// Note: this will need tweaking if your icon is not positioned to the left of the text
 		final Icon icon = lbl.getIcon();
-		final int nStartOfText = (icon == null) ? 0 : icon.getIconWidth()+lbl.getIconTextGap();
+		final int nStartOfText = (icon == null) ? 0 : icon.getIconWidth() + lbl.getIconTextGap();
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, 0.5f)); // Make the gradient ghostlike
 		g2.setPaint(new GradientPaint(nStartOfText, 0, SystemColor.controlShadow,
-									  getWidth(),   0, new Color(255,255,255,0)));
+				getWidth(), 0, new Color(255, 255, 255, 0)));
 		g2.fillRect(nStartOfText, 0, getWidth(), _imgGhost.getHeight());
 		g2.dispose();
 
@@ -512,11 +475,13 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 		_pathSource = path;
 
 		// We pass our drag image just in case it IS supported by the platform
-		e.startDrag(null, _imgGhost, new Point(5,5), transferable, this);
+		e.startDrag(null, _imgGhost, new Point(5, 5), transferable, this);
 	}
 
-	public void dragOver(final DragSourceDragEvent e) {}
+	public void dragOver(final DragSourceDragEvent e) {
+	}
 
-	public void dropActionChanged(final DragSourceDragEvent e) {}
+	public void dropActionChanged(final DragSourceDragEvent e) {
+	}
 
 }

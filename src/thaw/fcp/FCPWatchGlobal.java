@@ -1,9 +1,10 @@
 package thaw.fcp;
 
 public class FCPWatchGlobal implements FCPQuery {
-	private boolean watch;
-	private final FCPQueryManager queryManager;
 
+	private boolean watch;
+
+	private final FCPQueryManager queryManager;
 
 	public FCPWatchGlobal(final boolean v, FCPQueryManager queryManager) {
 		watch = v;
@@ -15,7 +16,7 @@ public class FCPWatchGlobal implements FCPQuery {
 
 		message.setMessageName("WatchGlobal");
 
-		if(watch)
+		if (watch)
 			message.setValue("Enabled", "true");
 		else
 			message.setValue("Enabled", "false");

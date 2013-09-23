@@ -1,47 +1,51 @@
 package thaw.plugins.miniFrost.frostKSK;
 
-import java.util.Observer;
-import java.util.Observable;
 import java.util.Date;
-
-import java.util.Vector;
 import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Vector;
 
-import thaw.fcp.*;
-import thaw.plugins.signatures.Identity;
-
-import thaw.core.Logger;
-import thaw.plugins.miniFrost.interfaces.Board;
-import thaw.plugins.miniFrost.interfaces.Attachment;
 import thaw.core.I18n;
-
+import thaw.core.Logger;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
+import thaw.fcp.FCPClientPut;
+import thaw.fcp.FCPQueueManager;
+import thaw.plugins.miniFrost.interfaces.Attachment;
+import thaw.plugins.miniFrost.interfaces.Board;
+import thaw.plugins.signatures.Identity;
 
 public class KSKDraft
-	implements thaw.plugins.miniFrost.interfaces.Draft, Observer {
+		implements thaw.plugins.miniFrost.interfaces.Draft, Observer {
 
 	private KSKMessage inReplyTo = null;
+
 	private KSKBoard board = null;
 
 	private String subject = null;
+
 	private String txt = null;
+
 	private String nick = null;
+
 	private Identity identity = null;
+
 	private Identity recipient = null;
+
 	private Date date = null;
 
 	private int idLinePos = 0;
+
 	private int idLineLen = 0;
 
 	private Vector attachments;
-
 
 	public KSKDraft(KSKBoard board, KSKMessage inReplyTo) {
 		this.board = board;
 		this.inReplyTo = inReplyTo;
 		attachments = null;
-		
+
 		if (inReplyTo != null
 				&& inReplyTo.encryptedFor() != null
 				&& inReplyTo.getSender() != null
@@ -58,7 +62,7 @@ public class KSKDraft
 			String subject = inReplyTo.getSubject();
 			if (subject.indexOf("Re: ") == 0)
 				return subject;
-			return "Re: "+subject;
+			return "Re: " + subject;
 		}
 
 		return "";
@@ -72,8 +76,10 @@ public class KSKDraft
 
 		if (inReplyTo != null) {
 			txt = inReplyTo.getRawMessage();
-			if (txt == null) txt = "";
-			else txt = (txt.trim() + "\n\n");
+			if (txt == null)
+				txt = "";
+			else
+				txt = (txt.trim() + "\n\n");
 		}
 
 		txt += "----- $sender$ ----- $dateAndTime$GMT -----\n\n";
@@ -94,7 +100,8 @@ public class KSKDraft
 	}
 
 	/**
-	 * @param identity if null, unsigned post
+	 * @param identity
+	 * 		if null, unsigned post
 	 */
 	public void setAuthor(String nick, Identity identity) {
 		this.nick = nick;
@@ -108,7 +115,7 @@ public class KSKDraft
 	public String getAuthorNick() {
 		return nick;
 	}
-	
+
 	public void setRecipient(Identity id) {
 		this.recipient = id;
 	}
@@ -120,17 +127,19 @@ public class KSKDraft
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	
+
 	public Date getDate() {
 		return date;
 	}
 
-
 	private java.io.File fileToInsert;
+
 	private FCPQueueManager queueManager;
+
 	private int revUsed;
 
 	private boolean waiting;
+
 	private boolean posting;
 
 	public void notifyPlugin() {
@@ -145,7 +154,6 @@ public class KSKDraft
 		return posting;
 	}
 
-
 	public void setIdLinePos(int i) {
 		idLinePos = i;
 	}
@@ -153,7 +161,6 @@ public class KSKDraft
 	public void setIdLineLen(int i) {
 		idLineLen = i;
 	}
-
 
 	private boolean initialInsertion = false;
 
@@ -167,7 +174,7 @@ public class KSKDraft
 		notifyPlugin();
 
 		/* we start immediatly a board refresh (we will need it) */
-		synchronized(board) {
+		synchronized (board) {
 			board.addObserver(this);
 			board.refresh(2 /* until yesterday ; just to be sure because of the GMT conversion etc */);
 		}
@@ -176,8 +183,8 @@ public class KSKDraft
 		update(board, null);
 	}
 
-
 	private class InsertionStarter implements ThawRunnable {
+
 		private boolean forceStop;
 
 		public InsertionStarter() {
@@ -186,56 +193,55 @@ public class KSKDraft
 
 		public void run() {
 			boolean ready = false;
-			
-			while(!ready && attachments != null && !forceStop) {
+
+			while (!ready && attachments != null && !forceStop) {
 				ready = true;
 
 				for (Iterator it = attachments.iterator();
-					it.hasNext();) {
-					KSKAttachment a = (KSKAttachment)it.next();
+					 it.hasNext(); ) {
+					KSKAttachment a = (KSKAttachment) it.next();
 					if (!a.isReady())
 						ready = false;
 				}
-				
+
 				if (!ready) {
 					try {
 						Thread.sleep(500);
-					} catch(InterruptedException e) {
+					} catch (InterruptedException e) {
 						/* \_o< */
 					}
 				}
 			}
-			
+
 			if (!forceStop)
 				startInsertion();
 		}
-		
+
 		public void stop() {
 			forceStop = true;
 		}
 	}
 
 	private void startInsertion() {
-		
+
 		/* we generate first the XML message */
 		KSKMessageParser generator = new KSKMessageParser(board.getFactory().getDb(),
-									((inReplyTo != null) ? inReplyTo.getMsgId() : null),
-									  nick,
-									  subject,
-									  date,
-									  recipient, /* recipient */
-									  board.getName(),
-									  txt,
-									  ((identity != null) ? identity.getPublicKey() : null),
-									   attachments,
-									   identity,
-									   idLinePos,
-									   idLineLen,
-									   board.getFactory().getWoT().getTrustListPublicKeyFor(identity));
+				((inReplyTo != null) ? inReplyTo.getMsgId() : null),
+				nick,
+				subject,
+				date,
+				recipient, /* recipient */
+				board.getName(),
+				txt,
+				((identity != null) ? identity.getPublicKey() : null),
+				attachments,
+				identity,
+				idLinePos,
+				idLineLen,
+				board.getFactory().getWoT().getTrustListPublicKeyFor(identity));
 
 		fileToInsert = generator.generateXML(board.getFactory().getDb() /* gruick */);
-		
-		
+
 		waiting = false;
 		posting = true;
 		notifyPlugin();
@@ -245,42 +251,40 @@ public class KSKDraft
 		int keyType = board.getKeyType();
 
 		if (keyType == FCPClientPut.KEY_TYPE_KSK)
-			Logger.info(this, "Inserting : KSK@"+name);
+			Logger.info(this, "Inserting : KSK@" + name);
 		else
-			Logger.info(this, "Insertion : SSK@"+privateKey+name);
+			Logger.info(this, "Insertion : SSK@" + privateKey + name);
 
 		FCPClientPut clientPut = new FCPClientPut.Builder(queueManager)
-												.setLocalFile(fileToInsert)
-						                        .setKeyType(keyType)
-												.setRev(-1) /* rev : we specify it ourselves in the key name */
-												.setName(name)
-                                                .setPrivateKey(privateKey)
-												.setPriority(2)
-												.setGlobal(false)
-						                        .setPersistence(FCPClientPut.PERSISTENCE_FOREVER)
-						                        .setCompress(true)
-												.build();
+				.setLocalFile(fileToInsert)
+				.setKeyType(keyType)
+				.setRev(-1) /* rev : we specify it ourselves in the key name */
+				.setName(name)
+				.setPrivateKey(privateKey)
+				.setPriority(2)
+				.setGlobal(false)
+				.setPersistence(FCPClientPut.PERSISTENCE_FOREVER)
+				.setCompress(true)
+				.build();
 		clientPut.addObserver(this);
 		queueManager.addQueryToTheRunningQueue(clientPut);
 	}
 
-
 	private boolean isBoardUpToDateForToday() {
 		if (!board.isRefreshing()
-		    || (board.getCurrentlyRefreshedDate() != null
-			&& (KSKBoard.getMidnight(board.getCurrentlyRefreshedDate()).getTime()
-			    < KSKBoard.getMidnight(date).getTime()) )) {
+				|| (board.getCurrentlyRefreshedDate() != null
+				&& (KSKBoard.getMidnight(board.getCurrentlyRefreshedDate()).getTime()
+				< KSKBoard.getMidnight(date).getTime()))) {
 			//Logger.info(this, "Board: "+Long.toString(KSKBoard.getMidnight(board.getCurrentlyRefreshedDate()).getTime()));
-			Logger.info(this, "Draft: "+KSKBoard.getMidnight(date).getTime());
+			Logger.info(this, "Draft: " + KSKBoard.getMidnight(date).getTime());
 			return true;
 		}
 		return false;
 	}
 
-
 	public void update(Observable o, Object param) {
 		if (o instanceof Board) {
-			synchronized(board) {
+			synchronized (board) {
 				/* just to be sure we don't insert the message many times */
 				if (initialInsertion)
 					return;
@@ -299,7 +303,7 @@ public class KSKDraft
 		}
 
 		if (o instanceof FCPClientPut) {
-			FCPClientPut put = (FCPClientPut)o;
+			FCPClientPut put = (FCPClientPut) o;
 
 			if (put.isFinished() && put.isSuccessful()) {
 				posting = false;
@@ -318,20 +322,19 @@ public class KSKDraft
 				announce = announce.replaceAll("X", board.toString());
 
 				thaw.plugins.TrayIcon.popMessage(board.getFactory().getCore().getPluginManager(),
-								 "MiniFrost",
-								 announce);
-
+						"MiniFrost",
+						announce);
 
 			} else if (put.isFinished() && !put.isSuccessful()) {
 				if (put.getPutFailedCode() != 9) { /* !Collision */
 					put.deleteObserver(this);
 
 					if (put.getPutFailedCode() < 0)
-						Logger.warning(this, "message insertion on the board '"+
-							       board.toString()+"' cancelled");
+						Logger.warning(this, "message insertion on the board '" +
+								board.toString() + "' cancelled");
 					else
-						Logger.error(this, "Can't insert the message on the board '"+
-							     board.toString()+"' ; Code: "+Integer.toString(put.getPutFailedCode()));
+						Logger.error(this, "Can't insert the message on the board '" +
+								board.toString() + "' ; Code: " + Integer.toString(put.getPutFailedCode()));
 					waiting = false;
 					posting = false;
 					notifyPlugin();
@@ -342,9 +345,9 @@ public class KSKDraft
 				announce = announce.replaceAll("X", board.toString());
 
 				thaw.plugins.TrayIcon.popMessage(board.getFactory().getCore().getPluginManager(),
-								 "MiniFrost",
-								 announce,
-								 thaw.gui.SysTrayIcon.MSG_WARNING);
+						"MiniFrost",
+						announce,
+						thaw.gui.SysTrayIcon.MSG_WARNING);
 
 				put.deleteObserver(this);
 				put.stop();
@@ -368,7 +371,7 @@ public class KSKDraft
 
 	public boolean addAttachment(java.io.File file) {
 		return addAttachment(new KSKFileAttachment(board.getFactory().getCore().getQueueManager(),
-							   file));
+				file));
 	}
 
 	public boolean addAttachment(Board board) {

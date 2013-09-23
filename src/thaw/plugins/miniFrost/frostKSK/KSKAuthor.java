@@ -1,17 +1,17 @@
 package thaw.plugins.miniFrost.frostKSK;
 
-import thaw.plugins.signatures.Identity;
 import thaw.core.I18n;
-
+import thaw.plugins.signatures.Identity;
 
 public class KSKAuthor
-	implements thaw.plugins.miniFrost.interfaces.Author {
+		implements thaw.plugins.miniFrost.interfaces.Author {
 
 	private String nick;
+
 	private Identity identity;
 
 	public KSKAuthor(String nick,
-			 Identity identity) {
+					 Identity identity) {
 		this.nick = nick;
 		this.identity = identity;
 	}
@@ -28,7 +28,7 @@ public class KSKAuthor
 		if (identity != null) {
 			if (noDup || !identity.isDup())
 				return identity.toString();
-			return I18n.getMessage("thaw.plugin.miniFrost.DUP")+" "+identity.toString();
+			return I18n.getMessage("thaw.plugin.miniFrost.DUP") + " " + identity.toString();
 		}
 
 		return nick;

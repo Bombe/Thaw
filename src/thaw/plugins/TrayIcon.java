@@ -1,62 +1,59 @@
 package thaw.plugins;
 
-import java.util.*;
-
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-
-import javax.swing.JLabel;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JScrollPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
-import java.awt.Toolkit;
-
-import java.awt.GridLayout;
-import java.awt.BorderLayout;
-
-import thaw.core.Core;
 import thaw.core.Config;
-import thaw.core.Logger;
+import thaw.core.Core;
 import thaw.core.I18n;
-import thaw.core.ThawThread;
+import thaw.core.Logger;
 import thaw.core.ThawRunnable;
-
+import thaw.core.ThawThread;
 import thaw.fcp.FCPTransferQuery;
-
+import thaw.gui.IconBox;
 import thaw.gui.SysTrayIcon;
 import thaw.gui.TransferProgressBar;
-import thaw.gui.IconBox;
 import thaw.gui.WarningWindow;
 
-
 public class TrayIcon implements thaw.core.Plugin,
-				 MouseListener,
-				 WindowListener,
-				 ActionListener,
-				 thaw.core.LogListener {
+		MouseListener,
+		WindowListener,
+		ActionListener,
+		thaw.core.LogListener {
 
 	private Core core;
+
 	private Config config;
 
 	private SysTrayIcon icon;
 
 	private JDialog dialog;
+
 	private JButton closeDialog;
 
 	public final static int DIALOG_X = 500;
-	public final static int DIALOG_Y = 800;
 
+	public final static int DIALOG_Y = 800;
 
 	public TrayIcon() {
 
 	}
-
 
 	public boolean run(Core core) {
 		this.core = core;
@@ -64,7 +61,7 @@ public class TrayIcon implements thaw.core.Plugin,
 
 		if (!Core.checkJavaVersion(1, 6)) {
 			new WarningWindow(core,
-					  I18n.getMessage("thaw.plugin.trayIcon.java1.6"));
+					I18n.getMessage("thaw.plugin.trayIcon.java1.6"));
 			return false;
 		}
 
@@ -72,7 +69,7 @@ public class TrayIcon implements thaw.core.Plugin,
 			config.setValue("disableTrayIconPopups", "false");
 
 		icon = new SysTrayIcon(thaw.gui.IconBox.blueBunny);
-		icon.setToolTip("Thaw "+thaw.core.Main.VERSION);
+		icon.setToolTip("Thaw " + thaw.core.Main.VERSION);
 		icon.addMouseListener(this);
 
 		core.getMainWindow().addWindowListener(this);
@@ -83,7 +80,6 @@ public class TrayIcon implements thaw.core.Plugin,
 
 		return true;
 	}
-
 
 	public void stop() {
 		if (icon == null)
@@ -104,24 +100,25 @@ public class TrayIcon implements thaw.core.Plugin,
 		Logger.addLogListener(this);
 	}
 
-
 	public static boolean popMessage(thaw.core.PluginManager pluginManager,
-					 String title,
-					 String message) {
+									 String title,
+									 String message) {
 		return popMessage(pluginManager, title, message, SysTrayIcon.MSG_NONE);
 	}
 
 	/**
-	 * that's an helper to make my life easier :
-	 *  it tries to find a loaded instance of this plugin, it succeed, it tries to
-	 *   pop the message with it. Else if returns false.
-	 * @param msgType see thaw.gui.SysTrayIcon
+	 * that's an helper to make my life easier : it tries to find a loaded instance
+	 * of this plugin, it succeed, it tries to pop the message with it. Else if
+	 * returns false.
+	 *
+	 * @param msgType
+	 * 		see thaw.gui.SysTrayIcon
 	 */
 	public static boolean popMessage(thaw.core.PluginManager pluginManager,
-					 String title,
-					 String message,
-					 int msgType) {
-		TrayIcon plugin = (TrayIcon)pluginManager.getPlugin("thaw.plugins.TrayIcon");
+									 String title,
+									 String message,
+									 int msgType) {
+		TrayIcon plugin = (TrayIcon) pluginManager.getPlugin("thaw.plugins.TrayIcon");
 
 		if (plugin == null)
 			return false;
@@ -129,16 +126,14 @@ public class TrayIcon implements thaw.core.Plugin,
 		return plugin.popMessage(title, message, msgType);
 	}
 
-	/**
-	 * Made to be also used by other plugins
-	 */
+	/** Made to be also used by other plugins */
 	public boolean popMessage(String title, String message, int msgType) {
 		if (icon == null || !icon.canWork())
 			return false;
 
 		String cfg;
 
-		if ( (cfg = config.getValue("disableTrayIconPopups")) != null )
+		if ((cfg = config.getValue("disableTrayIconPopups")) != null)
 			if (Boolean.TRUE.equals(Boolean.valueOf(cfg)))
 				return false;
 
@@ -147,18 +142,17 @@ public class TrayIcon implements thaw.core.Plugin,
 		return true;
 	}
 
-
 	public void newLogLine(int level, Object src, String line) {
 		if (level > Logger.LOG_LEVEL_ERROR || src == this || src == icon)
 			return;
 
 		int msgType = ((level == 0) ? SysTrayIcon.MSG_ERROR : SysTrayIcon.MSG_WARNING);
 
-		popMessage("Thaw : "+Logger.PREFIXES[level], line, msgType);
+		popMessage("Thaw : " + Logger.PREFIXES[level], line, msgType);
 	}
 
-	public void logLevelChanged(int oldLevel, int newLevel) { }
-
+	public void logLevelChanged(int oldLevel, int newLevel) {
+	}
 
 	public String getNameForUser() {
 		return I18n.getMessage("thaw.plugin.trayIcon.pluginName");
@@ -179,8 +173,8 @@ public class TrayIcon implements thaw.core.Plugin,
 			core.getMainWindow().getMainFrame().toFront();
 	}
 
-
 	private class QueryComparator implements Comparator {
+
 		public QueryComparator() {
 
 		}
@@ -188,20 +182,19 @@ public class TrayIcon implements thaw.core.Plugin,
 		public int compare(final Object o1, final Object o2) {
 			int result = 0;
 
-			if(!(o1 instanceof FCPTransferQuery)
-			   || !(o2 instanceof FCPTransferQuery))
+			if (!(o1 instanceof FCPTransferQuery)
+					|| !(o2 instanceof FCPTransferQuery))
 				return 0;
 
-			final FCPTransferQuery q1 = (FCPTransferQuery)o1;
-			final FCPTransferQuery q2 = (FCPTransferQuery)o2;
+			final FCPTransferQuery q1 = (FCPTransferQuery) o1;
+			final FCPTransferQuery q2 = (FCPTransferQuery) o2;
 
-
-			if((q1.getProgression() <= 0)
-			   && (q2.getProgression() <= 0)) {
-				if(q1.isRunning() && !q2.isRunning())
+			if ((q1.getProgression() <= 0)
+					&& (q2.getProgression() <= 0)) {
+				if (q1.isRunning() && !q2.isRunning())
 					return 1;
 
-				if(q2.isRunning() && !q1.isRunning())
+				if (q2.isRunning() && !q1.isRunning())
 					return -1;
 			}
 
@@ -210,18 +203,16 @@ public class TrayIcon implements thaw.core.Plugin,
 			return result;
 		}
 
-
 		public boolean equals(final Object obj) {
 			return true;
 		}
 
-		public int hashCode(){
+		public int hashCode() {
 			return super.hashCode();
 		}
 	}
 
 	private Vector<TransferProgressBar> progressBars = null;
-
 
 	private JPanel getTransferPanel(FCPTransferQuery q) {
 		JPanel p = new JPanel(new GridLayout(2, 1, 5, 5));
@@ -254,10 +245,9 @@ public class TrayIcon implements thaw.core.Plugin,
 		return p;
 	}
 
-
 	private boolean realDisplayFrame(int x, int y) {
-		dialog = new JDialog((java.awt.Frame)null,
-				     I18n.getMessage("thaw.plugin.trayIcon.dialogTitle"));
+		dialog = new JDialog((java.awt.Frame) null,
+				I18n.getMessage("thaw.plugin.trayIcon.dialogTitle"));
 		dialog.getContentPane().setLayout(new BorderLayout(5, 5));
 		dialog.setUndecorated(true);
 		dialog.setResizable(true);
@@ -271,29 +261,27 @@ public class TrayIcon implements thaw.core.Plugin,
 
 		List<FCPTransferQuery> newQueries = new Vector<FCPTransferQuery>();
 
-		for(FCPTransferQuery query : queries) {
+		for (FCPTransferQuery query : queries) {
 			newQueries.add(query);
 		}
 
 		if (newQueries.size() == 0) {
 			popMessage("Thaw",
-				   I18n.getMessage("thaw.plugin.trayIcon.emptyQueue"),
-				   SysTrayIcon.MSG_WARNING);
+					I18n.getMessage("thaw.plugin.trayIcon.emptyQueue"),
+					SysTrayIcon.MSG_WARNING);
 			dialog = null;
 			return false;
 		}
 
 		Collections.sort(newQueries, new QueryComparator());
 
-
 		north = new JPanel(new GridLayout(queries.size(), 1, 10, 10));
 
 		progressBars = new Vector();
 
-		for(FCPTransferQuery query : newQueries) {
+		for (FCPTransferQuery query : newQueries) {
 			north.add(getTransferPanel(query));
 		}
-
 
 		JPanel northNorth = new JPanel(new BorderLayout());
 		northNorth.add(new JLabel(" "), BorderLayout.CENTER);
@@ -306,12 +294,12 @@ public class TrayIcon implements thaw.core.Plugin,
 		dialog.getContentPane().add(panel, BorderLayout.CENTER);
 
 		panel.add(north,
-			  BorderLayout.NORTH);
+				BorderLayout.NORTH);
 
 		dialog.getContentPane().add(new JScrollPane(panel,
-							    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-							    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
-					    BorderLayout.CENTER);
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
+				BorderLayout.CENTER);
 
 		//dialog.setSize(DIALOG_X, DIALOG_Y);
 		dialog.validate();
@@ -320,25 +308,23 @@ public class TrayIcon implements thaw.core.Plugin,
 		java.awt.Dimension size = dialog.getSize();
 
 		double height = size.getHeight();
-		double width  = size.getWidth();
+		double width = size.getWidth();
 
 		if (width > DIALOG_X)
 			width = DIALOG_X;
 		if (height > DIALOG_Y)
 			height = DIALOG_Y;
 
-		dialog.setSize((int)width, (int)height);
-
+		dialog.setSize((int) width, (int) height);
 
 		java.awt.Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-		int screen_x = (int)d.getWidth();
-		int screen_y = (int)d.getHeight();
+		int screen_x = (int) d.getWidth();
+		int screen_y = (int) d.getHeight();
 
-		if (x+width >= screen_x)
+		if (x + width >= screen_x)
 			x -= width;
-		if (y+height >= screen_y)
+		if (y + height >= screen_y)
 			y -= height;
-
 
 		dialog.setLocation(x, y);
 
@@ -348,9 +334,10 @@ public class TrayIcon implements thaw.core.Plugin,
 		return true;
 	}
 
-
 	private class ProgressBarRefresher implements ThawRunnable {
+
 		private Vector<TransferProgressBar> bars;
+
 		private boolean stop;
 
 		public ProgressBarRefresher(Vector<TransferProgressBar> bars) {
@@ -359,12 +346,12 @@ public class TrayIcon implements thaw.core.Plugin,
 		}
 
 		public void run() {
-			while(!stop) {
+			while (!stop) {
 
-				for(TransferProgressBar bar : bars) {
+				for (TransferProgressBar bar : bars) {
 					try {
 						Thread.sleep(200);
-					} catch(InterruptedException e) {
+					} catch (InterruptedException e) {
 						/* \_o< */
 					}
 
@@ -381,9 +368,7 @@ public class TrayIcon implements thaw.core.Plugin,
 		}
 	}
 
-
 	private ProgressBarRefresher refresher = null;
-
 
 	public void displayFrame(int x, int y) {
 		if (realDisplayFrame(x, y) && dialog != null) {
@@ -405,19 +390,26 @@ public class TrayIcon implements thaw.core.Plugin,
 		}
 	}
 
+	public void windowActivated(WindowEvent e) {
+	}
 
-	public void windowActivated(WindowEvent e) { }
-	public void windowClosed(WindowEvent e) { }
-	public void windowClosing(WindowEvent e) { }
-	public void windowDeactivated(WindowEvent e) { }
+	public void windowClosed(WindowEvent e) {
+	}
+
+	public void windowClosing(WindowEvent e) {
+	}
+
+	public void windowDeactivated(WindowEvent e) {
+	}
+
 	public void windowDeiconified(WindowEvent e) {
 	}
 
-        public void windowIconified(WindowEvent e) {
+	public void windowIconified(WindowEvent e) {
 	}
 
-	public void windowOpened(WindowEvent e) { }
-
+	public void windowOpened(WindowEvent e) {
+	}
 
 	public void mouseClicked(MouseEvent e) {
 		if (dialog != null) {
@@ -430,15 +422,22 @@ public class TrayIcon implements thaw.core.Plugin,
 		else if (e.getButton() == MouseEvent.BUTTON3) {
 			if (dialog == null) {
 				java.awt.Point p = icon.getMousePosition();
-				displayFrame(((int)p.getX()), ((int)p.getY()));
+				displayFrame(((int) p.getX()), ((int) p.getY()));
 			}
 		}
 	}
 
-	public void mouseEntered(MouseEvent e) { }
-	public void mouseExited(MouseEvent e) { }
-	public void mousePressed(MouseEvent e) { }
-	public void mouseReleased(MouseEvent e) { }
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	public void mouseExited(MouseEvent e) {
+	}
+
+	public void mousePressed(MouseEvent e) {
+	}
+
+	public void mouseReleased(MouseEvent e) {
+	}
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == closeDialog) {

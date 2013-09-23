@@ -6,13 +6,9 @@ public class FileCategory {
 
 	}
 
-	/**
-	 * TODO !
-	 */
+	/** TODO ! */
 	public static String promptForACategory() {
 		return null;
 	}
-
-
 
 }
