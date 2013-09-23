@@ -233,31 +233,11 @@ public class IconBox {
 	}
 
 	protected static ImageIcon loadIcon(final String fileName) {
-		URL url;
-		Class daClass;
-		ClassLoader classLoader;
-
-		daClass = IconBox.class;
-
-		if (daClass == null) {
-			Logger.error(IconBox.class, "Icon '" + fileName + "' not found ! (Class)");
-			return null;
-		}
-
-		classLoader = daClass.getClassLoader();
-
-		if (classLoader == null) {
-			Logger.error(IconBox.class, "Icon '" + fileName + "' not found ! (ClassLoader)");
-			return null;
-		}
-
-		url = classLoader.getResource(fileName);
-
+		URL url = IconBox.class.getClassLoader().getResource(fileName);
 		if (url == null) {
 			Logger.error(IconBox.class, "Icon '" + fileName + "' not found ! (Resource)");
 			return null;
 		}
-
 		return new ImageIcon(url);
 	}
 
