@@ -40,7 +40,7 @@ public class Config {
 
 	private boolean listenChanges = false;
 
-	private final List<Plugin> pluginsToReload = null;
+	private final List<Plugin> pluginsToReload = new ArrayList<Plugin>();
 
 	public Config(Core core, final String filename) {
 		this.core = core;
