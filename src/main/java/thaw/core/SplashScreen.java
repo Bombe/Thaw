@@ -1,12 +1,11 @@
 package thaw.core;
 
 import static javax.swing.SwingUtilities.updateComponentTreeUI;
+import static thaw.gui.GUIHelper.center;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -71,18 +70,8 @@ public class SplashScreen {
 		splashScreen.getContentPane().add(panel);
 
 		splashScreen.setSize(SplashScreen.SIZE_X, SplashScreen.SIZE_Y);
-
-		final Dimension screenSize =
-				Toolkit.getDefaultToolkit().getScreenSize();
-
-		final Dimension splashSize = splashScreen.getSize();
-		splashScreen.setLocation(screenSize.width / 2 - (splashSize.width / 2),
-				screenSize.height / 2 - (splashSize.height / 2));
-
+		center(splashScreen);
 		splashScreen.setVisible(true);
-
-		splashScreen.setSize(SplashScreen.SIZE_X, SplashScreen.SIZE_Y);
-
 	}
 
 	public JDialog getDialog() {
