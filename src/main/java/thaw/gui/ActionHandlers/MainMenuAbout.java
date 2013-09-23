@@ -19,7 +19,7 @@ public class MainMenuAbout implements ActionListener {
 
 	public void showDialogAbout() {
 		final JComponent[] labels = new JComponent[] {
-				new JTextField("Thaw " + Main.VERSION),
+				new JTextField("Thaw " + Main.getVersion()),
 				new JLabel(I18n.getMessage("thaw.about.l02")),
 				new JLabel(I18n.getMessage("thaw.about.l03")),
 				new JLabel(I18n.getMessage("thaw.about.l04")),

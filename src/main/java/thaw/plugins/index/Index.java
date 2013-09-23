@@ -21,6 +21,7 @@ import thaw.core.Config;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.core.Main;
+import thaw.core.Version;
 import thaw.fcp.FCPClientGet;
 import thaw.fcp.FCPClientPut;
 import thaw.fcp.FCPGenerateSSK;
@@ -1892,7 +1893,7 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public String getClientVersion() {
-		return ("Thaw " + Main.VERSION);
+		return ("Thaw " + Main.getVersion());
 	}
 
 	/** @return -1 if none */
@@ -2097,34 +2098,11 @@ public class Index extends Observable implements MutableTreeNode,
 			}
 
 			str = str.substring(0, spacePos);
+			Version version = Version.valueOf(str);
 
-			String[] numbers = str.split("\\.");
-			int major = Integer.parseInt(numbers[0]);
-			int minor = Integer.parseInt(numbers[1]);
-			int update = Integer.parseInt(numbers[2]);
-
-			boolean mustPopup = false;
-
-			if (major > Main._major)
-				mustPopup = true;
-
-			else if (major == Main._major) {
-
-				if (minor > Main._minor)
-					mustPopup = true;
-				else if (update > Main._update)
-					mustPopup = true;
-
-			}
-
-			if (mustPopup) {
-				String newVersion =
-						Integer.toString(major) + "." +
-								Integer.toString(minor) + "." +
-								Integer.toString(update);
-
+			if (version.compareTo(Main.getVersion()) > 0) {
 				/* quick and dirty way to warn the user */
-				Logger.warning(this, I18n.getMessage("thaw.plugins.index.newThawVersion").replaceAll("X", newVersion));
+				Logger.warning(this, I18n.getMessage("thaw.plugins.index.newThawVersion").replaceAll("X", version.toString()));
 			}
 
 		} catch (Exception e) {

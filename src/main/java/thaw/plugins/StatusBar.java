@@ -146,7 +146,7 @@ public class StatusBar implements ThawRunnable, Plugin, LogListener {
 
 		total = finished + failed + running + pending;
 
-		String status = "Thaw " + Main.VERSION;
+		String status = "Thaw " + Main.getVersion();
 
 		if (advancedMode) {
 			status = status
@@ -170,7 +170,7 @@ public class StatusBar implements ThawRunnable, Plugin, LogListener {
 	public void stop() {
 		running = false;
 		Logger.removeLogListener(this);
-		core.getMainWindow().setStatus(IconBox.blueBunny, "Thaw " + Main.VERSION);
+		core.getMainWindow().setStatus(IconBox.blueBunny, "Thaw " + Main.getVersion());
 	}
 
 	public String getNameForUser() {

@@ -808,7 +808,7 @@ public class KSKMessageParser {
 
 		Element el;
 
-		if ((el = makeText(doc, "client", "Thaw " + thaw.core.Main.VERSION)) != null)
+		if ((el = makeText(doc, "client", "Thaw " + thaw.core.Main.getVersion())) != null)
 			root.appendChild(el);
 
 		if (wotPublicKey != null) {

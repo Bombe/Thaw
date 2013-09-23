@@ -20,13 +20,8 @@ import javax.swing.UIManager;
  */
 public class Main {
 
-	public final static int
-			_major = 0,
-			_minor = 8,
-			_update = 5;
-
-	public final static String
-			VERSION = Main._major + "." + Main._minor + "." + Main._update;
+	/** Thaw version. */
+	private static final Version VERSION = new Version(0, 8, 5);
 
 	/** Look &amp; feel use by GUI front end */
 	private static String lookAndFeel = null;
@@ -35,6 +30,15 @@ public class Main {
 	private static String locale = null;
 
 	private Main() {
+	}
+
+	/**
+	 * Returns the version of Thaw.
+	 *
+	 * @return The version of Thaw
+	 */
+	public static Version getVersion() {
+		return VERSION;
 	}
 
 	/**

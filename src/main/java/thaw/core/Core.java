@@ -63,7 +63,7 @@ public class Core implements Observer {
 	/** Creates a core, but do nothing else (no initialization). */
 	public Core() {
 		isStopping = false;
-		Logger.info(this, "Thaw, version " + Main.VERSION, true);
+		Logger.info(this, "Thaw, version " + Main.getVersion(), true);
 		Logger.info(this, "2006-2009(c) Freenet project", true);
 		Logger.info(this, "Released under GPL license version 2 or later (see http://www.fsf.org/licensing/licenses/gpl.html)", true);
 	}
@@ -132,7 +132,7 @@ public class Core implements Observer {
 		splashScreen.setProgressionAndStatus(100, "Ready");
 
 		mainWindow.setStatus(IconBox.minDisconnectAction,
-				"Thaw " + Main.VERSION + " : " + I18n.getMessage("thaw.statusBar.ready"));
+				"Thaw " + Main.getVersion() + " : " + I18n.getMessage("thaw.statusBar.ready"));
 
 		splashScreen.hide();
 		splashScreen = null;
