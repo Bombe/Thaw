@@ -19,8 +19,8 @@ public class GUIHelper {
 
 	private final static String unknownStr = I18n.getMessage("thaw.common.unknown");
 
-	public GUIHelper() {
-
+	private GUIHelper() {
+		/* this class doesn’t need to be instantiated. */
 	}
 
 	/**
