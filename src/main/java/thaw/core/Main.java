@@ -23,6 +23,11 @@ public class Main {
 	/** Thaw version. */
 	private static final Version VERSION = new Version(0, 8, 5);
 
+	private final static String[] DEPS = new String[] {
+			"hsqldb.jar",
+			"BouncyCastle.jar",
+	};
+
 	/** Look &amp; feel use by GUI front end */
 	private static String lookAndFeel = null;
 
@@ -172,11 +177,6 @@ public class Main {
 		Logger.warning(this, "Will try to continue anyway");
 		//System.exit(1);
 	}
-
-	private final static String[] DEPS = new String[] {
-			"hsqldb.jar",
-			"BouncyCastle.jar",
-	};
 
 	private static void extractDeps() {
 		Main main = new Main();
