@@ -132,7 +132,7 @@ public class Main {
 	}
 
 	/** need a non-static context */
-	public void extractFileFromJar(String src, String dst) {
+	private void extractFileFromJar(String src, String dst) {
 		try {
 			String realHome = this.getClass().getProtectionDomain().
 					getCodeSource().getLocation().toString();
@@ -173,12 +173,12 @@ public class Main {
 		//System.exit(1);
 	}
 
-	public final static String[] DEPS = new String[] {
+	private final static String[] DEPS = new String[] {
 			"hsqldb.jar",
 			"BouncyCastle.jar",
 	};
 
-	public static void extractDeps() {
+	private static void extractDeps() {
 		Main main = new Main();
 
 		/* we erase each time the files to be sure that they are always up to date */
