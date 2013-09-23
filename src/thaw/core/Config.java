@@ -28,6 +28,8 @@ public class Config {
 
 	public static String CONFIG_FILE_NAME = "thaw.conf.xml";
 
+	private final Core core;
+
 	private final File configFile;
 
 	private final HashMap<String, String> parameters; /* String (param) -> String (value) */
@@ -36,7 +38,9 @@ public class Config {
 
 	private final Vector<String> pluginNames;        /* String (plugin names) */
 
-	private final Core core;
+	private boolean listenChanges = false;
+
+	private Vector<Plugin> pluginsToReload = null;
 
 	public Config(Core core, final String filename) {
 		this.core = core;
@@ -52,10 +56,6 @@ public class Config {
 	public String getValue(final String key) {
 		return (parameters.get(key));
 	}
-
-	private boolean listenChanges = false;
-
-	private Vector<Plugin> pluginsToReload = null;
 
 	/**
 	 * called when majors changed will be done to the config and will imply some
