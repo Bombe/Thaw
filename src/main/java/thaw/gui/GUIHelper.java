@@ -1,7 +1,9 @@
 package thaw.gui;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -142,4 +144,18 @@ public class GUIHelper {
 		paintLine(g, headX, headY, ARROW_SIZE, theta + ARROW_ANGLE);
 		paintLine(g, headX, headY, ARROW_SIZE, theta - ARROW_ANGLE);
 	}
+
+	/**
+	 * Centers the given window on the primary screen.
+	 *
+	 * @param window
+	 * 		The window to center
+	 * @see Toolkit#getScreenSize()
+	 */
+	public static void center(Window window) {
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension windowSize = window.getSize();
+		window.setLocation((screenSize.width - windowSize.width) / 2, (screenSize.height - windowSize.height) / 2);
+	}
+
 }
