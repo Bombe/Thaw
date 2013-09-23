@@ -27,6 +27,9 @@ import thaw.gui.MainWindow;
  */
 public class Core implements Observer {
 
+	/** Default configuration filename. */
+	public static final String CONFIG_FILE_NAME = "thaw.conf.xml";
+
 	private SplashScreen splashScreen = null;
 
 	private MainWindow mainWindow = null;
@@ -142,7 +145,7 @@ public class Core implements Observer {
 
 	/** Init configuration. May re-set I18n. */
 	public boolean initConfig() {
-		config = new Config(this, Config.CONFIG_FILE_NAME);
+		config = new Config(this, CONFIG_FILE_NAME);
 
 		config.loadConfig();
 

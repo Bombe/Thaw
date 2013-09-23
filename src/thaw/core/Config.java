@@ -28,8 +28,6 @@ import org.w3c.dom.NodeList;
  */
 public class Config {
 
-	public static String CONFIG_FILE_NAME = "thaw.conf.xml";
-
 	private final Core core;
 
 	private final File configFile;
