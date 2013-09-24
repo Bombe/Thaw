@@ -63,9 +63,7 @@ public class Core implements Observer {
 	/** Creates a core, but do nothing else (no initialization). */
 	public Core() {
 		isStopping = false;
-		Logger.info(this, "Thaw, version " + Main.getVersion(), true);
-		Logger.info(this, "2006-2009(c) Freenet project", true);
-		Logger.info(this, "Released under GPL license version 2 or later (see http://www.fsf.org/licensing/licenses/gpl.html)", true);
+		printStartupInformation();
 	}
 
 	/** Gives a ref to the object containing the config. */
@@ -731,6 +729,17 @@ public class Core implements Observer {
 			return false;
 
 		return true;
+	}
+
+	//
+	// PRIVATE METHODS
+	//
+
+	/** Prints startup information. */
+	private void printStartupInformation() {
+		Logger.info(this, "Thaw, version " + Main.getVersion(), true);
+		Logger.info(this, "2006-2009(c) Freenet project", true);
+		Logger.info(this, "Released under GPL license version 2 or later (see http://www.fsf.org/licensing/licenses/gpl.html)", true);
 	}
 
 }
