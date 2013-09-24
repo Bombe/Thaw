@@ -634,39 +634,46 @@ public class Index extends Observable implements MutableTreeNode,
 		if (indexBrowser != null && indexBrowser.getMainWindow() != null) {
 			indexTree = indexBrowser.getIndexTree();
 
+			boolean hasLink = false;
 			synchronized (db.dbLock) {
+				PreparedStatement st = null;
 				try {
-					PreparedStatement st;
 
 					st = db.getConnection().prepareStatement("SELECT id FROM links where indexParent = ? LIMIT 1");
 					st.setInt(1, id);
 
 					ResultSet set = st.executeQuery();
 
-					if (!set.next()) {
-						st.close();
-
-						/* no link ?! we will warn the user */
-
-						int ret =
-								JOptionPane.showOptionDialog(indexBrowser.getMainWindow().getMainFrame(),
-										I18n.getMessage("thaw.plugin.index.indexWithNoLink").replaceAll("\\?", toString(false)),
-										I18n.getMessage("thaw.warning.title"),
-										JOptionPane.YES_NO_OPTION,
-										JOptionPane.WARNING_MESSAGE,
-										null,
-										null,
-										null);
-
-						if (ret == JOptionPane.CLOSED_OPTION
-								|| ret == JOptionPane.NO_OPTION) {
-							return 0;
-						}
-					} else
-						st.close();
-
+					hasLink = set.next();
 				} catch (SQLException e) {
 					Logger.error(this, "Error while checking the link number before insertion : " + e.toString());
+				} finally {
+					if (st != null) {
+						try {
+							st.close();
+						} catch (SQLException sqle1) {
+							/* swallow this one. */
+						}
+					}
+				}
+			}
+
+			if (!hasLink) {
+				/* no link ?! we will warn the user */
+
+				int ret =
+						JOptionPane.showOptionDialog(indexBrowser.getMainWindow().getMainFrame(),
+								I18n.getMessage("thaw.plugin.index.indexWithNoLink").replaceAll("\\?", toString(false)),
+								I18n.getMessage("thaw.warning.title"),
+								JOptionPane.YES_NO_OPTION,
+								JOptionPane.WARNING_MESSAGE,
+								null,
+								null,
+								null);
+
+				if (ret == JOptionPane.CLOSED_OPTION
+						|| ret == JOptionPane.NO_OPTION) {
+					return 0;
 				}
 			}
 
