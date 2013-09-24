@@ -1,13 +1,14 @@
 package thaw.core;
 
+import static javax.swing.SwingConstants.CENTER;
+import static javax.swing.SwingConstants.WEST;
 import static javax.swing.SwingUtilities.updateComponentTreeUI;
 import static thaw.gui.GUIHelper.center;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -20,19 +21,11 @@ public class SplashScreen {
 
 	private static final int SIZE_Y = 150;
 
-	private static final int NMB_ICONS = 13;
-
 	private final JDialog splashScreen = new JDialog();
 
 	private final JProgressBar progressBar = new JProgressBar(0, 100);
 
 	private final JPanel iconPanel = new JPanel();
-
-	private int nmbIcon = 0;
-
-	private final List<JLabel> emptyLabels = new ArrayList<JLabel>();
-
-	private final List<JLabel> iconLabels = new ArrayList<JLabel>();
 
 	public void display() {
 		final JPanel panel = new JPanel();
@@ -43,19 +36,12 @@ public class SplashScreen {
 
 		panel.setLayout(new BorderLayout(10, 10));
 		subPanel.setLayout(new GridLayout(2, 1));
-		iconPanel.setLayout(new GridLayout(1, NMB_ICONS));
-
-		/* it's a dirty method to keep the NMB_ICONS parts of the panel at the same size */
-		for (int i = 0; i < NMB_ICONS; i++) {
-			JLabel lb = new JLabel();
-			emptyLabels.add(lb);
-			iconPanel.add(lb, i);
-		}
+		iconPanel.setLayout(new FlowLayout(WEST));
 
 		final JLabel thawLabel = new JLabel("Thaw");
 
 		thawLabel.setFont(new Font("Dialog", Font.BOLD, 42));
-		thawLabel.setHorizontalAlignment(JLabel.CENTER);
+		thawLabel.setHorizontalAlignment(CENTER);
 
 		subPanel.add(thawLabel);
 		subPanel.add(iconPanel);
@@ -69,7 +55,7 @@ public class SplashScreen {
 
 		splashScreen.getContentPane().add(panel);
 
-		splashScreen.setSize(SplashScreen.SIZE_X, SplashScreen.SIZE_Y);
+		splashScreen.setSize(SIZE_X, SIZE_Y);
 		center(splashScreen);
 		splashScreen.setVisible(true);
 	}
@@ -90,18 +76,10 @@ public class SplashScreen {
 	public void addIcon(ImageIcon icon) {
 		JLabel lb = new JLabel(icon);
 
-		lb.setHorizontalAlignment(JLabel.CENTER);
-		lb.setVerticalAlignment(JLabel.CENTER);
+		lb.setHorizontalAlignment(CENTER);
+		lb.setVerticalAlignment(CENTER);
 
-		if (emptyLabels.size() > 0)
-			iconPanel.remove(emptyLabels.get(0));
-
-		iconPanel.add(lb, nmbIcon);
-
-		if (emptyLabels.size() > 0)
-			emptyLabels.remove(0);
-
-		nmbIcon++;
+		iconPanel.add(lb);
 
 		splashScreen.getContentPane().validate();
 		lb.repaint();
