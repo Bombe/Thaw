@@ -16,10 +16,10 @@ public class WarningWindow {
 	public WarningWindow(final Core core,
 						 final String warning) {
 		this(core != null ?
-				(core.getSplashScreen() != null && core.getSplashScreen().getDialog() != null ?
-						(Component) core.getSplashScreen().getDialog()
-						: (Component) core.getMainWindow().getMainFrame())
-				: (Component) null,
+				(core.getSplashScreen().isVisible() ?
+						core.getSplashScreen().getDialog()
+						: core.getMainWindow().getMainFrame())
+				: null,
 				warning);
 	}
 

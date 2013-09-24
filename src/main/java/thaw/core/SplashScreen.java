@@ -60,6 +60,10 @@ public class SplashScreen {
 		splashScreen.setVisible(true);
 	}
 
+	public boolean isVisible() {
+		return splashScreen.isVisible();
+	}
+
 	public JDialog getDialog() {
 		return splashScreen;
 	}
