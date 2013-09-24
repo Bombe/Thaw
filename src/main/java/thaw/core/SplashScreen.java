@@ -69,8 +69,10 @@ public class SplashScreen {
 	 * 		In percent
 	 */
 	public void setProgression(final int progress) {
-		progressBar.setValue(progress);
-		splashScreen.getContentPane().validate();
+		if (splashScreen.isVisible()) {
+			progressBar.setValue(progress);
+			splashScreen.getContentPane().validate();
+		}
 	}
 
 	public void addIcon(ImageIcon icon) {
@@ -93,8 +95,10 @@ public class SplashScreen {
 	}
 
 	public void setStatus(final String status) {
-		progressBar.setString(status);
-		splashScreen.getContentPane().validate();
+		if (splashScreen.isVisible()) {
+			progressBar.setString(status);
+			splashScreen.getContentPane().validate();
+		}
 	}
 
 	public void setProgressionAndStatus(final int progress, final String status) {

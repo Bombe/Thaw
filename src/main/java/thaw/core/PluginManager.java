@@ -81,14 +81,11 @@ public class PluginManager {
 			final Iterator pluginIt = pluginNames.iterator();
 
 			final int progressJump = (100 - 40) / pluginNames.size();
-
-			if (core.getSplashScreen() != null)
-				core.getSplashScreen().setProgression(40);
+			core.getSplashScreen().setProgression(40);
 
 			for (String pluginName : pluginNames) {
-				if (core.getSplashScreen() != null)
-					core.getSplashScreen().setProgressionAndStatus(core.getSplashScreen().getProgression() + progressJump,
-							"Loading plugin '" + pluginName.replaceFirst("thaw.plugins.", "") + "' ...");
+				core.getSplashScreen().setProgressionAndStatus(core.getSplashScreen().getProgression() + progressJump,
+						"Loading plugin '" + pluginName.replaceFirst("thaw.plugins.", "") + "' ...");
 
 				if (loadPlugin(pluginName) == null) {
 					Logger.notice(this, "Plugin already loaded");

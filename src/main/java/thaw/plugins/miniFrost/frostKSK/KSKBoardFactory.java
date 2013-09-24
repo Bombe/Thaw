@@ -89,13 +89,11 @@ public class KSKBoardFactory
 				core.getConfig().setValue(configOption, "true");
 		}
 
-		if (core.getSplashScreen() != null)
-			core.getSplashScreen().setStatus("MiniFrost : Compacting frost invalid slots list ...");
+		core.getSplashScreen().setStatus("MiniFrost : Compacting frost invalid slots list ...");
 
 		recompactInvalidSlots(db, core);
 
-		if (core.getSplashScreen() != null)
-			core.getSplashScreen().setStatus("MiniFrost : Loading ...");
+		core.getSplashScreen().setStatus("MiniFrost : Loading ...");
 
 		boardsHashMap = new HashMap();
 
