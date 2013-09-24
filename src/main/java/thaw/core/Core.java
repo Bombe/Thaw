@@ -30,7 +30,7 @@ public class Core implements Observer {
 	/** Default configuration filename. */
 	public static final String CONFIG_FILE_NAME = "thaw.conf.xml";
 
-	private SplashScreen splashScreen = null;
+	private final SplashScreen splashScreen = new SplashScreen();
 
 	private MainWindow mainWindow = null;
 
@@ -101,8 +101,6 @@ public class Core implements Observer {
 	public boolean initAll() {
 		IconBox.loadIcons();
 
-		splashScreen = new SplashScreen();
-
 		splashScreen.display();
 
 		splashScreen.setProgressionAndStatus(0, "Loading configuration ...");
@@ -113,6 +111,7 @@ public class Core implements Observer {
 		splashScreen.setProgressionAndStatus(10, "Applying look and feel ...");
 		if (!initializeLookAndFeel())
 			return false;
+		splashScreen.rebuild();
 
 		splashScreen.setProgressionAndStatus(20, "Connecting ...");
 		if (!initConnection())
@@ -135,7 +134,6 @@ public class Core implements Observer {
 				"Thaw " + Main.getVersion() + " : " + I18n.getMessage("thaw.statusBar.ready"));
 
 		splashScreen.hide();
-		splashScreen = null;
 		mainWindow.setVisible(true);
 
 		setTheme(lookAndFeel);
@@ -432,9 +430,6 @@ public class Core implements Observer {
 
 		try {
 			setTheme(this.lookAndFeel);
-
-			if (splashScreen != null)
-				splashScreen.rebuild();
 		} catch (final Exception e) {
 			Logger.warning(this, "Exception while setting the L&F : " + e.toString() + " ; " + e.getMessage());
 			e.printStackTrace();
