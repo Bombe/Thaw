@@ -1,8 +1,10 @@
 package thaw.plugins.index;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,10 +14,13 @@ import java.util.Iterator;
 import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -24,6 +29,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -526,7 +532,7 @@ public class DatabaseManager {
 
 		try {
 			outputStream = new FileOutputStream(dest);
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.warning(new DatabaseManager(), "Unable to create file '" + dest.toString() + "' ! not generated !");
 			return;
 		}
@@ -539,7 +545,7 @@ public class DatabaseManager {
 
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch (final javax.xml.parsers.ParserConfigurationException e) {
+		} catch (final ParserConfigurationException e) {
 			Logger.error(new DatabaseManager(), "Unable to generate the index because : " + e.toString());
 			return;
 		}
@@ -561,7 +567,7 @@ public class DatabaseManager {
 
 		try {
 			serializer = transformFactory.newTransformer();
-		} catch (final javax.xml.transform.TransformerConfigurationException e) {
+		} catch (final TransformerConfigurationException e) {
 			Logger.error(new DatabaseManager(), "Unable to save index because: " + e.toString());
 			return;
 		}
@@ -572,7 +578,7 @@ public class DatabaseManager {
 		/* final step */
 		try {
 			serializer.transform(domSource, streamResult);
-		} catch (final javax.xml.transform.TransformerException e) {
+		} catch (final TransformerException e) {
 			Logger.error(new DatabaseManager(), "Unable to save index because: " + e.toString());
 			return;
 		}
@@ -603,7 +609,7 @@ public class DatabaseManager {
 			this.indexBrowser = indexBrowser;
 		}
 
-		/** @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator) */
+		/** @see ContentHandler#setDocumentLocator(Locator) */
 		public void setDocumentLocator(Locator value) {
 
 		}
@@ -611,7 +617,7 @@ public class DatabaseManager {
 		/**
 		 * Called when parsing is started
 		 *
-		 * @see org.xml.sax.ContentHandler#startDocument()
+		 * @see ContentHandler#startDocument()
 		 */
 		public void startDocument() throws SAXException {
 			importFolder = indexBrowser.getIndexTree().getRoot().getNewImportFolder(db);
@@ -622,7 +628,7 @@ public class DatabaseManager {
 		/**
 		 * Called when parsing is finished
 		 *
-		 * @see org.xml.sax.ContentHandler#endDocument()
+		 * @see ContentHandler#endDocument()
 		 */
 		public void endDocument() throws SAXException {
 			/* \_o< */
@@ -635,8 +641,7 @@ public class DatabaseManager {
 		 * 		name space prefix
 		 * @param URI
 		 * 		name space URI
-		 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String,
-		 *      java.lang.String)
+		 * @see ContentHandler#startPrefixMapping(String, String)
 		 */
 		public void startPrefixMapping(String prefix, String URI) throws SAXException {
 			/* \_o< */
@@ -645,7 +650,7 @@ public class DatabaseManager {
 		/**
 		 * @param prefix
 		 * 		name space prefix
-		 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
+		 * @see ContentHandler#endPrefixMapping(String)
 		 */
 		public void endPrefixMapping(String prefix) throws SAXException {
 			/* \_o< */
@@ -664,8 +669,7 @@ public class DatabaseManager {
 		 * 		local tag name
 		 * @param rawName
 		 * 		rawName (the one used here)
-		 * @see org.xml.sax.ContentHandler#startElement(java.lang.String,
-		 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+		 * @see ContentHandler#startElement(String, String, String, Attributes)
 		 */
 		public void startElement(String nameSpaceURI, String localName,
 								 String rawName, Attributes attrs) throws SAXException {
@@ -739,8 +743,7 @@ public class DatabaseManager {
 		/**
 		 * Called when a closing tag is met
 		 *
-		 * @see org.xml.sax.ContentHandler#endElement(java.lang.String,
-		 *      java.lang.String, java.lang.String)
+		 * @see ContentHandler#endElement(String, String, String)
 		 */
 		public void endElement(String nameSpaceURI, String localName,
 							   String rawName) throws SAXException {
@@ -776,7 +779,7 @@ public class DatabaseManager {
 		 * 		position
 		 * @param end
 		 * 		position
-		 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
+		 * @see ContentHandler#characters(char[], int, int)
 		 */
 		public void characters(char[] ch, int start, int end) throws SAXException {
 			if (indexHandler != null)
@@ -794,7 +797,7 @@ public class DatabaseManager {
 
 		}
 
-		/** @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String) */
+		/** @see ContentHandler#skippedEntity(String) */
 		public void skippedEntity(String arg0) throws SAXException {
 
 		}
@@ -802,13 +805,13 @@ public class DatabaseManager {
 	}
 
 	public static void importDatabase(java.io.File source, IndexBrowserPanel indexBrowser, FCPQueueManager queueManager) {
-		java.io.InputStream input;
+		InputStream input;
 
 		Logger.info(new DatabaseManager(), "Importing ...");
 
 		try {
 			input = new FileInputStream(source);
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.error(new DatabaseManager(), "Unable to load XML: FileNotFoundException ('" + source.getPath() + "') ! : " + e.toString());
 			return;
 		}
@@ -824,18 +827,18 @@ public class DatabaseManager {
 				// Parse the input
 				SAXParser saxParser = factory.newSAXParser();
 				saxParser.parse(input, handler);
-			} catch (javax.xml.parsers.ParserConfigurationException e) {
+			} catch (ParserConfigurationException e) {
 				Logger.error(new DatabaseManager(), "Error (1) while importing database : " + e.toString());
-			} catch (org.xml.sax.SAXException e) {
+			} catch (SAXException e) {
 				Logger.error(new DatabaseManager(), "Error (2) while importing database : " + e.toString());
-			} catch (java.io.IOException e) {
+			} catch (IOException e) {
 				Logger.error(new DatabaseManager(), "Error (3) while importing database : " + e.toString());
 			}
 		}
 
 		try {
 			input.close();
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.warning(new DatabaseManager(), "Unable to close cleanly the xml file");
 		}
 
@@ -848,7 +851,7 @@ public class DatabaseManager {
 
 	/** used by convertDatabase_1_to_2() */
 	private static boolean insertChildIn(Hsqldb db, int folderId) throws SQLException {
-		java.util.Vector<Integer> results;
+		Vector<Integer> results;
 		int i = 0, j;
 
 		Logger.notice(new DatabaseManager(), "Expanding folder " + Integer.toString(folderId));
@@ -863,7 +866,7 @@ public class DatabaseManager {
 				st.setInt(1, folderId);
 
 			ResultSet set = st.executeQuery();
-			results = new java.util.Vector<Integer>();
+			results = new Vector<Integer>();
 
 			while (set.next()) {
 				results.add(set.getInt("id"));

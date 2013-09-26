@@ -1,9 +1,12 @@
 package thaw.plugins.miniFrost;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Vector;
 import javax.swing.JButton;
@@ -33,7 +36,7 @@ public class BoardSelecter implements ActionListener {
 
 	/**
 	 * @param parentWindow
-	 * 		must be a java.awt.Dialog or a java.awt.Frame
+	 * 		must be a Dialog or a Frame
 	 */
 	protected BoardSelecter(MiniFrostPanel mainPanel,
 							Object parentWindow) {
@@ -53,11 +56,11 @@ public class BoardSelecter implements ActionListener {
 
 		JDialog dialog;
 
-		if (parentWindow instanceof java.awt.Frame)
-			dialog = new JDialog((java.awt.Frame) parentWindow,
+		if (parentWindow instanceof Frame)
+			dialog = new JDialog((Frame) parentWindow,
 					I18n.getMessage("thaw.plugin.miniFrost.boards"));
-		else if (parentWindow instanceof java.awt.Dialog)
-			dialog = new JDialog((java.awt.Dialog) parentWindow,
+		else if (parentWindow instanceof Dialog)
+			dialog = new JDialog((Dialog) parentWindow,
 					I18n.getMessage("thaw.plugin.miniFrost.boards"));
 		else {
 			Logger.error(this, "Unknow type for the parameter 'parentWindow' : " + parentWindow.getClass().getName());
@@ -81,7 +84,7 @@ public class BoardSelecter implements ActionListener {
 			}
 		}
 
-		java.util.Collections.sort(boards);
+		Collections.sort(boards);
 
 
 		/* checkbox */

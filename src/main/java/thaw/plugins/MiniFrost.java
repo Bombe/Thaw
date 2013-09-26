@@ -1,5 +1,6 @@
 package thaw.plugins;
 
+import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -7,13 +8,19 @@ import thaw.core.Config;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.core.Plugin;
+import thaw.gui.IconBox;
 import thaw.plugins.miniFrost.AutoRefresh;
+import thaw.plugins.miniFrost.KnownBoardListProvider;
 import thaw.plugins.miniFrost.MiniFrostConfigTab;
 import thaw.plugins.miniFrost.MiniFrostPanel;
 import thaw.plugins.miniFrost.RegexpBlacklist;
+import thaw.plugins.miniFrost.SpecialBoardFactory;
+import thaw.plugins.miniFrost.frostKSK.KSKBoardFactory;
+import thaw.plugins.miniFrost.frostKSK.SSKBoardFactory;
 import thaw.plugins.miniFrost.interfaces.BoardFactory;
 
-public class MiniFrost implements thaw.core.Plugin, ChangeListener {
+public class MiniFrost implements Plugin, ChangeListener {
 
 	public final static int DEFAULT_ARCHIVE_AFTER = 7; /* days */
 
@@ -37,10 +44,10 @@ public class MiniFrost implements thaw.core.Plugin, ChangeListener {
 
 	public final static BoardFactory[] factories =
 			new BoardFactory[] {
-					new thaw.plugins.miniFrost.KnownBoardListProvider(),
-					new thaw.plugins.miniFrost.frostKSK.KSKBoardFactory(),
-					new thaw.plugins.miniFrost.frostKSK.SSKBoardFactory(),
-					new thaw.plugins.miniFrost.SpecialBoardFactory()
+					new KnownBoardListProvider(),
+					new KSKBoardFactory(),
+					new SSKBoardFactory(),
+					new SpecialBoardFactory()
 			};
 
 	public boolean run(Core core) {
@@ -149,7 +156,7 @@ public class MiniFrost implements thaw.core.Plugin, ChangeListener {
 		miniFrostPanel = new MiniFrostPanel(core.getConfig(), hsqldb, this);
 
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.miniFrost"),
-				thaw.gui.IconBox.readComments,
+				IconBox.readComments,
 				miniFrostPanel.getPanel());
 
 		core.getMainWindow().getMainFrame().validate();
@@ -200,8 +207,8 @@ public class MiniFrost implements thaw.core.Plugin, ChangeListener {
 		return I18n.getMessage("thaw.plugin.miniFrost");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.readComments;
+	public ImageIcon getIcon() {
+		return IconBox.readComments;
 	}
 
 	public void stateChanged(ChangeEvent arg0) {

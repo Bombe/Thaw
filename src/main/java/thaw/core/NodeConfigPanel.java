@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import thaw.gui.ConfigWindow;
+import thaw.gui.WarningWindow;
 
 /**
  * NodeConfigPanel. Creates and manages the panel containing all the things to
@@ -146,7 +147,7 @@ public class NodeConfigPanel implements Observer, ActionListener {
 						!paramFields[0].getText().equals(currentValues[0]) &&
 						!"127.0.0.1".equals(paramFields[0].getText())) {
 
-					new thaw.gui.WarningWindow(core,
+					new WarningWindow(core,
 							I18n.getMessage("thaw.config.sameComputerButNotLocalhost.l0") + "\n" +
 									I18n.getMessage("thaw.config.sameComputerButNotLocalhost.l1") + "\n" +
 									I18n.getMessage("thaw.config.sameComputerButNotLocalhost.l2") + "\n\n" +

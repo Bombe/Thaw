@@ -2,6 +2,7 @@ package thaw.plugins;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -10,12 +11,14 @@ import javax.swing.WindowConstants;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.core.Plugin;
 import thaw.fcp.FCPClientGet;
 import thaw.fcp.FreenetURIHelper;
 import thaw.gui.IconBox;
+import thaw.gui.WarningWindow;
 import thaw.plugins.fetchPlugin.FetchPanel;
 
-public class FetchPlugin implements thaw.core.Plugin, ActionListener {
+public class FetchPlugin implements Plugin, ActionListener {
 
 	public final static int MIN_SLASH_POSITION = 80;
 
@@ -138,14 +141,14 @@ public class FetchPlugin implements thaw.core.Plugin, ActionListener {
 		fetchFrame.setVisible(false);
 
 		if (!somethingStarted) {
-			new thaw.gui.WarningWindow(core,
+			new WarningWindow(core,
 					I18n.getMessage("thaw.plugin.fetch.noValidURI"));
 			return;
 		}
 
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.downloads;
+	public ImageIcon getIcon() {
+		return IconBox.downloads;
 	}
 }

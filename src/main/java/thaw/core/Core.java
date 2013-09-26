@@ -1,12 +1,20 @@
 package thaw.core;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
+import java.util.Vector;
+import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import freenet.crypt.Yarrow;
 
@@ -20,6 +28,7 @@ import thaw.fcp.FCPWatchGlobal;
 import thaw.gui.ConfigWindow;
 import thaw.gui.IconBox;
 import thaw.gui.MainWindow;
+import thaw.gui.WarningWindow;
 
 /**
  * A "core" contains references to all the main parts of Thaw. The Core has all
@@ -113,7 +122,7 @@ public class Core implements Observer {
 
 		splashScreen.setProgressionAndStatus(20, "Connecting ...");
 		if (!initConnection())
-			new thaw.gui.WarningWindow(this, I18n.getMessage("thaw.warning.unableToConnectTo") +
+			new WarningWindow(this, I18n.getMessage("thaw.warning.unableToConnectTo") +
 					" " + config.getValue("nodeAddress") +
 					":" + config.getValue("nodePort"));
 
@@ -154,7 +163,7 @@ public class Core implements Observer {
 			System.setProperty("java.io.tmpdir", config.getValue("tmpDir"));
 
 		if (config.getValue("lang") != null)
-			I18n.setLocale(new java.util.Locale(config.getValue("lang")));
+			I18n.setLocale(new Locale(config.getValue("lang")));
 
 		return true;
 	}
@@ -236,7 +245,7 @@ public class Core implements Observer {
 							I18n.getMessage("thaw.statusBar.ready"));
 				else
 					getMainWindow().setStatus(IconBox.minDisconnectAction,
-							I18n.getMessage("thaw.statusBar.disconnected"), java.awt.Color.RED);
+							I18n.getMessage("thaw.statusBar.disconnected"), Color.RED);
 			}
 
 			return ret;
@@ -263,7 +272,7 @@ public class Core implements Observer {
 
 		if (getMainWindow() != null) {
 			getMainWindow().setStatus(IconBox.blueBunny,
-					I18n.getMessage("thaw.statusBar.connecting"), java.awt.Color.RED);
+					I18n.getMessage("thaw.statusBar.connecting"), Color.RED);
 
 		}
 
@@ -366,14 +375,14 @@ public class Core implements Observer {
 				Logger.error(this, "(1) Error while loading theme '" + theme + "' : " + e.toString());
 			} catch (IllegalAccessException e) {
 				Logger.error(this, "(2) Error while loading theme '" + theme + "' : " + e.toString());
-			} catch (javax.swing.UnsupportedLookAndFeelException e) {
+			} catch (UnsupportedLookAndFeelException e) {
 				Logger.error(this, "(3) Error while loading theme '" + theme + "' : " + e.toString());
 			}
 
 			if (core.getMainWindow() != null)
-				javax.swing.SwingUtilities.updateComponentTreeUI(core.getMainWindow().getMainFrame());
+				SwingUtilities.updateComponentTreeUI(core.getMainWindow().getMainFrame());
 			if (core.getConfigWindow() != null)
-				javax.swing.SwingUtilities.updateComponentTreeUI(core.getConfigWindow().getFrame());
+				SwingUtilities.updateComponentTreeUI(core.getConfigWindow().getFrame());
 		}
 	}
 
@@ -386,10 +395,10 @@ public class Core implements Observer {
 		LnFSetter s = new LnFSetter(this, theme);
 
 		try {
-			javax.swing.SwingUtilities.invokeAndWait(s);
+			SwingUtilities.invokeAndWait(s);
 		} catch (InterruptedException e) {
 			Logger.error(s, "Interrupted while setting theme '" + theme + "' because: " + e.toString());
-		} catch (java.lang.reflect.InvocationTargetException e) {
+		} catch (InvocationTargetException e) {
 			Logger.error(s, "Error while setting theme : " + e.toString());
 			Logger.notice(s, "Original exception: " + e.getTargetException().toString());
 			e.getTargetException().printStackTrace();
@@ -478,10 +487,10 @@ public class Core implements Observer {
 
 		if (mainWindow != null) {
 			mainWindow.setStatus(IconBox.minDisconnectAction,
-					I18n.getMessage("thaw.statusBar.disconnected"), java.awt.Color.RED);
+					I18n.getMessage("thaw.statusBar.disconnected"), Color.RED);
 
 			/* not null because we want to force the cleaning */
-			mainWindow.changeButtonsInTheToolbar(this, new java.util.Vector());
+			mainWindow.changeButtonsInTheToolbar(this, new Vector());
 		}
 
 		if (connection != null) {
@@ -545,14 +554,14 @@ public class Core implements Observer {
 	}
 
 	public boolean askDeconnectionConfirmation() {
-		final int ret = JOptionPane.showOptionDialog((java.awt.Component) null,
+		final int ret = JOptionPane.showOptionDialog((Component) null,
 				I18n.getMessage("thaw.warning.isWriting"),
 				"Thaw - " + I18n.getMessage("thaw.warning.title"),
 				JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE,
-				(javax.swing.Icon) null,
-				(java.lang.Object[]) null,
-				(java.lang.Object) null);
+				(Icon) null,
+				(Object[]) null,
+				(Object) null);
 		if ((ret == JOptionPane.CLOSED_OPTION)
 				|| (ret == JOptionPane.CANCEL_OPTION)
 				|| (ret == JOptionPane.NO_OPTION))
@@ -577,10 +586,10 @@ public class Core implements Observer {
 				Logger.notice(this, "Starting reconnection process !");
 
 				getMainWindow().setStatus(IconBox.blueBunny,
-						I18n.getMessage("thaw.statusBar.connecting"), java.awt.Color.RED);
+						I18n.getMessage("thaw.statusBar.connecting"), Color.RED);
 				getPluginManager().stopPlugins(); /* don't forget there is the status bar plugin */
 				getMainWindow().setStatus(IconBox.blueBunny,
-						I18n.getMessage("thaw.statusBar.connecting"), java.awt.Color.RED);
+						I18n.getMessage("thaw.statusBar.connecting"), Color.RED);
 
 				subDisconnect();
 
@@ -588,7 +597,7 @@ public class Core implements Observer {
 					try {
 						if (initialWait)
 							Thread.sleep(Core.TIME_BETWEEN_EACH_TRY);
-					} catch (final java.lang.InterruptedException e) {
+					} catch (final InterruptedException e) {
 						// brouzouf
 					}
 
@@ -604,7 +613,7 @@ public class Core implements Observer {
 							I18n.getMessage("thaw.statusBar.ready"));
 				} else {
 					getMainWindow().setStatus(IconBox.minDisconnectAction,
-							I18n.getMessage("thaw.statusBar.disconnected"), java.awt.Color.RED);
+							I18n.getMessage("thaw.statusBar.disconnected"), Color.RED);
 				}
 
 				if (running && !isStopping()) {

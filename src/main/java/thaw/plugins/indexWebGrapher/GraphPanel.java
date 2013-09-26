@@ -1,5 +1,6 @@
 package thaw.plugins.indexWebGrapher;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -136,7 +137,7 @@ public class GraphPanel extends JComponent implements MouseListener {
 		super.paintComponent(g);
 
 		Dimension d = getSize();
-		g.setColor(java.awt.Color.WHITE);
+		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, (int) d.getWidth(), (int) d.getHeight());
 
 		if (nodeList == null)
@@ -145,7 +146,7 @@ public class GraphPanel extends JComponent implements MouseListener {
 		int zeroX = (-1 * (int) (minX * zoom)) + BORDER;
 		int zeroY = (-1 * (int) (minY * zoom)) + BORDER;
 
-		g.setColor(java.awt.Color.GRAY);
+		g.setColor(Color.GRAY);
 		g.drawLine(zeroX, 0, zeroX, (int) d.getHeight());
 		g.drawLine(0, zeroY, (int) d.getWidth(), zeroY);
 

@@ -2,6 +2,8 @@ package thaw.plugins;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -83,7 +85,7 @@ public class IndexExporter implements Plugin, ActionListener {
 		return I18n.getMessage("thaw.plugin.index.importExportPlugin");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
+	public ImageIcon getIcon() {
 		return IconBox.importExport;
 	}
 
@@ -112,7 +114,7 @@ public class IndexExporter implements Plugin, ActionListener {
 		fileChooser.setDirectoryOnly(false);
 		fileChooser.setDialogType(in ? JFileChooser.OPEN_DIALOG : JFileChooser.SAVE_DIALOG);
 
-		java.io.File file = fileChooser.askOneFile();
+		File file = fileChooser.askOneFile();
 
 		if (file == null || (in && (!file.exists() || !file.isFile()))) {
 			Logger.notice(this, "Cancelled");
@@ -131,9 +133,9 @@ public class IndexExporter implements Plugin, ActionListener {
 
 		private boolean content;
 
-		private java.io.File file;
+		private File file;
 
-		public Worker(boolean impor, boolean content, java.io.File file) {
+		public Worker(boolean impor, boolean content, File file) {
 			this.impor = impor;
 			this.content = content;
 			this.file = file;

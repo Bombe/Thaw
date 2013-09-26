@@ -1,15 +1,20 @@
 package thaw.plugins.webOfTrust;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -184,7 +189,7 @@ public class TrustListUploader implements Signatures.SignaturesObserver, Observe
 
 			try {
 				xmlBuilder = xmlFactory.newDocumentBuilder();
-			} catch (final javax.xml.parsers.ParserConfigurationException e) {
+			} catch (final ParserConfigurationException e) {
 				Logger.error(this, "Unable to generate the index because : " + e.toString());
 				return false;
 			}
@@ -208,7 +213,7 @@ public class TrustListUploader implements Signatures.SignaturesObserver, Observe
 
 			try {
 				serializer = transformFactory.newTransformer();
-			} catch (final javax.xml.transform.TransformerConfigurationException e) {
+			} catch (final TransformerConfigurationException e) {
 				Logger.error(this, "Unable to save index because: " + e.toString());
 				return false;
 			}
@@ -219,7 +224,7 @@ public class TrustListUploader implements Signatures.SignaturesObserver, Observe
 			/* final step */
 			try {
 				serializer.transform(domSource, streamResult);
-			} catch (final javax.xml.transform.TransformerException e) {
+			} catch (final TransformerException e) {
 				Logger.error(this, "Unable to save index because: " + e.toString());
 				return false;
 			}
@@ -227,9 +232,9 @@ public class TrustListUploader implements Signatures.SignaturesObserver, Observe
 			out.close();
 
 			return true;
-		} catch (java.io.FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			Logger.error(this, "File not found exception ?!");
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "IOException while generating the index: " + e.toString());
 		}
 
@@ -272,7 +277,7 @@ public class TrustListUploader implements Signatures.SignaturesObserver, Observe
 
 				queueManager.addQueryToTheRunningQueue(upload);
 
-			} catch (java.io.IOException e) {
+			} catch (IOException e) {
 				Logger.error(this, "Can't upload your trust list because : " + e.toString());
 				e.printStackTrace();
 			}

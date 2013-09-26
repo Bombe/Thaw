@@ -1,7 +1,10 @@
 package thaw.plugins;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -22,7 +26,11 @@ import javax.swing.JScrollPane;
 import thaw.core.Config;
 import thaw.core.Core;
 import thaw.core.I18n;
+import thaw.core.LogListener;
 import thaw.core.Logger;
+import thaw.core.Main;
+import thaw.core.Plugin;
+import thaw.core.PluginManager;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
 import thaw.fcp.FCPTransferQuery;
@@ -31,11 +39,11 @@ import thaw.gui.SysTrayIcon;
 import thaw.gui.TransferProgressBar;
 import thaw.gui.WarningWindow;
 
-public class TrayIcon implements thaw.core.Plugin,
+public class TrayIcon implements Plugin,
 		MouseListener,
 		WindowListener,
 		ActionListener,
-		thaw.core.LogListener {
+        LogListener {
 
 	private Core core;
 
@@ -68,8 +76,8 @@ public class TrayIcon implements thaw.core.Plugin,
 		if (config.getValue("disableTrayIconPopups") == null)
 			config.setValue("disableTrayIconPopups", "false");
 
-		icon = new SysTrayIcon(thaw.gui.IconBox.blueBunny);
-		icon.setToolTip("Thaw " + thaw.core.Main.getVersion());
+		icon = new SysTrayIcon(IconBox.blueBunny);
+		icon.setToolTip("Thaw " + Main.getVersion());
 		icon.addMouseListener(this);
 
 		core.getMainWindow().addWindowListener(this);
@@ -100,7 +108,7 @@ public class TrayIcon implements thaw.core.Plugin,
 		Logger.addLogListener(this);
 	}
 
-	public static boolean popMessage(thaw.core.PluginManager pluginManager,
+	public static boolean popMessage(PluginManager pluginManager,
 									 String title,
 									 String message) {
 		return popMessage(pluginManager, title, message, SysTrayIcon.MSG_NONE);
@@ -112,9 +120,9 @@ public class TrayIcon implements thaw.core.Plugin,
 	 * returns false.
 	 *
 	 * @param msgType
-	 * 		see thaw.gui.SysTrayIcon
+	 * 		see SysTrayIcon
 	 */
-	public static boolean popMessage(thaw.core.PluginManager pluginManager,
+	public static boolean popMessage(PluginManager pluginManager,
 									 String title,
 									 String message,
 									 int msgType) {
@@ -158,8 +166,8 @@ public class TrayIcon implements thaw.core.Plugin,
 		return I18n.getMessage("thaw.plugin.trayIcon.pluginName");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.blueBunny;
+	public ImageIcon getIcon() {
+		return IconBox.blueBunny;
 	}
 
 	public void switchMainWindowVisibility() {
@@ -225,7 +233,7 @@ public class TrayIcon implements thaw.core.Plugin,
 		if (txt == null)
 			txt = "?";
 
-		javax.swing.ImageIcon icon;
+		ImageIcon icon;
 
 		if (q.getQueryType() == 2)
 			icon = IconBox.minInsertions;
@@ -246,7 +254,7 @@ public class TrayIcon implements thaw.core.Plugin,
 	}
 
 	private boolean realDisplayFrame(int x, int y) {
-		dialog = new JDialog((java.awt.Frame) null,
+		dialog = new JDialog((Frame) null,
 				I18n.getMessage("thaw.plugin.trayIcon.dialogTitle"));
 		dialog.getContentPane().setLayout(new BorderLayout(5, 5));
 		dialog.setUndecorated(true);
@@ -305,7 +313,7 @@ public class TrayIcon implements thaw.core.Plugin,
 		dialog.validate();
 		dialog.pack();
 
-		java.awt.Dimension size = dialog.getSize();
+		Dimension size = dialog.getSize();
 
 		double height = size.getHeight();
 		double width = size.getWidth();
@@ -317,7 +325,7 @@ public class TrayIcon implements thaw.core.Plugin,
 
 		dialog.setSize((int) width, (int) height);
 
-		java.awt.Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		int screen_x = (int) d.getWidth();
 		int screen_y = (int) d.getHeight();
 
@@ -421,7 +429,7 @@ public class TrayIcon implements thaw.core.Plugin,
 			switchMainWindowVisibility();
 		else if (e.getButton() == MouseEvent.BUTTON3) {
 			if (dialog == null) {
-				java.awt.Point p = icon.getMousePosition();
+				Point p = icon.getMousePosition();
 				displayFrame(((int) p.getX()), ((int) p.getY()));
 			}
 		}

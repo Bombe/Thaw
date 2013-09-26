@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -13,11 +14,13 @@ import javax.swing.JScrollPane;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.core.Plugin;
 import thaw.core.ThawThread;
+import thaw.gui.IconBox;
 import thaw.plugins.indexWebGrapher.GraphBuilder;
 import thaw.plugins.indexWebGrapher.GraphPanel;
 
-public class IndexWebGrapher implements thaw.core.Plugin, ActionListener {
+public class IndexWebGrapher implements Plugin, ActionListener {
 
 	public final static int NMB_STEPS = 10;
 
@@ -77,7 +80,7 @@ public class IndexWebGrapher implements thaw.core.Plugin, ActionListener {
 		progressBar.setStringPainted(true);
 
 		JPanel zoomPanel = new JPanel(new GridLayout(1, 3));
-		zoomPanel.add((refresh = new JButton("", thaw.gui.IconBox.minRefreshAction)));
+		zoomPanel.add((refresh = new JButton("", IconBox.minRefreshAction)));
 		zoomPanel.add((zoomOut = new JButton("-")));
 		zoomPanel.add((zoomIn = new JButton("+")));
 
@@ -99,7 +102,7 @@ public class IndexWebGrapher implements thaw.core.Plugin, ActionListener {
 		tabPanel.add(southPanel, BorderLayout.SOUTH);
 
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.indexWebGrapher.shortName"),
-				thaw.gui.IconBox.web,
+				IconBox.web,
 				tabPanel);
 
 		return true;
@@ -133,8 +136,8 @@ public class IndexWebGrapher implements thaw.core.Plugin, ActionListener {
 		return I18n.getMessage("thaw.plugin.indexWebGrapher");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.web;
+	public ImageIcon getIcon() {
+		return IconBox.web;
 	}
 
 	private GraphBuilder lastBuilder = null;

@@ -1,9 +1,12 @@
 package thaw.fcp;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Observable;
 
 import thaw.core.Logger;
@@ -137,7 +140,7 @@ public class FCPConnection extends Observable {
 			synchronized (monitor) {
 				monitor.notifyAll();
 			}
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.warning(this, "Unable to close cleanly the connection : "
 					+ e.toString() + " ; " + e.getMessage());
 		}
@@ -183,7 +186,7 @@ public class FCPConnection extends Observable {
 		try {
 			in = socket.getInputStream();
 			out = socket.getOutputStream();
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.error(this, "Socket and connection established, but unable to get " +
 					"in/output streams ?! : " + e.toString() + " ; " + e.getMessage());
 			return false;
@@ -209,11 +212,11 @@ public class FCPConnection extends Observable {
 		try {
 			socket = new Socket(nodeAddress, port);
 
-		} catch (final java.net.UnknownHostException e) {
+		} catch (final UnknownHostException e) {
 			Logger.error(this, "Error while trying to connect to " + nodeAddress + ":" + port + " : " +
 					e.toString());
 			socket = null;
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.error(this, "Error while trying to connect to " + nodeAddress + ":" + port + " : " +
 					e.toString() + " ; " + e.getMessage());
 			socket = null;
@@ -250,7 +253,7 @@ public class FCPConnection extends Observable {
 			try {
 				out.write(data);
 				out.flush();
-			} catch (final java.io.IOException e) {
+			} catch (final IOException e) {
 				Logger.warning(this, "Unable to write() on the socket ?! : "
 						+ e.toString() + " ; " + e.getMessage());
 				disconnect();
@@ -277,7 +280,7 @@ public class FCPConnection extends Observable {
 			if (writersWaiting > 1) {
 				try {
 					monitor.wait();
-				} catch (final java.lang.InterruptedException e) {
+				} catch (final InterruptedException e) {
 					Logger.warning(this, "Interrupted while waiting ?!");
 				}
 			}
@@ -323,7 +326,7 @@ public class FCPConnection extends Observable {
 		if ((out != null) && (socket != null) && socket.isConnected()) {
 			try {
 				bufferedOut.write(toWrite.getBytes("UTF-8"));
-			} catch (final java.io.UnsupportedEncodingException e) {
+			} catch (final UnsupportedEncodingException e) {
 				Logger.error(this, "UNSUPPORTED ENCODING EXCEPTION : UTF-8");
 				bufferedOut.write(toWrite.getBytes());
 			}
@@ -371,7 +374,7 @@ public class FCPConnection extends Observable {
 			//Logger.verbose(this, "Remaining: "+rawBytesWaiting);
 
 			return rdBytes;
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.error(this, "IOException while reading raw bytes on socket => disconnection:");
 			Logger.error(this, "   =========");
 			Logger.error(this, e.getMessage() + ":");
@@ -456,7 +459,7 @@ public class FCPConnection extends Observable {
 
 				return result;
 
-			} catch (final java.io.IOException e) {
+			} catch (final IOException e) {
 				if (isConnected())
 					Logger.notice(this, "IOException while reading but still connected ?! : "
 							+ e.toString() + " ; " + e.getMessage());

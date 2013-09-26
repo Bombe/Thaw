@@ -144,7 +144,7 @@ public class MiniFrostConfigTab implements Observer, ActionListener {
 	public void display() {
 		configWindow.addObserver(this);
 		configWindow.addTab(I18n.getMessage("thaw.plugin.miniFrost"),
-				thaw.gui.IconBox.minReadComments,
+				IconBox.minReadComments,
 				globalPanel);
 	}
 

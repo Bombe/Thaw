@@ -5,6 +5,7 @@ import javax.swing.ImageIcon;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Plugin;
+import thaw.gui.IconBox;
 import thaw.plugins.nodeConfigurator.NodeConfiguratorTab;
 
 public class NodeConfigurator implements Plugin {
@@ -17,11 +18,11 @@ public class NodeConfigurator implements Plugin {
 	}
 
 	public ImageIcon getIcon() {
-		return thaw.gui.IconBox.settings;
+		return IconBox.settings;
 	}
 
 	public String getNameForUser() {
-		return thaw.core.I18n.getMessage("thaw.plugin.nodeConfig");
+		return I18n.getMessage("thaw.plugin.nodeConfig");
 	}
 
 	public boolean run(Core core) {
@@ -34,7 +35,7 @@ public class NodeConfigurator implements Plugin {
 		configTab = new NodeConfiguratorTab(advanced, core.getQueueManager().getQueryManager());
 
 		core.getConfigWindow().addTab(I18n.getMessage("thaw.plugin.nodeConfig"),
-				thaw.gui.IconBox.minSettings,
+				IconBox.minSettings,
 				configTab.getPanel());
 
 		configTab.refresh();

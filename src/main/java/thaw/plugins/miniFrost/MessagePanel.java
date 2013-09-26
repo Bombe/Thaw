@@ -6,16 +6,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.Iterator;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import thaw.core.I18n;
 import thaw.core.Logger;
@@ -23,6 +26,8 @@ import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
 import thaw.fcp.FCPClientGet;
 import thaw.fcp.FCPQueueManager;
+import thaw.gui.FileChooser;
+import thaw.gui.GUIHelper;
 import thaw.gui.IconBox;
 import thaw.plugins.IndexBrowser;
 import thaw.plugins.index.IndexManagementHelper;
@@ -408,7 +413,7 @@ public class MessagePanel
 			}
 		};
 
-		javax.swing.SwingUtilities.invokeLater(doScroll);
+		SwingUtilities.invokeLater(doScroll);
 	}
 
 	public JPanel getPanel() {
@@ -590,7 +595,7 @@ public class MessagePanel
 			}
 		}
 
-		public void download(String key, java.io.File destDir) {
+		public void download(String key, File destDir) {
 			FCPQueueManager queueManager = messagePanel.getMainPanel().getPluginCore().getCore().getQueueManager();
 
 			FCPClientGet get = new FCPClientGet.Builder(queueManager)
@@ -625,7 +630,7 @@ public class MessagePanel
 			if (e.getSource() == chkActions[3]
 					|| e.getSource() == indexActions[3]) { /* copy this key */
 
-				thaw.gui.GUIHelper.copyToClipboard(key);
+				GUIHelper.copyToClipboard(key);
 
 			} else if (e.getSource() == chkActions[4]
 					|| e.getSource() == indexActions[4]) { /* copy all keys */
@@ -641,21 +646,21 @@ public class MessagePanel
 					str += ((String) it.next()) + "\n";
 				}
 
-				thaw.gui.GUIHelper.copyToClipboard(str);
+				GUIHelper.copyToClipboard(str);
 
 			} else if (e.getSource() == chkActions[0]) { /* download this key */
 
 				String lastPath = mainPanel.getConfig().getValue("lastDestinationDirectory");
 
-				thaw.gui.FileChooser chooser = (lastPath != null ?
-						new thaw.gui.FileChooser(lastPath) :
-						new thaw.gui.FileChooser());
+				FileChooser chooser = (lastPath != null ?
+						new FileChooser(lastPath) :
+						new FileChooser());
 
 				chooser.setTitle(I18n.getMessage("thaw.plugin.fetch.chooseDestination"));
 				chooser.setDirectoryOnly(true);
-				chooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
+				chooser.setDialogType(JFileChooser.SAVE_DIALOG);
 
-				java.io.File file = chooser.askOneFile();
+				File file = chooser.askOneFile();
 
 				if (file == null)
 					return;
@@ -668,15 +673,15 @@ public class MessagePanel
 
 				String lastPath = mainPanel.getConfig().getValue("lastDestinationDirectory");
 
-				thaw.gui.FileChooser chooser = (lastPath != null ?
-						new thaw.gui.FileChooser(lastPath) :
-						new thaw.gui.FileChooser());
+				FileChooser chooser = (lastPath != null ?
+						new FileChooser(lastPath) :
+						new FileChooser());
 
 				chooser.setTitle(I18n.getMessage("thaw.plugin.fetch.chooseDestination"));
 				chooser.setDirectoryOnly(true);
-				chooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
+				chooser.setDialogType(JFileChooser.SAVE_DIALOG);
 
-				java.io.File file = chooser.askOneFile();
+				File file = chooser.askOneFile();
 
 				if (file == null)
 					return;

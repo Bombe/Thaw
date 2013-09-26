@@ -9,6 +9,7 @@ import java.util.Observer;
 import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -21,9 +22,10 @@ import thaw.fcp.FCPQueueManager;
 import thaw.fcp.FCPTransferQuery;
 import thaw.gui.GUIHelper;
 import thaw.gui.IconBox;
+import thaw.gui.SysTrayIcon;
 import thaw.plugins.TrayIcon;
 
-public class QueueTableModel extends javax.swing.table.AbstractTableModel implements Observer {
+public class QueueTableModel extends AbstractTableModel implements Observer {
 
 	private static final long serialVersionUID = 20091205;
 
@@ -151,7 +153,7 @@ public class QueueTableModel extends javax.swing.table.AbstractTableModel implem
 
 		} else if (column == 2) {
 
-			return thaw.gui.GUIHelper.getPrintableSize(query.getFileSize());
+			return GUIHelper.getPrintableSize(query.getFileSize());
 
 		} else if (!isForInsertions && (column == 3)) {
 			if (query.getPath() != null)
@@ -293,7 +295,7 @@ public class QueueTableModel extends javax.swing.table.AbstractTableModel implem
 		synchronized (queries) {
 			try {
 				return queries.get(row);
-			} catch (final java.lang.ArrayIndexOutOfBoundsException e) {
+			} catch (final ArrayIndexOutOfBoundsException e) {
 				Logger.notice(this, "Query not found, row: " + row);
 				return null;
 			}
@@ -400,7 +402,7 @@ public class QueueTableModel extends javax.swing.table.AbstractTableModel implem
 				if (str != null) {
 					str = str.replaceAll("X", ((FCPTransferQuery) o).getFilename());
 					TrayIcon.popMessage(pluginManager, "Thaw",
-							str, thaw.gui.SysTrayIcon.MSG_INFO);
+							str, SysTrayIcon.MSG_INFO);
 				}
 			}
 

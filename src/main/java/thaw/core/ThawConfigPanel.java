@@ -4,12 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -120,9 +122,9 @@ public class ThawConfigPanel implements Observer, ActionListener {
 		FileChooser chooser = new FileChooser(System.getProperty("java.io.tmpdir"));
 		chooser.setTitle(I18n.getMessage("thaw.common.tempDir"));
 		chooser.setDirectoryOnly(true);
-		chooser.setDialogType(javax.swing.JFileChooser.OPEN_DIALOG);
+		chooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
-		java.io.File file = chooser.askOneFile();
+		File file = chooser.askOneFile();
 		tmpDirField.setText(file.getPath());
 	}
 

@@ -3,18 +3,23 @@ package thaw.plugins.miniFrost.frostKSK;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import frost.crypt.FrostCrypt;
+import frost.util.FileAccess;
 import frost.util.XMLTools;
 import org.bouncycastle.util.encoders.Base64;
 import org.w3c.dom.CDATASection;
@@ -23,6 +28,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.core.Main;
 import thaw.plugins.Hsqldb;
 import thaw.plugins.miniFrost.RegexpBlacklist;
 import thaw.plugins.signatures.Identity;
@@ -39,7 +45,7 @@ public class KSKMessageParser {
 
 	public KSKMessageParser() {
 		gmtFormat = new SimpleDateFormat("yyyy.M.d HH:mm:ss");
-		gmtFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+		gmtFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 
 	private String messageId;
@@ -92,7 +98,7 @@ public class KSKMessageParser {
 							String inReplyTo, /* msg id */
 							String from,
 							String subject,
-							java.util.Date dateUtil,
+							Date dateUtil,
 							Identity encryptedFor,
 							String board,
 							String body,
@@ -195,17 +201,17 @@ public class KSKMessageParser {
 		}
 	}
 
-	public java.util.Date getDate() {
+	public Date getDate() {
 		date = date.trim();
 		time = time.trim();
 
 		date += " " + time;
 
-		java.util.Date dateUtil = null;
+		Date dateUtil = null;
 
 		try {
 			dateUtil = simpleFormat.parse(date);
-		} catch (java.text.ParseException e) {
+		} catch (ParseException e) {
 			Logger.notice(this, "Can't parse the date !");
 			return null;
 		}
@@ -214,7 +220,7 @@ public class KSKMessageParser {
 	}
 
 	public boolean insert(Hsqldb db,
-						  int boardId, java.util.Date boardDate, int rev,
+						  int boardId, Date boardDate, int rev,
 						  String boardNameExpected) {
 
 		if (boardNameExpected == null) {
@@ -244,11 +250,11 @@ public class KSKMessageParser {
 
 		date += " " + time;
 
-		java.util.Date dateUtil = null;
+		Date dateUtil = null;
 
 		try {
 			dateUtil = simpleFormat.parse(date);
-		} catch (java.text.ParseException e) {
+		} catch (ParseException e) {
 			Logger.notice(this, "Can't parse the date !");
 			return false;
 		}
@@ -262,12 +268,12 @@ public class KSKMessageParser {
 				dateUtil = null;
 		}
 
-		java.sql.Timestamp timestampSql;
+		Timestamp timestampSql;
 
 		if (dateUtil != null)
-			timestampSql = new java.sql.Timestamp(dateUtil.getTime());
+			timestampSql = new Timestamp(dateUtil.getTime());
 		else
-			timestampSql = new java.sql.Timestamp(boardDate.getTime());
+			timestampSql = new Timestamp(boardDate.getTime());
 
 		java.sql.Date dateSql = new java.sql.Date(boardDate.getTime());
 
@@ -577,7 +583,7 @@ public class KSKMessageParser {
 				tmp = File.createTempFile("thaw-", "-decrypted-msg.xml");
 				tmp.deleteOnExit();
 
-				frost.util.FileAccess.writeFile(decoded, tmp);
+				FileAccess.writeFile(decoded, tmp);
 
 				/* recursivity (bad bad bad, but I'm lazy :) */
 				ret = loadFile(tmp, db);
@@ -808,7 +814,7 @@ public class KSKMessageParser {
 
 		Element el;
 
-		if ((el = makeText(doc, "client", "Thaw " + thaw.core.Main.getVersion())) != null)
+		if ((el = makeText(doc, "client", "Thaw " + Main.getVersion())) != null)
 			root.appendChild(el);
 
 		if (wotPublicKey != null) {
@@ -867,7 +873,7 @@ public class KSKMessageParser {
 			din.readFully(data);
 			fileIn.close();
 			return data;
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "Exception thrown in readByteArray(File file): '" + e.toString() + "'");
 		}
 		return null;
@@ -879,7 +885,7 @@ public class KSKMessageParser {
 		try {
 			tmpFile = File.createTempFile("thaw-", "-message.xml");
 			tmpFile.deleteOnExit();
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "Can't create temporary file because : " + e.toString());
 			return null;
 		}
@@ -920,7 +926,7 @@ public class KSKMessageParser {
 		try {
 			tmpFile = File.createTempFile("thaw-", "-message.xml");
 			tmpFile.deleteOnExit();
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "Can't create temporary file because : " + e.toString());
 			return null;
 		}

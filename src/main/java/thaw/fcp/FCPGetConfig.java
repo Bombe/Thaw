@@ -5,6 +5,8 @@ import java.util.Hashtable;
 import java.util.Observable;
 import java.util.Observer;
 
+import thaw.core.Logger;
+
 public class FCPGetConfig extends Observable implements FCPQuery, Observer {
 
 	private final FCPQueryManager queryManager;
@@ -112,7 +114,7 @@ public class FCPGetConfig extends Observable implements FCPQuery, Observer {
 			else if ("forcewriteflag".equals(element))
 				forceWriteFlag = Boolean.valueOf(value).booleanValue();
 			else
-				thaw.core.Logger.warning(this, "Unknow element '" + element + "' : '" + value + "' !");
+				Logger.warning(this, "Unknow element '" + element + "' : '" + value + "' !");
 		}
 
 		public String getName() {

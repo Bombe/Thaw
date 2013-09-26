@@ -1,5 +1,6 @@
 package thaw.plugins;
 
+import javax.swing.ImageIcon;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -102,7 +103,7 @@ public class Signatures extends LibraryPlugin {
 		configTab = new SigConfigTab(core.getConfig(), core.getConfigWindow(), db);
 
 		core.getConfigWindow().addTab(I18n.getMessage("thaw.plugin.signature.signatures"),
-				thaw.gui.IconBox.minPeers,
+				IconBox.minPeers,
 				configTab.getPanel());
 
 		return true;
@@ -139,7 +140,7 @@ public class Signatures extends LibraryPlugin {
 		return I18n.getMessage("thaw.plugin.signature.pluginName");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
+	public ImageIcon getIcon() {
 		return IconBox.identity;
 	}
 

@@ -1,15 +1,20 @@
 package thaw.plugins.miniFrost;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.TimeZone;
 import java.util.Vector;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -24,6 +29,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 import thaw.core.I18n;
 import thaw.core.Logger;
@@ -82,7 +88,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 		this.mainPanel = mainPanel;
 
 		gmtConverter = new SimpleDateFormat("yyyy.M.d HH:mm:ss");
-		gmtConverter.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+		gmtConverter.setTimeZone(TimeZone.getTimeZone("GMT"));
 		dateParser = new SimpleDateFormat("yyyy.M.d HH:mm:ss");
 		messageDateFormat = new SimpleDateFormat("yyyy.MM.dd - HH:mm:ss");
 
@@ -92,7 +98,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 
 		authorBox = new JComboBox();
 		authorBox.setEditable(true);
-		authorBox.setBackground(java.awt.Color.WHITE);
+		authorBox.setBackground(Color.WHITE);
 
 		subjectField = new JTextField("");
 		subjectField.setEditable(true);
@@ -153,17 +159,17 @@ public class DraftPanel implements ActionListener, MouseListener {
 		JPanel southCenterPanel = new JPanel(new BorderLayout(3, 3));
 		addAttachment = new JButton(IconBox.attachment);
 		addAttachment.addActionListener(this);
-		addAttachment.setPreferredSize(new java.awt.Dimension(ATTACHMENT_LIST_HEIGHT,
+		addAttachment.setPreferredSize(new Dimension(ATTACHMENT_LIST_HEIGHT,
 				ATTACHMENT_LIST_HEIGHT));
 		attachmentList = new JList();
 		attachmentList.setCellRenderer(new AttachmentRenderer());
 		attachmentList.addMouseListener(this);
-		attachmentList.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		attachmentList.setPreferredSize(new java.awt.Dimension(ATTACHMENT_LIST_HEIGHT,
+		attachmentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		attachmentList.setPreferredSize(new Dimension(ATTACHMENT_LIST_HEIGHT,
 				ATTACHMENT_LIST_HEIGHT));
 
 		JScrollPane attListScrollPanel = new JScrollPane(attachmentList);
-		attListScrollPanel.setPreferredSize(new java.awt.Dimension(ATTACHMENT_LIST_HEIGHT,
+		attListScrollPanel.setPreferredSize(new Dimension(ATTACHMENT_LIST_HEIGHT,
 				ATTACHMENT_LIST_HEIGHT));
 
 		southCenterPanel.add(addAttachment, BorderLayout.WEST);
@@ -199,7 +205,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 
 		}
 
-		public java.awt.Component getListCellRendererComponent(final JList list, Object value,
+		public Component getListCellRendererComponent(final JList list, Object value,
 															   final int index, final boolean isSelected,
 															   final boolean cellHasFocus) {
 			Attachment att = (Attachment) value;
@@ -310,7 +316,7 @@ public class DraftPanel implements ActionListener, MouseListener {
 
 		try {
 			return dateParser.parse(dateStr);
-		} catch (java.text.ParseException e) {
+		} catch (ParseException e) {
 			Logger.warning(null, "DraftPanel : Can't get the GMT date => will use the local time");
 			return new Date();
 		}

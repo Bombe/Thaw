@@ -1,5 +1,7 @@
 package thaw.plugins.index;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -167,8 +169,8 @@ public class File implements Observer, FileContainer {
 		String res;
 
 		try {
-			res = java.net.URLDecoder.decode(filename, "UTF-8");
-		} catch (final java.io.UnsupportedEncodingException e) {
+			res = URLDecoder.decode(filename, "UTF-8");
+		} catch (final UnsupportedEncodingException e) {
 			res = filename;
 		}
 

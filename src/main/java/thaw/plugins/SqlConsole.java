@@ -2,8 +2,14 @@ package thaw.plugins;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -14,8 +20,10 @@ import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.core.Plugin;
+import thaw.gui.IconBox;
+import thaw.plugins.index.DatabaseManager;
 
-public class SqlConsole implements Plugin, java.awt.event.ActionListener {
+public class SqlConsole implements Plugin, ActionListener {
 
 	public final static int MAX_LINE = 512;
 
@@ -70,7 +78,7 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 		panel = getPanel();
 
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.hsqldb.console"),
-				thaw.gui.IconBox.terminal,
+				IconBox.terminal,
 				panel);
 
 		return true;
@@ -169,7 +177,7 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 		}
 	}
 
-	public void actionPerformed(final java.awt.event.ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 
 		sendCommand(commandField.getText());
 
@@ -237,7 +245,7 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 			}
 
 			synchronized (hsqldb.dbLock) {
-				final java.sql.Statement st = hsqldb.getConnection().createStatement();
+				final Statement st = hsqldb.getConnection().createStatement();
 
 				ResultSet result;
 
@@ -250,8 +258,8 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 						return;
 					}
 				} else {
-					thaw.plugins.index.DatabaseManager.dropTables(hsqldb);
-					thaw.plugins.TransferLogs.dropTables(hsqldb);
+					DatabaseManager.dropTables(hsqldb);
+					TransferLogs.dropTables(hsqldb);
 					addToConsole("Ok\n");
 					st.close();
 					return;
@@ -269,7 +277,7 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 					return;
 				}
 
-				java.sql.SQLWarning warning = result.getWarnings();
+				SQLWarning warning = result.getWarnings();
 
 				while (warning != null) {
 					addToConsole("Warning: " + warning.toString());
@@ -323,13 +331,13 @@ public class SqlConsole implements Plugin, java.awt.event.ActionListener {
 				st.close();
 			}
 
-		} catch (final java.sql.SQLException e) {
+		} catch (final SQLException e) {
 			addToConsole("SQLException : " + e.toString() + " : " + e.getCause() + "\n");
 		}
 
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.terminal;
+	public ImageIcon getIcon() {
+		return IconBox.terminal;
 	}
 }

@@ -3,7 +3,10 @@ package thaw.fcp;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -38,7 +41,7 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 
 		try {
 			this.dir = new File(directory).getCanonicalPath();
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "IOException while doing a getCanonicalPath() on the directory : " + e.toString());
 			this.dir = new File(directory).getAbsolutePath();
 		}
@@ -74,7 +77,7 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 
 			try {
 				b = content.getBytes("UTF-8");
-			} catch (java.io.UnsupportedEncodingException e) {
+			} catch (UnsupportedEncodingException e) {
 				Logger.warning(this, "UnsupportedEncodingException : " + e.toString());
 				b = content.getBytes();
 			}
@@ -85,12 +88,12 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 
 			return true;
 
-		} catch (java.io.FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 
 			Logger.warning(this, "Unable to write file: " + e.toString());
 			return false;
 
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 
 			Logger.warning(this, "Unable to write file: " + e.toString());
 			return false;
@@ -110,10 +113,10 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 			dis.close();
 			stream.close();
 
-		} catch (java.io.FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			Logger.warning(this, "Unable to read file : " + e.toString());
 			return null;
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.warning(this, "Unable to read file : " + e.toString());
 			return null;
 		}

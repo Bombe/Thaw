@@ -1,9 +1,12 @@
 package thaw.plugins.nodeConfigurator;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Observable;
@@ -90,7 +93,7 @@ public class NodeConfiguratorTab implements Observer, ActionListener, ListSelect
 		categoryChoice.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		categoryChoice.addListSelectionListener(this);
 		categoryPanel.add(sc = new JScrollPane(categoryChoice), BorderLayout.CENTER);
-		sc.setPreferredSize(new java.awt.Dimension(COLUMNS_WIDTH, COLUMNS_WIDTH));
+		sc.setPreferredSize(new Dimension(COLUMNS_WIDTH, COLUMNS_WIDTH));
 
 		panel.add(categoryPanel, BorderLayout.WEST);
 
@@ -102,7 +105,7 @@ public class NodeConfiguratorTab implements Observer, ActionListener, ListSelect
 		settingChoice = new JList();
 		settingChoice.addListSelectionListener(this);
 		settingsPanel.add(sc = new JScrollPane(settingChoice), BorderLayout.CENTER);
-		sc.setPreferredSize(new java.awt.Dimension((int) (COLUMNS_WIDTH * 1.5), (int) (COLUMNS_WIDTH * 1.5)));
+		sc.setPreferredSize(new Dimension((int) (COLUMNS_WIDTH * 1.5), (int) (COLUMNS_WIDTH * 1.5)));
 
 		subPanel.add(settingsPanel, BorderLayout.WEST);
 
@@ -113,7 +116,7 @@ public class NodeConfiguratorTab implements Observer, ActionListener, ListSelect
 		descPanel.add(new JLabel(I18n.getMessage("thaw.plugin.nodeConfig.description")), BorderLayout.NORTH);
 		descriptionArea = new JTextArea();
 		descriptionArea.setEditable(false);
-		descriptionArea.setBackground(new java.awt.Color(GRAY, GRAY, GRAY));
+		descriptionArea.setBackground(new Color(GRAY, GRAY, GRAY));
 		descriptionArea.setLineWrap(true);
 		descriptionArea.setWrapStyleWord(true);
 		descPanel.add(new JScrollPane(descriptionArea), BorderLayout.CENTER);
@@ -126,7 +129,7 @@ public class NodeConfiguratorTab implements Observer, ActionListener, ListSelect
 		valuePanel.add(new JLabel(I18n.getMessage("thaw.plugin.nodeConfig.default")));
 		defaultField = new JTextField();
 		defaultField.setEditable(false);
-		defaultField.setBackground(new java.awt.Color(GRAY, GRAY, GRAY));
+		defaultField.setBackground(new Color(GRAY, GRAY, GRAY));
 		valuePanel.add(defaultField);
 		valuePanel.add(new JLabel(I18n.getMessage("thaw.plugin.nodeConfig.value")));
 		valueField = new JTextField();
@@ -319,7 +322,7 @@ public class NodeConfiguratorTab implements Observer, ActionListener, ListSelect
 				String catName = (String) keyEnum.nextElement();
 				Vector categorySettings = (Vector) categories.get(catName);
 
-				java.util.Collections.sort(categorySettings);
+				Collections.sort(categorySettings);
 			}
 
 			refreshDisplay();

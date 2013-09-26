@@ -1,9 +1,14 @@
 package thaw.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Collection;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -42,8 +47,7 @@ import thaw.core.Logger;
  *
  * @author <a href="mailto:jflesch@nerim.net">Jerome Flesch</a>
  */
-public class MainWindow implements WindowListener,
-		java.util.Observer {
+public class MainWindow implements WindowListener, Observer {
 
 	public final static int DEFAULT_SIZE_X = 790;
 
@@ -181,7 +185,7 @@ public class MainWindow implements WindowListener,
 	 * Should not be used.
 	 *
 	 * @return In the future, it's possible that it will sometimes return null.
-	 * @see #addTab(String, java.awt.Component)
+	 * @see #addTab(String, Component)
 	 */
 	public JTabbedPane getTabbedPane() {
 		return tabbedPane;
@@ -212,7 +216,7 @@ public class MainWindow implements WindowListener,
 	 * Used to add a tab in the main window. In the future, even if the interface
 	 * change, this function should remain available.
 	 */
-	public boolean addTab(final String tabName, final java.awt.Component panel) {
+	public boolean addTab(final String tabName, final Component panel) {
 		return addTab(tabName, IconBox.add, panel);
 	}
 
@@ -220,22 +224,22 @@ public class MainWindow implements WindowListener,
 	 * Used to add a tab in the main window. In the future, even if the interface
 	 * change, this function should remain available
 	 *
-	 * @see #addTab(String, java.awt.Component)
+	 * @see #addTab(String, Component)
 	 */
 	public boolean addTab(final String tabName, final Icon icon,
-						  final java.awt.Component panel) {
+						  final Component panel) {
 		tabbedPane.addTab(tabName, icon, panel);
 
 		return true;
 	}
 
-	public boolean setSelectedTab(java.awt.Component c) {
+	public boolean setSelectedTab(Component c) {
 		tabbedPane.setSelectedComponent(c);
 		return true;
 	}
 
 	/** Used to remove a tab from the main window. */
-	public boolean removeTab(final java.awt.Component panel) {
+	public boolean removeTab(final Component panel) {
 		tabbedPane.remove(panel);
 
 		return true;
@@ -261,12 +265,12 @@ public class MainWindow implements WindowListener,
 
 	/** Warns the user by a popup. */
 	protected void unableToConnect() {
-		new thaw.gui.WarningWindow(core,
+		new WarningWindow(core,
 				I18n.getMessage("thaw.warning.unableToConnectTo") +
 						" " + core.getConfig().getValue("nodeAddress") + ":" + core.getConfig().getValue("nodePort"));
 	}
 
-	public void update(final java.util.Observable o, final Object arg) {
+	public void update(final Observable o, final Object arg) {
 		updateToolBar();
 	}
 
@@ -277,7 +281,7 @@ public class MainWindow implements WindowListener,
 	/** Called when window is closed or 'quit' is chosen is the menu. */
 	public void endOfTheWorld() {
 		if (mainWindow != null) {
-			java.awt.Dimension size = mainWindow.getSize();
+			Dimension size = mainWindow.getSize();
 
 			core.getConfig().setValue("mainWindowSizeX",
 					Integer.toString((new Double(size.getWidth())).intValue()));
@@ -290,8 +294,8 @@ public class MainWindow implements WindowListener,
 		core.exit();
 	}
 
-	public void setStatus(final javax.swing.Icon icon, final String status) {
-		setStatus(icon, status, java.awt.Color.BLACK);
+	public void setStatus(final Icon icon, final String status) {
+		setStatus(icon, status, Color.BLACK);
 	}
 
 	/**
@@ -300,7 +304,7 @@ public class MainWindow implements WindowListener,
 	 * @param status
 	 * 		Null is accepted.
 	 */
-	public void setStatus(final javax.swing.Icon icon, final String status, java.awt.Color color) {
+	public void setStatus(final Icon icon, final String status, Color color) {
 		if (status != null) {
 			statusBar.setText(status);
 		} else {
@@ -322,7 +326,7 @@ public class MainWindow implements WindowListener,
 	 * @param pos
 	 * 		can be BorderLayout.EAST or BorderLayout.WEST
 	 */
-	public void addComponent(java.awt.Component c, Object pos) {
+	public void addComponent(Component c, Object pos) {
 		mainWindow.getContentPane().add(c, pos);
 	}
 
@@ -330,8 +334,8 @@ public class MainWindow implements WindowListener,
 		mainWindow.setEnabled(value);
 	}
 
-	/** @see #addComponent(java.awt.Component, Object) */
-	public void removeComponent(java.awt.Component c) {
+	/** @see #addComponent(Component, Object) */
+	public void removeComponent(Component c) {
 		mainWindow.getContentPane().remove(c);
 	}
 

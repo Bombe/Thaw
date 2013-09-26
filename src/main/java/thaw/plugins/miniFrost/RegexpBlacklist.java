@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,6 +21,7 @@ import javax.swing.JTextArea;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.gui.ConfigWindow;
+import thaw.gui.IconBox;
 import thaw.plugins.Hsqldb;
 
 /**
@@ -143,7 +145,7 @@ public class RegexpBlacklist implements Observer, ActionListener {
 				try {
 					if (str.matches(".*" + regexp + ".*"))
 						return true;
-				} catch (java.util.regex.PatternSyntaxException e) {
+				} catch (PatternSyntaxException e) {
 					Logger.error(e, "Invalid regexp in the blacklist : " + regexp);
 				}
 			}
@@ -164,7 +166,7 @@ public class RegexpBlacklist implements Observer, ActionListener {
 
 				try {
 					"".matches(".*" + regexp + ".*");
-				} catch (java.util.regex.PatternSyntaxException e) {
+				} catch (PatternSyntaxException e) {
 					Logger.error(e, "Invalid regexp in the blacklist : " + regexp);
 					return regexp;
 				}
@@ -196,7 +198,7 @@ public class RegexpBlacklist implements Observer, ActionListener {
 		refresh();
 
 		window.addTab(I18n.getMessage("thaw.plugin.miniFrost.regexpBlacklist"),
-				thaw.gui.IconBox.minStop,
+				IconBox.minStop,
 				panel);
 		window.setSelectedTab(panel);
 		window.addObserver(this);

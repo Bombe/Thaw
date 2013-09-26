@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import thaw.core.I18n;
+import thaw.gui.IconBox;
 
 public class SearchBar implements ActionListener {
 
@@ -28,7 +29,7 @@ public class SearchBar implements ActionListener {
 
 		userText = new JTextField("");
 		validationButton = new JButton(I18n.getMessage("thaw.common.search"),
-				thaw.gui.IconBox.minSearch);
+				IconBox.minSearch);
 
 		final JLabel label = new JLabel(I18n.getMessage("thaw.plugin.index.search.label"));
 

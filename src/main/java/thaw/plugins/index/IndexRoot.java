@@ -10,6 +10,7 @@ import thaw.core.Logger;
 import thaw.fcp.FCPQueueManager;
 import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.IndexBrowser;
 
 public class IndexRoot extends IndexFolder implements IndexTreeNode {
 
@@ -94,9 +95,9 @@ public class IndexRoot extends IndexFolder implements IndexTreeNode {
 		DatabaseManager.dropTables(indexBrowser.getDb());
 		DatabaseManager.createTables(indexBrowser.getDb());
 
-		for (int i = 0; i < thaw.plugins.IndexBrowser.DEFAULT_INDEXES.length; i++) {
+		for (int i = 0; i < IndexBrowser.DEFAULT_INDEXES.length; i++) {
 			IndexManagementHelper.addIndex(queueManager, indexBrowser, null,
-					thaw.plugins.IndexBrowser.DEFAULT_INDEXES[i],
+					IndexBrowser.DEFAULT_INDEXES[i],
 					true);
 		}
 

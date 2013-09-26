@@ -2,6 +2,8 @@ package thaw.fcp;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -601,7 +603,7 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 
 		try {
 			in = new FileInputStream(localFile);
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.error(this, "FileNotFoundException ?! ohoh, problems ...");
 			return false;
 		}
@@ -622,7 +624,7 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 					Logger.error(this, "Error while reading file ?!");
 					return false;
 				}
-			} catch (final java.io.IOException e) {
+			} catch (final IOException e) {
 				Logger.error(this, "IOException while reading file! proobleeem");
 				return false;
 			}
@@ -650,7 +652,7 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 				Logger.error(this, "File not send completly ?!");
 				return false;
 			}
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			/* we will suppose its ok ... */
 			Logger.notice(this, "available() IOException (hu ?)");
 		}

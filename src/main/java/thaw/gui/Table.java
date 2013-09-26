@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -116,7 +117,7 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 		renderer = new DefaultRenderer();
 		setDefaultRenderer(getColumnClass(0), renderer);
 
-		((DefaultTableCellRenderer) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+		((DefaultTableCellRenderer) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
 	}
 
 	/**
@@ -224,7 +225,7 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 			} else if (value instanceof Long) {
 
 				cell = super.getTableCellRendererComponent(table,
-						thaw.gui.GUIHelper.getPrintableSize(((Long) value).longValue()),
+						GUIHelper.getPrintableSize(((Long) value).longValue()),
 						isSelected, hasFocus, row, column);
 
 			} else if (value instanceof String && ((String) value).indexOf("\n") >= 0) {
@@ -316,7 +317,7 @@ public class Table extends JTable implements TableColumnModelListener, ThawRunna
 
 			try {
 				Thread.sleep(TIME_BEFORE_SAVING);
-			} catch (java.lang.InterruptedException e) {
+			} catch (InterruptedException e) {
 				/* \_o< */
 			}
 

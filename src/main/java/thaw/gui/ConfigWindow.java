@@ -1,11 +1,15 @@
 package thaw.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.Observable;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -28,7 +32,7 @@ import thaw.core.ThawThread;
  * (Ok / Cancel) is clicked (gives the button in arg), or when window is set
  * visible (arg == null).
  */
-public class ConfigWindow extends Observable implements ActionListener, java.awt.event.WindowListener {
+public class ConfigWindow extends Observable implements ActionListener, WindowListener {
 
 	private JDialog configWin;
 
@@ -121,22 +125,22 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 			configWin.dispose();
 	}
 
-	public boolean addTab(final String name, final java.awt.Component panel) {
+	public boolean addTab(final String name, final Component panel) {
 		tabs.addTab(name, panel);
 		return true;
 	}
 
-	public boolean addTab(final String name, javax.swing.ImageIcon icon, final java.awt.Component panel) {
+	public boolean addTab(final String name, ImageIcon icon, final Component panel) {
 		tabs.addTab(name, icon, panel);
 		return true;
 	}
 
-	public boolean setSelectedTab(java.awt.Component c) {
+	public boolean setSelectedTab(Component c) {
 		tabs.setSelectedComponent(c);
 		return true;
 	}
 
-	public boolean removeTab(final java.awt.Component panel) {
+	public boolean removeTab(final Component panel) {
 		tabs.remove(panel);
 		return true;
 	}
@@ -176,14 +180,14 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 	/** Called when apply button is pressed. */
 	public void actionPerformed(final ActionEvent e) {
 		if ((e.getSource() == okButton) && !core.canDisconnect() && needConnectionReset) {
-			final int ret = JOptionPane.showOptionDialog((java.awt.Component) null,
+			final int ret = JOptionPane.showOptionDialog((Component) null,
 					I18n.getMessage("thaw.warning.isWritingSoApplyLater"),
 					I18n.getMessage("thaw.warning.title"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.WARNING_MESSAGE,
-					(javax.swing.Icon) null,
-					(java.lang.Object[]) null,
-					(java.lang.Object) null);
+					(Icon) null,
+					(Object[]) null,
+					(Object) null);
 			if ((ret == JOptionPane.CLOSED_OPTION) || (ret > 0))
 				return;
 		}
@@ -241,12 +245,12 @@ public class ConfigWindow extends Observable implements ActionListener, java.awt
 				/* should reinit the whole connection correctly */
 				if (running && resetConnection && !core.initConnection()) {
 					if (dialog == null)
-						new thaw.gui.WarningWindow(core.getMainWindow().getMainFrame(),
+						new WarningWindow(core.getMainWindow().getMainFrame(),
 								I18n.getMessage("thaw.warning.unableToConnectTo") +
 										" " + core.getConfig().getValue("nodeAddress") +
 										":" + core.getConfig().getValue("nodePort"));
 					else
-						new thaw.gui.WarningWindow(dialog.getDialog(),
+						new WarningWindow(dialog.getDialog(),
 								I18n.getMessage("thaw.warning.unableToConnectTo") +
 										" " + core.getConfig().getValue("nodeAddress") +
 										":" + core.getConfig().getValue("nodePort"));

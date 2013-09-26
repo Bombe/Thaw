@@ -3,6 +3,9 @@ package thaw.plugins.index;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
 
 import thaw.core.Config;
 import thaw.core.Core;
@@ -12,7 +15,7 @@ import thaw.fcp.FCPQueueManager;
 import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
 
-public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListener {
+public class IndexBrowserPanel implements TreeSelectionListener {
 
 	private IndexTree indexTree;
 
@@ -100,7 +103,7 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 		} else {
 			try {
 				leftSplit.setDividerLocation(Integer.parseInt(config.getValue("indexTreeUnknownListSplitLocation")));
-			} catch (java.lang.IllegalArgumentException e) { /* TODO: Find why it happens */
+			} catch (IllegalArgumentException e) { /* TODO: Find why it happens */
 				Logger.error(this, "Exception while setting indexTree split location");
 			}
 		}
@@ -187,8 +190,8 @@ public class IndexBrowserPanel implements javax.swing.event.TreeSelectionListene
 		tables.setLinkList(l);
 	}
 
-	public void valueChanged(final javax.swing.event.TreeSelectionEvent e) {
-		final javax.swing.tree.TreePath path = e.getPath();
+	public void valueChanged(final TreeSelectionEvent e) {
+		final TreePath path = e.getPath();
 
 		setList(null);
 

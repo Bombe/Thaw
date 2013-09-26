@@ -50,11 +50,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.Timer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
@@ -79,7 +81,7 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 
 		private Point _ptLast = new Point();
 
-		private javax.swing.Timer _timerHover;
+		private Timer _timerHover;
 
 		private int _nLeftRight = 0;    // Cumulative left/right mouse movement
 
@@ -94,7 +96,7 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 
 			// Set up a hover timer, so that a node will be automatically expanded or collapsed
 			// if the user lingers on it for more than a short time
-			_timerHover = new javax.swing.Timer(1000, new ActionListener() {
+			_timerHover = new Timer(1000, new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					_nLeftRight = 0;    // Reset left/right movement trend
 					if (isRootPath(_pathLast))
@@ -342,7 +344,7 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 		}
 
 		public boolean isDataFlavorSupported(final DataFlavor flavor) {
-			return java.util.Arrays.asList(_flavors).contains(flavor);
+			return Arrays.asList(_flavors).contains(flavor);
 		}
 
 		public synchronized Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException {

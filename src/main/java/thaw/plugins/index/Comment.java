@@ -1,10 +1,13 @@
 package thaw.plugins.index;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,12 +23,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -35,6 +42,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -134,9 +142,9 @@ public class Comment extends Observable implements Observer, ActionListener {
 
 		panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 				"--- " + author.toString() + " ---",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION,
-				new java.awt.Font("Dialog", java.awt.Font.BOLD, 14)));
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION,
+				new Font("Dialog", Font.BOLD, 14)));
 
 		JLabel sigLabel = new JLabel(I18n.getMessage("thaw.plugin.signature.trustLevel.trustLevel") + " : ");
 		JTextField sigLevel = new JTextField(author.getTrustLevelStr()
@@ -287,7 +295,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		try {
 			outputFile = java.io.File.createTempFile("thaw-", "-comment.xml");
 			outputFile.deleteOnExit();
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(new Comment(), "Unable to write comment in a temporary file because: " + e.toString());
 			return null;
 		}
@@ -296,7 +304,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 
 		try {
 			out = new FileOutputStream(outputFile);
-		} catch (java.io.FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			Logger.error(new Comment(), "File not found exception ?!");
 			return null;
 		}
@@ -312,7 +320,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch (final javax.xml.parsers.ParserConfigurationException e) {
+		} catch (final ParserConfigurationException e) {
 			Logger.error(new Comment(), "Unable to generate the comment xml file because : " + e.toString());
 			return null;
 		}
@@ -370,7 +378,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 
 		try {
 			serializer = transformFactory.newTransformer();
-		} catch (final javax.xml.transform.TransformerConfigurationException e) {
+		} catch (final TransformerConfigurationException e) {
 			Logger.error(new Comment(), "Unable to write comment in an XML file because: " + e.toString());
 			return null;
 		}
@@ -381,7 +389,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		/* final step */
 		try {
 			serializer.transform(domSource, streamResult);
-		} catch (final javax.xml.transform.TransformerException e) {
+		} catch (final TransformerException e) {
 			Logger.error(new Comment(), "Unable to save comment in an XML file (2) because: " + e.toString());
 			return null;
 		}
@@ -430,7 +438,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 
 		}
 
-		/** @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator) */
+		/** @see ContentHandler#setDocumentLocator(Locator) */
 		public void setDocumentLocator(Locator value) {
 
 		}
@@ -438,7 +446,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		/**
 		 * Called when parsing is started
 		 *
-		 * @see org.xml.sax.ContentHandler#startDocument()
+		 * @see ContentHandler#startDocument()
 		 */
 		public void startDocument() throws SAXException {
 
@@ -451,8 +459,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		 * 		name space prefix
 		 * @param URI
 		 * 		name space URI
-		 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String,
-		 *      java.lang.String)
+		 * @see ContentHandler#startPrefixMapping(String, String)
 		 */
 		public void startPrefixMapping(String prefix, String URI) throws SAXException {
 			/* \_o< */
@@ -461,7 +468,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		/**
 		 * @param prefix
 		 * 		name space prefix
-		 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
+		 * @see ContentHandler#endPrefixMapping(String)
 		 */
 		public void endPrefixMapping(String prefix) throws SAXException {
 			/* \_o< */
@@ -487,8 +494,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		 * 		local tag name
 		 * @param rawName
 		 * 		rawName (the one used here)
-		 * @see org.xml.sax.ContentHandler#startElement(java.lang.String,
-		 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+		 * @see ContentHandler#startElement(String, String, String, Attributes)
 		 */
 		public void startElement(String nameSpaceURI, String localName,
 								 String rawName, Attributes attrs) throws SAXException {
@@ -515,8 +521,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		/**
 		 * Called when a closing tag is met
 		 *
-		 * @see org.xml.sax.ContentHandler#endElement(java.lang.String,
-		 *      java.lang.String, java.lang.String)
+		 * @see ContentHandler#endElement(String, String, String)
 		 */
 		public void endElement(String nameSpaceURI, String localName,
 							   String rawName) throws SAXException {
@@ -549,7 +554,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		 * 		position
 		 * @param end
 		 * 		position
-		 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
+		 * @see ContentHandler#characters(char[], int, int)
 		 */
 		public void characters(char[] ch, int start, int end) throws SAXException {
 			String txt = new String(ch, start, end);
@@ -575,7 +580,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 
 		}
 
-		/** @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String) */
+		/** @see ContentHandler#skippedEntity(String) */
 		public void skippedEntity(String arg0) throws SAXException {
 
 		}
@@ -583,7 +588,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 		/**
 		 * Called when parsing is finished
 		 *
-		 * @see org.xml.sax.ContentHandler#endDocument()
+		 * @see ContentHandler#endDocument()
 		 */
 		public void endDocument() throws SAXException {
 			valid = false;
@@ -631,7 +636,7 @@ public class Comment extends Observable implements Observer, ActionListener {
 
 		try {
 			in = new FileInputStream(xmlFile);
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.error(this, "Unable to load XML: FileNotFoundException ('" + xmlFile.getPath() + "') ! : " + e.toString());
 			return false;
 		}
@@ -644,11 +649,11 @@ public class Comment extends Observable implements Observer, ActionListener {
 			// Parse the input
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(in, handler);
-		} catch (javax.xml.parsers.ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			Logger.error(this, "Error (1) while parsing index: " + e.toString());
-		} catch (org.xml.sax.SAXException e) {
+		} catch (SAXException e) {
 			Logger.error(this, "Error (2) while parsing index: " + e.toString());
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "Error (3) while parsing index: " + e.toString());
 		}
 

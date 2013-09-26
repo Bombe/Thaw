@@ -1,5 +1,6 @@
 package thaw.plugins;
 
+import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -10,6 +11,7 @@ import thaw.core.Plugin;
 import thaw.gui.IconBox;
 import thaw.plugins.index.AutoRefresh;
 import thaw.plugins.index.DatabaseManager;
+import thaw.plugins.index.File;
 import thaw.plugins.index.IndexBrowserPanel;
 import thaw.plugins.index.IndexConfigTab;
 import thaw.plugins.index.IndexManagementHelper;
@@ -124,7 +126,7 @@ public class IndexBrowser extends ToolbarModifier implements Plugin, ChangeListe
 			}
 		}
 
-		thaw.plugins.index.File.resumeTransfers(core.getQueueManager(), hsqldb);
+		File.resumeTransfers(core.getQueueManager(), hsqldb);
 
 		if (autoRefresh != null)
 			autoRefresh.start();
@@ -186,7 +188,7 @@ public class IndexBrowser extends ToolbarModifier implements Plugin, ChangeListe
 		browserPanel.setVisible(core.getMainWindow().getTabbedPane().getSelectedIndex() == tabId);
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.indexBrowser;
+	public ImageIcon getIcon() {
+		return IconBox.indexBrowser;
 	}
 }

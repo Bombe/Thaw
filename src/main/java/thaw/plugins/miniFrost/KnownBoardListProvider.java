@@ -7,6 +7,7 @@ import javax.swing.JOptionPane;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.gui.MainWindow;
+import thaw.gui.WarningWindow;
 import thaw.plugins.Hsqldb;
 import thaw.plugins.MiniFrost;
 import thaw.plugins.WebOfTrust;
@@ -51,7 +52,7 @@ public class KnownBoardListProvider implements BoardFactory {
 		Object[] boardListAr = boardList.toArray();
 
 		if (boardListAr.length <= 0) {
-			new thaw.gui.WarningWindow(mainWindow, I18n.getMessage("thaw.plugin.miniFrost.knownBoard.none"));
+			new WarningWindow(mainWindow, I18n.getMessage("thaw.plugin.miniFrost.knownBoard.none"));
 			return;
 		}
 

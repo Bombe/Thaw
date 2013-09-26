@@ -1,10 +1,11 @@
 package thaw.plugins.miniFrost.frostKSK;
 
 import thaw.core.I18n;
+import thaw.plugins.miniFrost.interfaces.Author;
 import thaw.plugins.signatures.Identity;
 
 public class KSKAuthor
-		implements thaw.plugins.miniFrost.interfaces.Author {
+		implements Author {
 
 	private String nick;
 

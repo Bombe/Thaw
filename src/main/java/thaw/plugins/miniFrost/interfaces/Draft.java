@@ -1,7 +1,11 @@
 package thaw.plugins.miniFrost.interfaces;
 
+import java.io.File;
+import java.util.Date;
 import java.util.Vector;
 
+import thaw.fcp.FCPQueueManager;
+import thaw.plugins.index.Index;
 import thaw.plugins.signatures.Identity;
 
 public interface Draft {
@@ -46,9 +50,9 @@ public interface Draft {
 	 * @param date
 	 * 		the date provided is already GMT-ized
 	 */
-	public void setDate(java.util.Date date);
+	public void setDate(Date date);
 
-	public java.util.Date getDate();
+	public Date getDate();
 
 	/**
 	 * @param i
@@ -62,19 +66,19 @@ public interface Draft {
 	 */
 	public void setIdLineLen(int i);
 
-	public boolean addAttachment(java.io.File file);
+	public boolean addAttachment(File file);
 
 	public boolean addAttachment(Board board);
 
-	public boolean addAttachment(thaw.plugins.index.Index index);
+	public boolean addAttachment(Index index);
 
 	public boolean removeAttachment(Attachment attachment);
 
 	/** @return can return null if none */
 	public Vector getAttachments();
 
-	/** must notify thaw.plugins.MiniFrostPanel at each change */
-	public void post(thaw.fcp.FCPQueueManager queueManager);
+	/** must notify MiniFrostPanel at each change */
+	public void post(FCPQueueManager queueManager);
 
 	public boolean isWaiting();
 

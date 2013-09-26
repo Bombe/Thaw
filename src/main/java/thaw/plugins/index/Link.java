@@ -3,6 +3,7 @@ package thaw.plugins.index;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Observable;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -10,7 +11,7 @@ import thaw.core.Logger;
 import thaw.fcp.FreenetURIHelper;
 import thaw.plugins.Hsqldb;
 
-public class Link extends java.util.Observable implements Comparable, LinkContainer {
+public class Link extends Observable implements Comparable, LinkContainer {
 
 	private int id;
 

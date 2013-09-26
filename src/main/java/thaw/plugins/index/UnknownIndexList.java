@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Vector;
 import javax.swing.JButton;
@@ -14,6 +15,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 
 import thaw.core.I18n;
 import thaw.core.ThawRunnable;
@@ -56,7 +58,7 @@ public class UnknownIndexList implements MouseListener, ActionListener {
 
 		list = new JList(linkList);
 
-		list.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
 		panel = new JPanel(new BorderLayout());
 		panel.add(new JLabel(I18n.getMessage("thaw.plugin.index.unknownIndexes")),
@@ -268,7 +270,7 @@ public class UnknownIndexList implements MouseListener, ActionListener {
 	}
 
 	public void refresh() {
-		java.util.Collections.sort(linkList);
+		Collections.sort(linkList);
 
 		list.setListData(linkList);
 

@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DateFormat;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -19,8 +20,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
+import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -63,9 +66,9 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 		/* header */
 		JPanel headPanel = new JPanel(new BorderLayout(10, 10));
 
-		JLabel dateLabel = new JLabel(java.text.DateFormat.getDateTimeInstance().format(msg.getDate()));
+		JLabel dateLabel = new JLabel(DateFormat.getDateTimeInstance().format(msg.getDate()));
 		AuthorPanel authorLabel = new AuthorPanel(msg.getAuthor());
-		//authorLabel.setPreferredSize(new java.awt.Dimension(400, 15));
+		//authorLabel.setPreferredSize(new Dimension(400, 15));
 
 		upDownButton = new JButton("", (retracted ? IconBox.minDown : IconBox.minUp));
 		upDownButton.addActionListener(this);
@@ -160,8 +163,8 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 			super();
 		}
 
-		private Rectangle rect(javax.swing.text.Position p)
-				throws javax.swing.text.BadLocationException {
+		private Rectangle rect(Position p)
+				throws BadLocationException {
 			int off = p.getOffset();
 			Rectangle r = modelToView(off > 0 ? off - 1 : off);
 			return r;
@@ -180,7 +183,7 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 				return new Dimension(messagePanel.getScrollPane().getWidth() - 30, height);
 
-			} catch (javax.swing.text.BadLocationException e) {
+			} catch (BadLocationException e) {
 				return super.getPreferredSize();
 			}
 		}
@@ -285,7 +288,7 @@ public class SubMessagePanel extends JPanel implements ActionListener {
 
 				if (i != split.length - 1)
 					doc.insertString(doc.getLength(), "\n", noAttrs);
-			} catch (javax.swing.text.BadLocationException e) {
+			} catch (BadLocationException e) {
 				Logger.error(this, "Error while parsing the text: " + e.toString() + " ; A line will be missing");
 				e.printStackTrace();
 			}

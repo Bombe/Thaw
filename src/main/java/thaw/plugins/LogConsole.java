@@ -4,13 +4,17 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 
 import thaw.core.Config;
 import thaw.core.Core;
@@ -21,6 +25,7 @@ import thaw.core.Plugin;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
 import thaw.gui.FileChooser;
+import thaw.gui.IconBox;
 
 /** Quick and dirty console showing Thaw logs, and allowing to save them. */
 public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunnable {
@@ -98,7 +103,7 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		consolePanel.add(southPanel, BorderLayout.SOUTH);
 
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.console.console"),
-				thaw.gui.IconBox.terminal, consolePanel);
+				IconBox.terminal, consolePanel);
 
 		Logger.addLogListener(this);
 
@@ -155,21 +160,21 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 
 		try {
 			output = new FileOutputStream(file);
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.error(this, "FileNotFoundException ? wtf ?");
 			return;
 		}
 
 		try {
 			output.write(logArea.getText().getBytes("UTF-8"));
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.error(this, "IOException while writing logs ... out of space ?");
 			return;
 		}
 
 		try {
 			output.close();
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.error(this, "IOException while closing log file ?!");
 			return;
 		}
@@ -222,20 +227,20 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 
 		logArea.setText(res);
 
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+		SwingUtilities.invokeLater(new Runnable() {
 
-			public void run() {
-				logAreaScrollPane.getVerticalScrollBar().setValue(logAreaScrollPane.getVerticalScrollBar().getMaximum());
-			}
+            public void run() {
+                logAreaScrollPane.getVerticalScrollBar().setValue(logAreaScrollPane.getVerticalScrollBar().getMaximum());
+            }
 
-		});
+        });
 	}
 
 	public void run() {
 		while (threadRunning) {
 			try {
 				Thread.sleep(1000);
-			} catch (java.lang.InterruptedException e) {
+			} catch (InterruptedException e) {
 				/* \_o< */
 			}
 
@@ -250,7 +255,7 @@ public class LogConsole implements Plugin, LogListener, ActionListener, ThawRunn
 		return I18n.getMessage("thaw.plugin.console.console");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.terminal;
+	public ImageIcon getIcon() {
+		return IconBox.terminal;
 	}
 }

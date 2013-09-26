@@ -1,5 +1,6 @@
 package thaw.fcp;
 
+import java.io.File;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -120,7 +121,7 @@ public class FCPQueueLoader implements FCPQuery, Observer {
 
 			if ((fileName = msg.getValue("TargetFilename")) == null) {
 				if (msg.getValue("Identifier").startsWith(thawId)) {
-					fileName = (new java.io.File(filePath)).getName();
+					fileName = (new File(filePath)).getName();
 				} else /* this is not out insertion, and we don't have the filename
 					  so we can't resume it */
 					return;

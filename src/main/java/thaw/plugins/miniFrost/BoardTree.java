@@ -2,9 +2,12 @@ package thaw.plugins.miniFrost;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Vector;
@@ -17,6 +20,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import thaw.core.I18n;
 import thaw.gui.IconBox;
@@ -29,7 +35,7 @@ import thaw.plugins.miniFrost.interfaces.BoardFactory;
  * the selection is changed (board is given in argument)
  */
 public class BoardTree extends Observable
-		implements javax.swing.event.ListSelectionListener,
+		implements ListSelectionListener,
 		MouseListener {
 
 	/* X and Y are replaced */
@@ -74,14 +80,14 @@ public class BoardTree extends Observable
 		refresh();
 
 		list = new JList(model);
-		list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setCellRenderer(new BoardListRenderer());
 		list.addListSelectionListener(this);
-		//list.setPreferredSize(new java.awt.Dimension(100, 100));
+		//list.setPreferredSize(new Dimension(100, 100));
 		list.addMouseListener(this);
 
 		JScrollPane scroll = new JScrollPane(list);
-		scroll.setPreferredSize(new java.awt.Dimension(100, 100));
+		scroll.setPreferredSize(new Dimension(100, 100));
 		panel.add(scroll, BorderLayout.CENTER);
 
 		actions = new Vector();
@@ -181,7 +187,7 @@ public class BoardTree extends Observable
 			messageTreeTable = mainPanel.getMessageTreeTable();
 		}
 
-		public java.awt.Component getListCellRendererComponent(JList list, Object value,
+		public Component getListCellRendererComponent(JList list, Object value,
 															   int index, boolean isSelected,
 															   boolean cellHasFocus) {
 			Board board = (Board) value;
@@ -195,7 +201,7 @@ public class BoardTree extends Observable
 					messageTreeTable.getMinTrustLevel())) > 0)
 				str += " (" + Integer.toString(unread) + ")";
 
-			java.awt.Component c = super.getListCellRendererComponent(list, str,
+			Component c = super.getListCellRendererComponent(list, str,
 					index, isSelected,
 					cellHasFocus);
 
@@ -308,7 +314,7 @@ public class BoardTree extends Observable
 			}
 		}
 
-		java.util.Collections.sort(boards);
+		Collections.sort(boards);
 
 		model.setBoardList(boards);
 	}
@@ -345,7 +351,7 @@ public class BoardTree extends Observable
 	private Board currentlySelected = null;
 
 	/** seems to be called twice */
-	public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+	public void valueChanged(ListSelectionEvent e) {
 
 		Board b = ((Board) list.getSelectedValue());
 

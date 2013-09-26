@@ -90,7 +90,7 @@ public class FCPClientHello implements FCPQuery, Observer {
 		while (!receiveAnswer && count < (NODEHELLO_TIMEOUT * 2)) {
 			try {
 				Thread.sleep(500);
-			} catch (final java.lang.InterruptedException e) {
+			} catch (final InterruptedException e) {
 				/* \_o< */
 			}
 			count++;

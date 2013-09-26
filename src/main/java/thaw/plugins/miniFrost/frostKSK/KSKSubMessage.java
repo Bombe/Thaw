@@ -1,23 +1,28 @@
 package thaw.plugins.miniFrost.frostKSK;
 
+import java.util.Date;
+
+import thaw.plugins.miniFrost.interfaces.Author;
+import thaw.plugins.miniFrost.interfaces.SubMessage;
+
 public class KSKSubMessage
-		implements thaw.plugins.miniFrost.interfaces.SubMessage {
+		implements SubMessage {
 
 	private KSKAuthor author;
 
-	private java.util.Date date;
+	private Date date;
 
 	private String msg;
 
 	public KSKSubMessage(KSKAuthor author,
-						 java.util.Date date,
+						 Date date,
 						 String msg) {
 		this.author = author;
 		this.date = date;
 		this.msg = msg;
 	}
 
-	public thaw.plugins.miniFrost.interfaces.Author getAuthor() {
+	public Author getAuthor() {
 		return author;
 	}
 
@@ -25,11 +30,11 @@ public class KSKSubMessage
 		this.author = author;
 	}
 
-	protected void setDate(java.util.Date date) {
+	protected void setDate(Date date) {
 		this.date = date;
 	}
 
-	public java.util.Date getDate() {
+	public Date getDate() {
 		return date;
 	}
 

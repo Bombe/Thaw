@@ -1,5 +1,6 @@
 package thaw.plugins.webOfTrust;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
@@ -41,7 +42,7 @@ public class WebOfTrustConfigTab implements Observer, ActionListener, Signatures
 		this.config = config;
 		this.db = db;
 
-		panel = new JPanel(new java.awt.GridLayout(15, 1));
+		panel = new JPanel(new GridLayout(15, 1));
 
 		activated = new JCheckBox(I18n.getMessage("thaw.plugin.wot.activated"));
 		panel.add(activated);

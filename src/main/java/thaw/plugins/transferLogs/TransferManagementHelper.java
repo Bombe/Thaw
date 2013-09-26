@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.Vector;
 import javax.swing.AbstractButton;
 
+import thaw.gui.GUIHelper;
+
 public class TransferManagementHelper {
 
 	public interface TransferAction extends ActionListener {
@@ -109,7 +111,7 @@ public class TransferManagementHelper {
 						keys += t.getKey() + "\n";
 				}
 
-				thaw.gui.GUIHelper.copyToClipboard(keys);
+				GUIHelper.copyToClipboard(keys);
 			}
 		}
 	}

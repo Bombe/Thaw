@@ -1,5 +1,8 @@
 package thaw.fcp;
 
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,8 +47,8 @@ public class FreenetURIHelper {
 		}
 
 		try {
-			uri = java.net.URLDecoder.decode(uri, "UTF-8");
-		} catch (final java.io.UnsupportedEncodingException e) {
+			uri = URLDecoder.decode(uri, "UTF-8");
+		} catch (final UnsupportedEncodingException e) {
 			Logger.warning(new FreenetURIHelper(), "UnsupportedEncodingException (UTF-8): " + e.toString());
 		}
 
@@ -97,10 +100,10 @@ public class FreenetURIHelper {
 
 		if (filename != null) {
 			try {
-				filename = java.net.URLDecoder.decode(filename, "UTF-8");
-			} catch (final java.io.UnsupportedEncodingException e) {
+				filename = URLDecoder.decode(filename, "UTF-8");
+			} catch (final UnsupportedEncodingException e) {
 				Logger.warning(filename, "UnsupportedEncodingException (UTF-8): " + e.toString());
-			} catch (final java.lang.IllegalArgumentException e) {
+			} catch (final IllegalArgumentException e) {
 				Logger.warning(filename, "IllegalArgumentException: " + e.toString());
 			}
 		}
@@ -148,9 +151,9 @@ public class FreenetURIHelper {
 
 	private static String abs(final String val) {
 		try {
-			final java.math.BigDecimal bd = new java.math.BigDecimal(val);
+			final BigDecimal bd = new BigDecimal(val);
 			return bd.abs().toString();
-		} catch (final java.lang.NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			Logger.warning(new FreenetURIHelper(), "NumberFormatException while parsing '" + val + "'");
 			return "0";
 		}

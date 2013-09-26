@@ -68,7 +68,7 @@ public class KSKAttachmentFactory {
 
 			try {
 				val = XMLTools.getChildElementsCDATAValue(rootEl, properties[i]);
-			} catch (java.lang.ClassCastException e) {
+			} catch (ClassCastException e) {
 				/* Dirty */
 				val = XMLTools.getChildElementsTextValue(rootEl, properties[i]);
 			}

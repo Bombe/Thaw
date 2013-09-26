@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.fcp.FCPTransferQuery;
+import thaw.plugins.QueueWatcher;
 
 /** Right panel of queueWatcher plugin. Show details about a transfer. */
 public class DetailPanel implements Observer {
@@ -43,7 +44,7 @@ public class DetailPanel implements Observer {
 
 	private FCPTransferQuery query = null;
 
-	private final static Dimension dim = new Dimension(thaw.plugins.QueueWatcher.DIVIDER_LOCATION - 10, 400);
+	private final static Dimension dim = new Dimension(QueueWatcher.DIVIDER_LOCATION - 10, 400);
 
 	private final static String unknownStr = I18n.getMessage("thaw.common.unknown");
 

@@ -1,9 +1,13 @@
 package thaw.plugins.miniFrost.frostKSK;
 
+import javax.swing.JFileChooser;
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Vector;
 
 import thaw.core.Config;
@@ -16,10 +20,11 @@ import thaw.fcp.FCPClientPut;
 import thaw.fcp.FCPQueueManager;
 import thaw.fcp.FreenetURIHelper;
 import thaw.gui.FileChooser;
+import thaw.gui.GUIHelper;
 import thaw.plugins.Hsqldb;
 
 public class KSKFileAttachment
-		extends KSKAttachment implements ThawRunnable, java.util.Observer {
+		extends KSKAttachment implements ThawRunnable, Observer {
 
 	private String filename;
 
@@ -35,7 +40,7 @@ public class KSKFileAttachment
 
 	}
 
-	public KSKFileAttachment(FCPQueueManager queueManager, java.io.File file) {
+	public KSKFileAttachment(FCPQueueManager queueManager, File file) {
 		this.filename = file.getName();
 		this.size = file.length();
 		this.key = null;
@@ -60,7 +65,7 @@ public class KSKFileAttachment
 		this.queueManager = queueManager;
 	}
 
-	public void computeKey(FCPQueueManager queueManager, java.io.File file) {
+	public void computeKey(FCPQueueManager queueManager, File file) {
 		this.queueManager = queueManager;     /* CAB TODO: Should this be finalized? */
 
 		FCPClientPut put = new FCPClientPut.Builder(queueManager)
@@ -78,7 +83,7 @@ public class KSKFileAttachment
 		queueManager.addQueryToTheRunningQueue(put);
 	}
 
-	public void update(java.util.Observable o, Object param) {
+	public void update(Observable o, Object param) {
 		if (o instanceof FCPClientPut) {
 			FCPClientPut put = (FCPClientPut) o;
 			String possibleKey = put.getFileKey();
@@ -152,7 +157,7 @@ public class KSKFileAttachment
 		} else if ("key".equals(property)) {
 			key = value;
 
-			String possibleFilename = thaw.fcp.FreenetURIHelper.getFilenameFromKey(key);
+			String possibleFilename = FreenetURIHelper.getFilenameFromKey(key);
 
 			if (possibleFilename != null)
 				possibleFilename = possibleFilename.trim();
@@ -175,7 +180,7 @@ public class KSKFileAttachment
 		if (name == null)
 			name = "null";
 
-		return name + " (" + thaw.gui.GUIHelper.getPrintableSize(size) + ")";
+		return name + " (" + GUIHelper.getPrintableSize(size) + ")";
 	}
 
 	public String getContainer() {
@@ -196,7 +201,7 @@ public class KSKFileAttachment
 	public void apply(Hsqldb db, FCPQueueManager queueManager, String action) {
 		if (action.equals(I18n.getMessage("thaw.common.copyKeyToClipboard"))) {
 
-			thaw.gui.GUIHelper.copyToClipboard(key);
+			GUIHelper.copyToClipboard(key);
 
 		} else if (action.equals(I18n.getMessage("thaw.plugin.miniFrost.copyAllKeys"))) {
 
@@ -212,7 +217,7 @@ public class KSKFileAttachment
 					keys += ((KSKFileAttachment) o).getValue("key");
 			}
 
-			thaw.gui.GUIHelper.copyToClipboard(keys);
+			GUIHelper.copyToClipboard(keys);
 
 		} else if (action.equals(I18n.getMessage("thaw.common.action.download"))) {
 
@@ -252,9 +257,9 @@ public class KSKFileAttachment
 
 		ch.setTitle(I18n.getMessage("thaw.plugin.fetch.chooseDestination"));
 		ch.setDirectoryOnly(true);
-		ch.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
+		ch.setDialogType(JFileChooser.SAVE_DIALOG);
 
-		java.io.File dir = ch.askOneFile();
+		File dir = ch.askOneFile();
 
 		if (dir == null)
 			return;

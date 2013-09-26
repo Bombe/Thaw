@@ -1,12 +1,14 @@
 package thaw.plugins.index;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -30,6 +32,8 @@ import thaw.fcp.FCPTransferQuery;
 import thaw.fcp.FreenetURIHelper;
 import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.IndexBrowser;
+import thaw.plugins.TrayIcon;
 import thaw.plugins.signatures.Identity;
 
 public class Index extends Observable implements MutableTreeNode,
@@ -60,7 +64,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 	private boolean publishPrivateKey = false;
 
-	private java.sql.Date date = null;
+	private Date date = null;
 
 	/* loaded only if asked explictly */
 	private String realName = null;
@@ -92,7 +96,7 @@ public class Index extends Observable implements MutableTreeNode,
 	/** Use it when you can have these infos easily ; else let the index do the job */
 	public Index(Hsqldb db, Config config, int id, TreeNode parentNode,
 				 String publicKey, int rev, String privateKey, boolean publishPrivateKey,
-				 String displayName, java.sql.Date insertionDate,
+				 String displayName, Date insertionDate,
 				 boolean hasChanged, boolean newComment) {
 		this(db, config, id);
 		this.parentNode = parentNode;
@@ -414,7 +418,7 @@ public class Index extends Observable implements MutableTreeNode,
 		return publicKey;
 	}
 
-	public java.sql.Date getDate() {
+	public Date getDate() {
 		if (publicKey == null) {
 			Logger.debug(this, "getDate() => loadData()");
 			loadData();
@@ -915,9 +919,9 @@ public class Index extends Observable implements MutableTreeNode,
 			announcement = announcement.replaceAll("X", toString(false));
 			announcement = announcement.replaceAll("Y", Integer.toString(getRevision()));
 
-			thaw.plugins.TrayIcon.popMessage(indexTree.getIndexBrowserPanel().getCore().getPluginManager(),
-					I18n.getMessage("thaw.plugin.index.browser"),
-					announcement);
+			TrayIcon.popMessage(indexTree.getIndexBrowserPanel().getCore().getPluginManager(),
+                I18n.getMessage("thaw.plugin.index.browser"),
+                announcement);
 		} catch (Exception e) {
 			/* it can happen with some index name (probably because
 			   of characters like '$' */
@@ -1006,7 +1010,7 @@ public class Index extends Observable implements MutableTreeNode,
 							PreparedStatement st;
 
 							Calendar cal = Calendar.getInstance();
-							java.sql.Date dateSql = new java.sql.Date(cal.getTime().getTime());
+							Date dateSql = new Date(cal.getTime().getTime());
 
 							st = db.getConnection().prepareStatement("UPDATE indexes " +
 									"SET insertionDate = ? " +
@@ -1094,8 +1098,8 @@ public class Index extends Observable implements MutableTreeNode,
 	public void setInsertionDate(java.util.Date date) {
 		try {
 			synchronized (db.dbLock) {
-				java.sql.Date dateSql = null;
-				dateSql = new java.sql.Date(date.getTime());
+				Date dateSql = null;
+				dateSql = new Date(date.getTime());
 
 				PreparedStatement st =
 						db.getConnection().prepareStatement("UPDATE indexes " +
@@ -1168,7 +1172,7 @@ public class Index extends Observable implements MutableTreeNode,
 		synchronized (db.dbLock) {
 
 			try {
-				java.util.LinkedList files = new java.util.LinkedList();
+				LinkedList files = new LinkedList();
 
 				PreparedStatement st;
 
@@ -1194,9 +1198,7 @@ public class Index extends Observable implements MutableTreeNode,
 					String mime = rs.getString("mime");
 					long size = rs.getLong("size");
 
-					thaw.plugins.index.File file =
-							new thaw.plugins.index.File(db, file_id, filename, file_publicKey,
-									localPath, mime, size, id, this);
+					File file = new File(db, file_id, filename, file_publicKey, localPath, mime, size, id, this);
 					files.add(file);
 				}
 
@@ -1252,7 +1254,7 @@ public class Index extends Observable implements MutableTreeNode,
 		synchronized (db.dbLock) {
 
 			try {
-				java.util.LinkedList links = new java.util.LinkedList();
+				LinkedList links = new LinkedList();
 
 				PreparedStatement st;
 
@@ -2083,7 +2085,7 @@ public class Index extends Observable implements MutableTreeNode,
 	public void setClientVersion(String str) {
 		/* only used if it's the Thaw index who was updated */
 
-		final String thawIndexPart = FreenetURIHelper.getComparablePart(thaw.plugins.IndexBrowser.DEFAULT_INDEXES[0]);
+		final String thawIndexPart = FreenetURIHelper.getComparablePart(IndexBrowser.DEFAULT_INDEXES[0]);
 		final String thisIndexPart = FreenetURIHelper.getComparablePart(getPublicKey());
 
 		if (!thawIndexPart.equals(thisIndexPart))

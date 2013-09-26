@@ -5,6 +5,8 @@ import java.util.Locale;
 import java.util.Vector;
 import javax.swing.UIManager;
 
+import thaw.plugins.ThemeSelector;
+
 /**
  * Main class. Only used to display some informations and init the core.
  *
@@ -103,7 +105,7 @@ public class Main {
 		System.out.println("-lf     Sets the 'Look and Feel' will use.");
 		System.out.println("        (overriden by the skins preferences)\n");
 		System.out.println("        These ones are currently available:");
-		Vector feels = thaw.plugins.ThemeSelector.getPossibleThemes();
+		Vector feels = ThemeSelector.getPossibleThemes();
 
 		for (Iterator it = feels.iterator(); it.hasNext(); ) {
 			String str = (String) it.next();

@@ -1,5 +1,6 @@
 package thaw.plugins.webOfTrust;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -173,7 +174,7 @@ public class WebOfTrustGraph extends JComponent implements MouseListener {
 	public void paintComponent(Graphics g) {
 		/* background */
 		Dimension d = getSize();
-		g.setColor(java.awt.Color.WHITE);
+		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, (int) d.getWidth(), (int) d.getHeight());
 
 		synchronized (nodes) {

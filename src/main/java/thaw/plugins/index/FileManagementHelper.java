@@ -116,7 +116,7 @@ public class FileManagementHelper {
 
 	/**
 	 * @param files
-	 * 		See thaw.plugins.index.File
+	 * 		See File
 	 * @param indexBrowser
 	 * 		can be null
 	 */
@@ -124,7 +124,7 @@ public class FileManagementHelper {
 									 final Vector files, final String destinationPath) {
 		for (final Iterator it = files.iterator();
 			 it.hasNext(); ) {
-			final thaw.plugins.index.File file = (thaw.plugins.index.File) it.next();
+			final File file = (File) it.next();
 			file.download(destinationPath, queueManager);
 		}
 
@@ -161,7 +161,7 @@ public class FileManagementHelper {
 			if (target != null) {
 				for (final Iterator it = target.iterator();
 					 it.hasNext(); ) {
-					final thaw.plugins.index.File file = (thaw.plugins.index.File) it.next();
+					final File file = (File) it.next();
 
 					if (file.getLocalPath() != null
 							&& file.getTransfer(queueManager) == null) {
@@ -181,7 +181,7 @@ public class FileManagementHelper {
 
 	/**
 	 * @param files
-	 * 		See thaw.plugins.index.File
+	 * 		See File
 	 * @param indexBrowser
 	 * 		can be null
 	 */
@@ -190,7 +190,7 @@ public class FileManagementHelper {
 								   final Vector files) {
 		for (final Iterator it = files.iterator();
 			 it.hasNext(); ) {
-			final thaw.plugins.index.File file = (thaw.plugins.index.File) it.next();
+			final File file = (File) it.next();
 			if (file.getLocalPath() != null)
 				file.insertOnFreenet(queueManager);
 		}
@@ -227,7 +227,7 @@ public class FileManagementHelper {
 			if (target != null) {
 				for (final Iterator it = target.iterator();
 					 it.hasNext(); ) {
-					final thaw.plugins.index.File file = (thaw.plugins.index.File) it.next();
+					final File file = (File) it.next();
 
 					if (file.getLocalPath() != null
 							&& file.getTransfer(queueManager) == null) {
@@ -248,7 +248,7 @@ public class FileManagementHelper {
 
 	/**
 	 * @param files
-	 * 		See thaw.plugins.index.File
+	 * 		See File
 	 * @param indexBrowser
 	 * 		can be null
 	 */
@@ -257,7 +257,7 @@ public class FileManagementHelper {
 									   final Vector files) {
 		for (final Iterator it = files.iterator();
 			 it.hasNext(); ) {
-			final thaw.plugins.index.File file = (thaw.plugins.index.File) it.next();
+			final File file = (File) it.next();
 
 			if (file.getLocalPath() != null)
 				file.recalculateCHK(queueManager);
@@ -294,7 +294,7 @@ public class FileManagementHelper {
 			if (target != null && target.size() > 0) {
 				/* check just the first file */
 
-				thaw.plugins.index.File file = (thaw.plugins.index.File) target.get(0);
+				File file = (File) target.get(0);
 
 				if (!file.isModifiable())
 					isOk = false;
@@ -311,13 +311,13 @@ public class FileManagementHelper {
 
 	/**
 	 * @param files
-	 * 		See thaw.plugins.index.File / files must have their parent correctly set
+	 * 		See File / files must have their parent correctly set
 	 */
 	public static void removeFiles(final IndexBrowserPanel browserPanel,
 								   final Vector files) {
 		for (final Iterator it = files.iterator();
 			 it.hasNext(); ) {
-			final thaw.plugins.index.File file = (thaw.plugins.index.File) it.next();
+			final File file = (File) it.next();
 
 			file.delete();
 		}
@@ -357,7 +357,7 @@ public class FileManagementHelper {
 
 		for (final Iterator it = targets.iterator();
 			 it.hasNext(); ) {
-			final thaw.plugins.index.File file = (thaw.plugins.index.File) it.next();
+			final File file = (File) it.next();
 			keys = keys + file.getPublicKey() + "\n";
 		}
 

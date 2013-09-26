@@ -6,12 +6,13 @@ import java.util.Vector;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.plugins.MiniFrost;
+import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.BoardFactory;
 import thaw.plugins.miniFrost.interfaces.Draft;
 import thaw.plugins.miniFrost.interfaces.Message;
 
 public class SentMessages
-		implements thaw.plugins.miniFrost.interfaces.Board {
+		implements Board {
 
 	private MiniFrost miniFrost;
 

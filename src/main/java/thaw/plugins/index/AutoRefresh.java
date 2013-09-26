@@ -3,6 +3,9 @@ package thaw.plugins.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Observable;
+import java.util.Observer;
 
 import thaw.core.Config;
 import thaw.core.Logger;
@@ -11,7 +14,7 @@ import thaw.core.ThawThread;
 import thaw.fcp.FCPQueueManager;
 import thaw.plugins.Hsqldb;
 
-public class AutoRefresh implements ThawRunnable, java.util.Observer {
+public class AutoRefresh implements ThawRunnable, Observer {
 
 	public final static boolean DEFAULT_ACTIVATED = true;
 
@@ -140,13 +143,13 @@ public class AutoRefresh implements ThawRunnable, java.util.Observer {
 
 				return ret;
 			}
-		} catch (java.sql.SQLException e) {
+		} catch (SQLException e) {
 			Logger.error(this, "SQLEXCEPTION while autorefreshing: " + e.toString());
 			return -2;
 		}
 	}
 
-	public void update(java.util.Observable o, Object param) {
+	public void update(Observable o, Object param) {
 
 		browserPanel.getIndexTree().redraw(((Index) o).getTreePath(browserPanel.getIndexTree()));
 
@@ -166,7 +169,7 @@ public class AutoRefresh implements ThawRunnable, java.util.Observer {
 		while (threadRunning) {
 			try {
 				Thread.sleep(1000 * subInterval);
-			} catch (java.lang.InterruptedException e) {
+			} catch (InterruptedException e) {
 				/* \_o< */
 			}
 

@@ -2,15 +2,20 @@ package thaw.plugins.signatures;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -19,6 +24,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import thaw.core.Logger;
@@ -49,7 +55,7 @@ public class TrustListParser {
 
 			try {
 				xmlBuilder = xmlFactory.newDocumentBuilder();
-			} catch (final javax.xml.parsers.ParserConfigurationException e) {
+			} catch (final ParserConfigurationException e) {
 				Logger.error(new TrustListParser(), "Unable to generate the index because : " + e.toString());
 				return false;
 			}
@@ -72,7 +78,7 @@ public class TrustListParser {
 
 			try {
 				serializer = transformFactory.newTransformer();
-			} catch (final javax.xml.transform.TransformerConfigurationException e) {
+			} catch (final TransformerConfigurationException e) {
 				Logger.error(new TrustListParser(), "Unable to save index because: " + e.toString());
 				return false;
 			}
@@ -83,7 +89,7 @@ public class TrustListParser {
 			/* final step */
 			try {
 				serializer.transform(domSource, streamResult);
-			} catch (final javax.xml.transform.TransformerException e) {
+			} catch (final TransformerException e) {
 				Logger.error(new TrustListParser(), "Unable to save index because: " + e.toString());
 				return false;
 			}
@@ -91,9 +97,9 @@ public class TrustListParser {
 			out.close();
 
 			return true;
-		} catch (java.io.FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			Logger.error(new TrustListParser(), "File not found exception ?!");
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(new TrustListParser(), "IOException while generating the index: " + e.toString());
 		}
 
@@ -219,8 +225,7 @@ public class TrustListParser {
 		/**
 		 * Called when a closing tag is met
 		 *
-		 * @see org.xml.sax.ContentHandler#endElement(java.lang.String,
-		 *      java.lang.String, java.lang.String)
+		 * @see ContentHandler#endElement(String, String, String)
 		 */
 		public void endElement(String nameSpaceURI, String localName,
 							   String rawName) throws SAXException {
@@ -282,13 +287,13 @@ public class TrustListParser {
 			Logger.notice(handler, "Parsing done");
 
 			stream.close();
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.error(new TrustListParser(), "Unable to load XML: FileNotFoundException ('" + inputFile.getPath() + "') ! : " + e.toString());
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(new TrustListParser(), "IOException while parsing the index: " + e.toString());
-		} catch (javax.xml.parsers.ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			Logger.notice(new TrustListParser(), "Error (1) while parsing index: " + e.toString());
-		} catch (org.xml.sax.SAXException e) {
+		} catch (SAXException e) {
 			Logger.notice(new TrustListParser(), "Error (2) while parsing index: " + e.toString());
 		} catch (Exception e) {
 			Logger.notice(new TrustListParser(), "Error (4) while parsing index: " + e.toString());

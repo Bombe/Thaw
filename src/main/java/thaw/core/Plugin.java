@@ -1,5 +1,7 @@
 package thaw.core;
 
+import javax.swing.ImageIcon;
+
 /** Define what methods a plugin must implements. */
 public interface Plugin {
 
@@ -23,5 +25,5 @@ public interface Plugin {
 	public String getNameForUser();
 
 	/** Can return null */
-	public javax.swing.ImageIcon getIcon();
+	public ImageIcon getIcon();
 }

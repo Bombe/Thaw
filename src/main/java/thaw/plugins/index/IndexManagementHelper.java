@@ -12,12 +12,16 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.DateFormat;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
@@ -48,10 +52,12 @@ import thaw.fcp.FCPGenerateSSK;
 import thaw.fcp.FCPQueueManager;
 import thaw.fcp.FreenetURIHelper;
 import thaw.gui.FileChooser;
+import thaw.gui.GUIHelper;
 import thaw.gui.IconBox;
 import thaw.gui.MainWindow;
 import thaw.gui.WarningWindow;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.insertPlugin.DefaultMIMETypes;
 import thaw.plugins.signatures.Identity;
 
 /**
@@ -784,7 +790,7 @@ public class IndexManagementHelper {
 			if (showDialog)
 				dialog = new PleaseWaitDialog(mainWindow);
 
-			for (java.util.Enumeration children = folder.children();
+			for (Enumeration children = folder.children();
 				 children.hasMoreElements(); ) {
 
 				/* dirty recursivity */
@@ -922,7 +928,7 @@ public class IndexManagementHelper {
 			}
 		}
 
-		thaw.gui.GUIHelper.copyToClipboard(node.getPublicKey());
+		GUIHelper.copyToClipboard(node.getPublicKey());
 	}
 
 	public static class PrivateKeyCopier extends BasicIndexAction {
@@ -1050,7 +1056,7 @@ public class IndexManagementHelper {
 
 			try {
 				out = new FileOutputStream(newFile);
-			} catch (final java.io.FileNotFoundException excep) {
+			} catch (final FileNotFoundException excep) {
 				Logger.warning(this, "Unable to create file '" + newFile.toString() + "' ! not generated  because : " + excep.toString());
 				return;
 			}
@@ -1059,7 +1065,7 @@ public class IndexManagementHelper {
 
 			try {
 				out.close();
-			} catch (java.io.IOException e) {
+			} catch (IOException e) {
 				Logger.warning(this, "Can't close the export file cleanly");
 			}
 		}
@@ -1175,7 +1181,7 @@ public class IndexManagementHelper {
 			/* A nicer way would be to ask directly to the database the index who
 			 * are children of this folder, but I'm a lazy bastard.
 			 */
-			java.util.Enumeration targetChildren = target.children();
+			Enumeration targetChildren = target.children();
 
 			while (targetChildren.hasMoreElements()) {
 				Object o = targetChildren.nextElement();
@@ -1375,7 +1381,7 @@ public class IndexManagementHelper {
 					st.setString(2, ioFile.getName());
 					st.setString(3, ioFile.getName() /* stand as public key for the moment */);
 					st.setString(4, ioFile.getAbsolutePath());
-					st.setString(5, thaw.plugins.insertPlugin.DefaultMIMETypes.guessMIMEType(ioFile.getName()));
+					st.setString(5, DefaultMIMETypes.guessMIMEType(ioFile.getName()));
 					st.setLong(6, ioFile.length());
 					st.setNull(7 /* category */, Types.INTEGER /* not used at the moment */);
 					st.setInt(8, target.getId());
@@ -1463,7 +1469,7 @@ public class IndexManagementHelper {
 			final JMenuItem item = new JMenuItem(I18n.getMessage("thaw.common.paste"));
 			popupMenu.add(item);
 			textArea.addMouseListener(this);
-			new thaw.gui.GUIHelper.PasteHelper(item, textArea);
+			new GUIHelper.PasteHelper(item, textArea);
 
 			cancelButton.addActionListener(this);
 			okButton.addActionListener(this);
@@ -1601,7 +1607,7 @@ public class IndexManagementHelper {
 						st.setString(2, FreenetURIHelper.getFilenameFromKey(key));
 						st.setString(3, key);
 						st.setNull(4, Types.VARCHAR /* localPath */);
-						st.setString(5, thaw.plugins.insertPlugin.DefaultMIMETypes.guessMIMEType(FreenetURIHelper.getFilenameFromKey(key)));
+						st.setString(5, DefaultMIMETypes.guessMIMEType(FreenetURIHelper.getFilenameFromKey(key)));
 						st.setLong(6, 0L);
 						st.setNull(7 /* category */, Types.INTEGER /* not used at the moment */);
 						st.setInt(8, target.getId());
@@ -1929,7 +1935,7 @@ public class IndexManagementHelper {
 		private void displayDialog(MainWindow mainWindow,
 								   int nmbFiles,
 								   int nmbLinks,
-								   java.sql.Date dateSql,
+								   Date dateSql,
 								   long totalSize) {
 
 			String dateStr = null;
@@ -1961,7 +1967,7 @@ public class IndexManagementHelper {
 			statPanel.add(new JLabel(dateStr, JLabel.RIGHT));
 
 			statPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.totalSize")));
-			statPanel.add(new JLabel(thaw.gui.GUIHelper.getPrintableSize(totalSize), JLabel.RIGHT));
+			statPanel.add(new JLabel(GUIHelper.getPrintableSize(totalSize), JLabel.RIGHT));
 
 			dialog.getContentPane().add(statPanel, BorderLayout.CENTER);
 
@@ -1997,7 +2003,7 @@ public class IndexManagementHelper {
 			int nmbFilesInt = 0;
 			int nmbLinksInt = 0;
 			long totalSize = 0;
-			java.sql.Date insertionDate = null;
+			Date insertionDate = null;
 
 			synchronized (db.dbLock) {
 				try {
@@ -2061,7 +2067,7 @@ public class IndexManagementHelper {
 
 					} else if (node instanceof Index) {
 						/* mode lazy bastard => on */
-						thaw.plugins.index.File[] files = ((Index) node).getFileList(null, true);
+						File[] files = ((Index) node).getFileList(null, true);
 
 						nmbFilesInt = files.length;
 						nmbLinksInt = ((Index) node).getLinkList(null, true).length;
@@ -2070,7 +2076,7 @@ public class IndexManagementHelper {
 						totalSize = 0;
 
 						for (int i = 0; i < files.length; i++) {
-							totalSize += ((thaw.plugins.index.File) files[i]).getSize();
+							totalSize += ((File) files[i]).getSize();
 						}
 					}
 

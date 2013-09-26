@@ -6,6 +6,7 @@ import thaw.core.Config;
 import thaw.core.Logger;
 import thaw.core.SplashScreen;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.Signatures;
 
 public class DatabaseManager {
 
@@ -81,7 +82,7 @@ public class DatabaseManager {
 	}
 
 	public static void addDevs(Hsqldb db) {
-		String[][] devs = thaw.plugins.Signatures.DEVS;
+		String[][] devs = Signatures.DEVS;
 
 		for (int i = 0; i < devs.length; i++) {
 			addDev(db, devs[i][0], devs[i][1]);

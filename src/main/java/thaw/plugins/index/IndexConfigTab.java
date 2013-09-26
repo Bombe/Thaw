@@ -16,6 +16,7 @@ import thaw.core.Config;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.gui.ConfigWindow;
+import thaw.gui.IconBox;
 
 /** in the config window */
 public class IndexConfigTab implements ActionListener, Observer {
@@ -97,7 +98,7 @@ public class IndexConfigTab implements ActionListener, Observer {
 	public void addTab() {
 		configWindow.addObserver(this);
 		configWindow.addTab(I18n.getMessage("thaw.plugin.index.indexes"),
-				thaw.gui.IconBox.minIndex,
+				IconBox.minIndex,
 				panel);
 	}
 

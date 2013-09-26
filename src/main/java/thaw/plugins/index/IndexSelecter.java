@@ -1,8 +1,13 @@
 package thaw.plugins.index;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -37,7 +42,7 @@ import thaw.plugins.Hsqldb;
  * *-------------------*------------------*
  * </pre>
  */
-public class IndexSelecter implements java.awt.event.ActionListener, java.util.Observer {
+public class IndexSelecter implements ActionListener, Observer {
 
 	private JFrame frame;
 
@@ -99,7 +104,7 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 
 		keyArea.setSize(100, 100);
 		sp.setSize(100, 100);
-		sp.setPreferredSize(new java.awt.Dimension(100, 100));
+		sp.setPreferredSize(new Dimension(100, 100));
 
 		fieldPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.indexKey")), BorderLayout.NORTH);
 		fieldPanel.add(sp, BorderLayout.CENTER);
@@ -116,7 +121,7 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 
 		keyArea.setSize(100, 100);
 		sp.setSize(100, 100);
-		sp.setPreferredSize(new java.awt.Dimension(100, 100));
+		sp.setPreferredSize(new Dimension(100, 100));
 
 		selectedIndexKeys = null;
 
@@ -129,7 +134,7 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 		for (closeWin = false; !closeWin; ) {
 			try {
 				Thread.sleep(500);
-			} catch (final java.lang.InterruptedException e) {
+			} catch (final InterruptedException e) {
 				/* \_o< \_o< \_o< */
 			}
 		}
@@ -153,7 +158,7 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 		return selectedIndexKeys;
 	}
 
-	public void update(final java.util.Observable o, final Object param) {
+	public void update(final Observable o, final Object param) {
 		if (param instanceof Vector) {
 			keyArea.setText("");
 
@@ -172,7 +177,7 @@ public class IndexSelecter implements java.awt.event.ActionListener, java.util.O
 
 	}
 
-	public void actionPerformed(final java.awt.event.ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 		if (e.getSource() == okButton) {
 			if ((keyArea.getText() == null) || "".equals(keyArea.getText()))
 				selectedIndexKeys = null;

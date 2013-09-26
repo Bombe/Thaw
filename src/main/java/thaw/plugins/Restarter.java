@@ -6,6 +6,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
 import java.util.Vector;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -18,6 +19,7 @@ import thaw.core.Plugin;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
 import thaw.fcp.FCPTransferQuery;
+import thaw.gui.IconBox;
 
 /**
  * This plugin, after a given time, restart all/some the failed downloads (if
@@ -81,7 +83,7 @@ public class Restarter implements Observer, ThawRunnable, Plugin {
 		configPanel.add(restartFatalsBox);
 
 		core.getConfigWindow().addTab(I18n.getMessage("thaw.plugin.restarter.configTabName"),
-				thaw.gui.IconBox.minRefreshAction,
+				IconBox.minRefreshAction,
 				configPanel);
 		core.getConfigWindow().addObserver(this);
 
@@ -106,7 +108,7 @@ public class Restarter implements Observer, ThawRunnable, Plugin {
 					Thread.sleep(1000);
 				}
 
-			} catch (final java.lang.InterruptedException e) {
+			} catch (final InterruptedException e) {
 				// We really really really don't care.
 			}
 
@@ -218,7 +220,7 @@ public class Restarter implements Observer, ThawRunnable, Plugin {
 		return I18n.getMessage("thaw.plugin.restarter.restarter");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.refreshAction;
+	public ImageIcon getIcon() {
+		return IconBox.refreshAction;
 	}
 }

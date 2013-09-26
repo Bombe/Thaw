@@ -1,6 +1,7 @@
 package thaw.gui;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -14,7 +15,7 @@ import thaw.gui.ActionHandlers.MainMenuReconnection;
 import thaw.gui.ActionHandlers.MainOptions;
 import thaw.gui.ActionHandlers.MainQuit;
 
-public class MenuBar implements java.awt.event.ActionListener {
+public class MenuBar implements ActionListener {
 
 	private final JMenuBar menuBar;
 

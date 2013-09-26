@@ -3,6 +3,7 @@ package thaw.plugins;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -12,12 +13,13 @@ import javax.swing.WindowConstants;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.core.Plugin;
 import thaw.fcp.FCPClientPut;
 import thaw.gui.IconBox;
 import thaw.gui.WarningWindow;
 import thaw.plugins.insertPlugin.InsertPanel;
 
-public class InsertPlugin implements thaw.core.Plugin, ActionListener {
+public class InsertPlugin implements Plugin, ActionListener {
 
 	private Core core;
 
@@ -184,7 +186,7 @@ public class InsertPlugin implements thaw.core.Plugin, ActionListener {
 		return true;
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.insertions;
+	public ImageIcon getIcon() {
+		return IconBox.insertions;
 	}
 }

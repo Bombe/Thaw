@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -14,10 +15,12 @@ import javax.swing.event.ListSelectionListener;
 
 import thaw.core.Core;
 import thaw.core.I18n;
+import thaw.core.Plugin;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
+import thaw.gui.IconBox;
 
-public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionListener {
+public class ThemeSelector implements Plugin, Observer, ListSelectionListener {
 
 	private Core core;
 
@@ -67,7 +70,7 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		panel = new JPanel(new BorderLayout(5, 5));
 		themeList = new JList(themes = getPossibleThemes());
 		JLabel label = new JLabel(I18n.getMessage("thaw.plugin.themeSelector.selectATheme"));
-		label.setIcon(thaw.gui.IconBox.lookAndFeel);
+		label.setIcon(IconBox.lookAndFeel);
 
 		themeList.addListSelectionListener(this);
 
@@ -79,7 +82,7 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		core.getConfigWindow().addObserver(this);
 
 		core.getConfigWindow().addTab(I18n.getMessage("thaw.plugin.themeSelector.theme"),
-				thaw.gui.IconBox.minLookAndFeel,
+				IconBox.minLookAndFeel,
 				panel);
 
 		return true;
@@ -94,8 +97,8 @@ public class ThemeSelector implements thaw.core.Plugin, Observer, ListSelectionL
 		return I18n.getMessage("thaw.plugin.themeSelector.themeSelector");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.lookAndFeel;
+	public ImageIcon getIcon() {
+		return IconBox.lookAndFeel;
 	}
 
 	public void resetSelection() {

@@ -4,7 +4,9 @@ import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -14,6 +16,8 @@ import thaw.core.Logger;
 import thaw.fcp.FCPClientGet;
 import thaw.fcp.FCPQueueManager;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.miniFrost.interfaces.Author;
+import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.Message;
 import thaw.plugins.signatures.Identity;
 
@@ -41,7 +45,7 @@ public class KSKMessage
 
 	private KSKAuthor author;
 
-	private java.util.Date date;
+	private Date date;
 
 	private int rev;
 
@@ -54,7 +58,7 @@ public class KSKMessage
 	private KSKBoard board;
 
 	public KSKMessage(KSKBoard board,
-					  java.util.Date date, int rev) {
+					  Date date, int rev) {
 		this.board = board;
 		this.date = date;
 		this.rev = rev;
@@ -228,7 +232,7 @@ public class KSKMessage
 					  String inReplyToStr,
 					  String subject, String nick,
 					  int sigId, Identity identity,
-					  java.util.Date date, int rev,
+					  Date date, int rev,
 					  boolean read, boolean archived,
 					  Identity encryptedFor,
 					  KSKBoard board) {
@@ -251,11 +255,11 @@ public class KSKMessage
 		return subject;
 	}
 
-	public thaw.plugins.miniFrost.interfaces.Author getSender() {
+	public Author getSender() {
 		return author;
 	}
 
-	public java.util.Date getDate() {
+	public Date getDate() {
 		return date;
 	}
 
@@ -290,7 +294,7 @@ public class KSKMessage
 		return encryptedFor;
 	}
 
-	public thaw.plugins.miniFrost.interfaces.Board getBoard() {
+	public Board getBoard() {
 		return board;
 	}
 
@@ -348,7 +352,7 @@ public class KSKMessage
 
 	protected Vector parseMessage(final String fullMsg) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd - HH:mm:ss");
-		//sdf.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+		//sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		Vector v = new Vector();
 
@@ -382,7 +386,7 @@ public class KSKMessage
 			String dateStr = split[i + 1].replaceAll("GMT", "");
 			String msg = split[i + 2];
 
-			java.util.Date date = sdf.parse(dateStr, new java.text.ParsePosition(0));
+			Date date = sdf.parse(dateStr, new ParsePosition(0));
 
 			if (date == null) {
 				Logger.notice(this, "Unable to parse the date : " + dateStr);
@@ -429,7 +433,7 @@ public class KSKMessage
 	}
 
 	private void setAuthorAndDate(Vector subMsgs, KSKAuthor author,
-								  java.util.Date date) {
+								  Date date) {
 
 		// we browse the vector by starting with the last element
 		// so we can't use an iterator

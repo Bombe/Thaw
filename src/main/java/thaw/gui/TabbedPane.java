@@ -25,7 +25,7 @@ public class TabbedPane extends JTabbedPane implements ChangeListener {
 	}
 
 	public void addTab(final String tabName, final Icon icon,
-					   final java.awt.Component panel) {
+					   final Component panel) {
 		tabNames.add(tabName);
 
 		if (tabNames.size() > 1)

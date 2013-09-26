@@ -1,5 +1,6 @@
 package thaw.plugins.signatures;
 
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -9,16 +10,18 @@ import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
 
 import thaw.core.Config;
 import thaw.core.I18n;
+import thaw.gui.IconBox;
 import thaw.gui.Table;
 
 public class IdentityTable extends Observable implements MouseListener, KeyListener {
 
 	private static final long serialVersionUID = -6972180330110075151L;
 
-	private thaw.gui.Table table;
+	private Table table;
 
 	private IdentityModel model;
 
@@ -39,7 +42,7 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 		renderer.setModel(model);
 	}
 
-	public static class IdentityModel extends javax.swing.table.AbstractTableModel {
+	public static class IdentityModel extends AbstractTableModel {
 
 		private static final long serialVersionUID = -7614528570324908651L;
 
@@ -103,7 +106,7 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 		}
 	}
 
-	public static class IdentityRenderer extends thaw.gui.Table.DefaultRenderer {
+	public static class IdentityRenderer extends Table.DefaultRenderer {
 
 		private static final long serialVersionUID = 5405210731032136559L;
 
@@ -118,16 +121,16 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 			this.model = model;
 		}
 
-		public java.awt.Component getTableCellRendererComponent(final JTable table, Object value,
+		public Component getTableCellRendererComponent(final JTable table, Object value,
 																final boolean isSelected, final boolean hasFocus,
 																final int row, final int column) {
 
 			if (value instanceof String
 					&& "X".equals(value)) {
-				value = thaw.gui.IconBox.minClose;
+				value = IconBox.minClose;
 			}
 
-			java.awt.Component c = super.getTableCellRendererComponent(table, value,
+			Component c = super.getTableCellRendererComponent(table, value,
 					isSelected, hasFocus,
 					row, column);
 			Identity i = model.getIdentity(row);
@@ -143,7 +146,7 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 		model.setIdentities(ids);
 	}
 
-	public thaw.gui.Table getTable() {
+	public Table getTable() {
 		return table;
 	}
 

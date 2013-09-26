@@ -5,21 +5,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Date;
 import javax.swing.ImageIcon;
 
 import thaw.core.Core;
 import thaw.core.I18n;
+import thaw.core.LibraryPlugin;
 import thaw.core.Logger;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
 import thaw.fcp.FreenetURIHelper;
+import thaw.gui.IconBox;
 import thaw.plugins.signatures.Identity;
 import thaw.plugins.webOfTrust.DatabaseManager;
 import thaw.plugins.webOfTrust.TrustListDownloader;
 import thaw.plugins.webOfTrust.TrustListUploader;
 import thaw.plugins.webOfTrust.WebOfTrustConfigTab;
 
-public class WebOfTrust extends thaw.core.LibraryPlugin {
+public class WebOfTrust extends LibraryPlugin {
 
 	private Core core;
 
@@ -81,7 +84,7 @@ public class WebOfTrust extends thaw.core.LibraryPlugin {
 	}
 
 	public ImageIcon getIcon() {
-		return thaw.gui.IconBox.trust;
+		return IconBox.trust;
 	}
 
 	public String getNameForUser() {
@@ -182,7 +185,7 @@ public class WebOfTrust extends thaw.core.LibraryPlugin {
 				core.getConfig(), db);
 
 		core.getConfigWindow().addTab(I18n.getMessage("thaw.plugin.wot"),
-				thaw.gui.IconBox.minTrust,
+				IconBox.minTrust,
 				configTab.getPanel());
 
 		configTab.addAsObserver();
@@ -214,7 +217,7 @@ public class WebOfTrust extends thaw.core.LibraryPlugin {
 		return null;
 	}
 
-	public void addTrustList(Identity identity, String publicKey, java.util.Date dateOfTheKey) {
+	public void addTrustList(Identity identity, String publicKey, Date dateOfTheKey) {
 		if (identity.getPrivateKey() != null)
 			return;
 
@@ -239,7 +242,7 @@ public class WebOfTrust extends thaw.core.LibraryPlugin {
 
 					PreparedStatement up = db.getConnection().prepareStatement("UPDATE wotKeys SET publicKey = ?, keyDate = ?, lastUpdate = ? WHERE id = ?");
 					up.setString(1, publicKey);
-					up.setTimestamp(2, new java.sql.Timestamp(dateOfTheKey.getTime()));
+					up.setTimestamp(2, new Timestamp(dateOfTheKey.getTime()));
 					up.setNull(3, Types.TIMESTAMP);
 					up.setInt(4, id);
 					up.execute();
@@ -248,7 +251,7 @@ public class WebOfTrust extends thaw.core.LibraryPlugin {
 				} else {
 					PreparedStatement in = db.getConnection().prepareStatement("INSERT INTO wotKeys (publicKey, keyDate, score, sigId) VALUES (?, ?, 0, ?)");
 					in.setString(1, publicKey);
-					in.setTimestamp(2, new java.sql.Timestamp(dateOfTheKey.getTime()));
+					in.setTimestamp(2, new Timestamp(dateOfTheKey.getTime()));
 					in.setInt(3, identity.getId());
 					in.execute();
 

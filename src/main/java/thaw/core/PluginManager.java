@@ -1,8 +1,11 @@
 package thaw.core;
 
+import javax.swing.ImageIcon;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import thaw.gui.IconBox;
 
 /** Manages plugins :) */
 public class PluginManager {
@@ -169,13 +172,13 @@ public class PluginManager {
 			try {
 				Plugin plugin = plugins.get(className);
 
-				javax.swing.ImageIcon icon;
+				ImageIcon icon;
 
 				if (core.getSplashScreen() != null) {
 					if ((icon = plugin.getIcon()) != null)
 						core.getSplashScreen().addIcon(icon);
 					else
-						core.getSplashScreen().addIcon(thaw.gui.IconBox.add);
+						core.getSplashScreen().addIcon(IconBox.add);
 				}
 
 				plugin.run(core);

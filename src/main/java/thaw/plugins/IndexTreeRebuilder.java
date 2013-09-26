@@ -1,5 +1,6 @@
 package thaw.plugins;
 
+import javax.swing.ImageIcon;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -225,7 +226,7 @@ public class IndexTreeRebuilder implements Plugin {
 		return I18n.getMessage("thaw.plugin.index.treeRebuilder");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
+	public ImageIcon getIcon() {
 		return null;
 	}
 }

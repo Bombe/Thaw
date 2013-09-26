@@ -1,13 +1,16 @@
 package thaw.plugins.miniFrost.frostKSK;
 
 import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import thaw.core.Logger;
+import thaw.fcp.FCPQueueManager;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.miniFrost.interfaces.Attachment;
 
 public abstract class KSKAttachment
-		implements thaw.plugins.miniFrost.interfaces.Attachment {
+		implements Attachment {
 
 	public abstract String getType();
 
@@ -37,7 +40,7 @@ public abstract class KSKAttachment
 
 	public abstract String[] getActions();
 
-	public abstract void apply(Hsqldb db, thaw.fcp.FCPQueueManager queueManager,
+	public abstract void apply(Hsqldb db, FCPQueueManager queueManager,
 							   String action);
 
 	public abstract void insert(Hsqldb db, int messageId);
@@ -63,7 +66,7 @@ public abstract class KSKAttachment
 		return false;
 	}
 
-	public Element getXML(org.w3c.dom.Document doc) {
+	public Element getXML(Document doc) {
 		Element root = doc.createElement("Attachment");
 		root.setAttribute("type", getType());
 

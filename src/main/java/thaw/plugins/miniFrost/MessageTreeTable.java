@@ -4,12 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -25,7 +28,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 
@@ -35,6 +40,7 @@ import thaw.gui.CheckBox;
 import thaw.gui.IconBox;
 import thaw.gui.Table;
 import thaw.plugins.MiniFrost;
+import thaw.plugins.Signatures;
 import thaw.plugins.miniFrost.interfaces.Author;
 import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.BoardFactory;
@@ -190,7 +196,7 @@ public class MessageTreeTable implements Observer,
 				"table_minifrost_message_table",
 				model);
 		table.setDefaultRenderer(table.getColumnClass(0), new MessageTableRenderer());
-		//table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+		//table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		table.getColumnModel().getColumn(0).setPreferredWidth(FIRST_COLUMN_SIZE);
 		table.getColumnModel().getColumn(0).setResizable(false);
@@ -230,7 +236,7 @@ public class MessageTreeTable implements Observer,
 		/* trust level */
 
 		String minTrustLvlStr = mainPanel.getConfig().getValue("minTrustLevel");
-		minTrustLevelInt = thaw.plugins.Signatures.DEFAULT_MIN_TRUST_LEVEL;
+		minTrustLevelInt = Signatures.DEFAULT_MIN_TRUST_LEVEL;
 
 		if (minTrustLvlStr != null)
 			minTrustLevelInt = Integer.parseInt(minTrustLvlStr);
@@ -255,7 +261,7 @@ public class MessageTreeTable implements Observer,
 		}
 
 		JPanel southWestPanel = new JPanel(new GridLayout(1, 3, 5, 5));
-		//southEastPanelTop.add(new JLabel(I18n.getMessage("thaw.plugin.miniFrost.seeMessages")));
+		//southEastPanelTop.add(new JLabel(I18n.getMessage("seeMessages")));
 		southWestPanel.add(seeUnsigned);
 		southWestPanel.add(seeArchived);
 		southWestPanel.add(seeRead);
@@ -320,7 +326,7 @@ public class MessageTreeTable implements Observer,
 			super.setBounds(x, 0, w, table.getHeight());
 		}
 
-		public void paint(java.awt.Graphics g) {
+		public void paint(Graphics g) {
 			g.translate(0, (-(visibleRow + 1) * rowHeight));
 			super.paint(g);
 		}
@@ -333,7 +339,7 @@ public class MessageTreeTable implements Observer,
 			if (isSelected)
 				setSelectionRow(row + 1); /* don't forget the root :) */
 
-			Color background = thaw.gui.Table.DefaultRenderer.setBackground(this, row, isSelected);
+			Color background = Table.DefaultRenderer.setBackground(this, row, isSelected);
 
 			setRowHeight(table.getRowHeight());
 			rowHeight = table.getRowHeight();
@@ -581,8 +587,8 @@ public class MessageTreeTable implements Observer,
 					value = trustLevelNoneStr;
 			}
 
-			if (value instanceof java.util.Date) {
-				value = java.text.DateFormat.getDateTimeInstance().format((java.util.Date) value);
+			if (value instanceof Date) {
+				value = DateFormat.getDateTimeInstance().format((Date) value);
 
 				if (advancedMode) {
 					int rev = msg.getRev();
@@ -625,7 +631,7 @@ public class MessageTreeTable implements Observer,
 	}
 
 	protected class MessageTableModel
-			extends javax.swing.table.AbstractTableModel {
+			extends AbstractTableModel {
 
 		/**
 		 *
@@ -1103,7 +1109,7 @@ public class MessageTreeTable implements Observer,
 				Logger.info(this, "Line: " + Integer.toString(line));
 				model.setSelectedAll(false);
 				model.switchSelection(line, true);
-				javax.swing.SwingUtilities.invokeLater(new LineSelecter(line));
+				SwingUtilities.invokeLater(new LineSelecter(line));
 			}
 
 			if (line >= 0) {

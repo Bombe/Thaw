@@ -7,14 +7,19 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -122,7 +127,7 @@ public class TransferLogs implements Plugin, ActionListener, Observer {
 		setAsObserverEverywhere();
 
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.transferLogs.transferLogsShort"),
-				thaw.gui.IconBox.file,
+				IconBox.file,
 				tab);
 
 		return true;
@@ -143,8 +148,8 @@ public class TransferLogs implements Plugin, ActionListener, Observer {
 		return I18n.getMessage("thaw.plugin.transferLogs.transferLogs");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.file;
+	public ImageIcon getIcon() {
+		return IconBox.file;
 	}
 
 	protected void createTables() {
@@ -251,8 +256,8 @@ public class TransferLogs implements Plugin, ActionListener, Observer {
 		return fileChooser.askOneFile();
 	}
 
-	public static java.sql.Timestamp getNow() {
-		return new java.sql.Timestamp((new java.util.Date()).getTime());
+	public static Timestamp getNow() {
+		return new Timestamp((new Date()).getTime());
 	}
 
 	private class KeyImporter implements ThawRunnable {
@@ -261,7 +266,7 @@ public class TransferLogs implements Plugin, ActionListener, Observer {
 		}
 
 		public void run() {
-			java.sql.Timestamp date = getNow();
+			Timestamp date = getNow();
 
 			File file = chooseFile(false);
 
@@ -319,9 +324,9 @@ public class TransferLogs implements Plugin, ActionListener, Observer {
 
 				in.close();
 
-			} catch (java.io.FileNotFoundException e) {
+			} catch (FileNotFoundException e) {
 				Logger.error(this, "(1) Unable to import keys because: " + e.toString());
-			} catch (java.io.IOException e) {
+			} catch (IOException e) {
 				Logger.error(this, "(2) Unable to import keys because: " + e.toString());
 			}
 
@@ -366,9 +371,9 @@ public class TransferLogs implements Plugin, ActionListener, Observer {
 
 			} catch (SQLException e) {
 				Logger.error(this, "Unable to export keys because: " + e.toString());
-			} catch (java.io.FileNotFoundException e) {
+			} catch (FileNotFoundException e) {
 				Logger.error(this, "(1) Unable to export keys because : " + e.toString());
-			} catch (java.io.IOException e) {
+			} catch (IOException e) {
 				Logger.error(this, "(2) Unable to export keys because : " + e.toString());
 			}
 

@@ -11,6 +11,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -456,7 +457,7 @@ public class SigConfigTab implements ActionListener, Observer {
 
 				FileChooser chooser = new FileChooser(I18n.getMessage("thaw.plugin.signature.trustList.export.long"));
 				chooser.setDirectoryOnly(false);
-				chooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
+				chooser.setDialogType(JFileChooser.SAVE_DIALOG);
 
 				File file = chooser.askOneFile();
 
@@ -468,7 +469,7 @@ public class SigConfigTab implements ActionListener, Observer {
 
 				FileChooser chooser = new FileChooser(I18n.getMessage("thaw.plugin.signature.trustList.import.long"));
 				chooser.setDirectoryOnly(false);
-				chooser.setDialogType(javax.swing.JFileChooser.OPEN_DIALOG);
+				chooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
 				File file = chooser.askOneFile();
 

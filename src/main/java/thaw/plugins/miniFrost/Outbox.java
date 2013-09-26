@@ -1,5 +1,6 @@
 package thaw.plugins.miniFrost;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -9,6 +10,7 @@ import thaw.plugins.miniFrost.interfaces.Author;
 import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.Draft;
 import thaw.plugins.miniFrost.interfaces.Message;
+import thaw.plugins.miniFrost.interfaces.SubMessage;
 import thaw.plugins.signatures.Identity;
 
 public class Outbox implements Board {
@@ -29,7 +31,7 @@ public class Outbox implements Board {
 		return null;
 	}
 
-	private static class DraftAuthorShell implements thaw.plugins.miniFrost.interfaces.Author {
+	private static class DraftAuthorShell implements Author {
 
 		private Draft draft;
 
@@ -50,7 +52,7 @@ public class Outbox implements Board {
 		}
 	}
 
-	private static class DraftSubMessageShell implements thaw.plugins.miniFrost.interfaces.SubMessage {
+	private static class DraftSubMessageShell implements SubMessage {
 
 		private Draft draft;
 
@@ -62,7 +64,7 @@ public class Outbox implements Board {
 			return new DraftAuthorShell(draft);
 		}
 
-		public java.util.Date getDate() {
+		public Date getDate() {
 			return draft.getDate();
 		}
 
@@ -71,7 +73,7 @@ public class Outbox implements Board {
 		}
 	}
 
-	private static class DraftShell implements thaw.plugins.miniFrost.interfaces.Message {
+	private static class DraftShell implements Message {
 
 		private Draft draft;
 
@@ -95,7 +97,7 @@ public class Outbox implements Board {
 			return new DraftAuthorShell(draft);
 		}
 
-		public java.util.Date getDate() {
+		public Date getDate() {
 			return draft.getDate();
 		}
 

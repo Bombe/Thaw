@@ -41,7 +41,7 @@ public class FileChooser {
 	/**
 	 * @param type
 	 * 		JFileChooser.OPEN_DIALOG / JFileChooser.SAVE_DIALOG
-	 * @see javax.swing.JFileChooser#setDialogType(int)
+	 * @see JFileChooser#setDialogType(int)
 	 */
 	public void setDialogType(final int type) {
 		fileChooser.setDialogType(type);

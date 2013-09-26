@@ -32,6 +32,7 @@ import thaw.core.ThawThread;
 import thaw.fcp.FCPClientGet;
 import thaw.fcp.FCPTransferQuery;
 import thaw.gui.FileChooser;
+import thaw.gui.GUIHelper;
 import thaw.gui.IconBox;
 import thaw.gui.Table;
 import thaw.plugins.QueueWatcher;
@@ -119,7 +120,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 				tableModel);
 
 		table.setShowGrid(false);
-		table.setIntercellSpacing(new java.awt.Dimension(0, 0));
+		table.setIntercellSpacing(new Dimension(0, 0));
 		table.showStatusInProgressBars(false);
 
 		final JTableHeader header = table.getTableHeader();
@@ -439,7 +440,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 			} /* for i in selectedRows */
 
 			if (action == ACTION_COPY_KEYS_SELECTED) {
-				thaw.gui.GUIHelper.copyToClipboard(keys);
+				GUIHelper.copyToClipboard(keys);
 			}
 
 		}

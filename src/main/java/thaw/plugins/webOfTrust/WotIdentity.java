@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -267,14 +268,14 @@ public class WotIdentity extends Identity implements TrustListParser.TrustListCo
 		}
 	}
 
-	public void updateInfos(String wotPublicKey, java.util.Date lastDownload) {
+	public void updateInfos(String wotPublicKey, Date lastDownload) {
 		try {
 			synchronized (getDb().dbLock) {
 				PreparedStatement st;
 
 				st = getDb().getConnection().prepareStatement("UPDATE wotKeys SET publicKey = ?, keyDate = ?, lastDownload = ? WHERE sigId = ?");
 				st.setString(1, wotPublicKey);
-				st.setTimestamp(2, new Timestamp(new java.util.Date().getTime()));
+				st.setTimestamp(2, new Timestamp(new Date().getTime()));
 				st.setTimestamp(3, new Timestamp(lastDownload.getTime()));
 				st.setInt(4, getId());
 

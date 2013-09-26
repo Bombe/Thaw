@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import java.io.UnsupportedEncodingException;
+
 import thaw.core.Logger;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
@@ -74,7 +76,7 @@ public class FCPBufferedStream implements ThawRunnable {
 	public boolean write(final String data) {
 		try {
 			return this.write(data.getBytes("UTF-8"));
-		} catch (final java.io.UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			Logger.error(this, "UNSUPPORTED ENCODING EXCEPTION : UTF-8");
 			return this.write(data.getBytes());
 		}
@@ -165,7 +167,7 @@ public class FCPBufferedStream implements ThawRunnable {
 	private void sleep(final int ms) {
 		try {
 			Thread.sleep(ms);
-		} catch (final java.lang.InterruptedException e) {
+		} catch (final InterruptedException e) {
 			/* just iggnnnnnooored */
 		}
 	}

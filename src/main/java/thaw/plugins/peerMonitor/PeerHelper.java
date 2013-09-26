@@ -19,6 +19,7 @@ import thaw.fcp.FCPAddPeer;
 import thaw.fcp.FCPQueryManager;
 import thaw.fcp.FCPRemovePeer;
 import thaw.gui.MainWindow;
+import thaw.gui.WarningWindow;
 
 public class PeerHelper {
 
@@ -121,7 +122,7 @@ public class PeerHelper {
 					addPeer(queryManager, ref);
 					dialog.setVisible(false);
 				} else {
-					new thaw.gui.WarningWindow(dialog,
+					new WarningWindow(dialog,
 							I18n.getMessage("thaw.plugin.peerMonitor.invalidRef"));
 				}
 			}

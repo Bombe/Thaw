@@ -27,6 +27,7 @@ import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.fcp.FCPQueueManager;
 import thaw.fcp.FreenetURIHelper;
+import thaw.gui.GUIHelper;
 import thaw.plugins.Hsqldb;
 
 public class IndexConfigDialog implements ActionListener, MouseListener,
@@ -195,7 +196,7 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		popupMenuA = new JPopupMenu();
 		JMenuItem item = new JMenuItem(I18n.getMessage("thaw.common.paste"));
 		popupMenuA.add(item);
-		new thaw.gui.GUIHelper.PasteHelper(item, publicKeyField);
+		new GUIHelper.PasteHelper(item, publicKeyField);
 		publicKeyField.addMouseListener(this);
 
 		labelPanel.add(new JLabel(I18n.getMessage("thaw.plugin.index.indexPrivateKey") + " "), BorderLayout.WEST);
@@ -204,7 +205,7 @@ public class IndexConfigDialog implements ActionListener, MouseListener,
 		popupMenuB = new JPopupMenu();
 		item = new JMenuItem(I18n.getMessage("thaw.common.paste"));
 		popupMenuB.add(item);
-		new thaw.gui.GUIHelper.PasteHelper(item, privateKeyField);
+		new GUIHelper.PasteHelper(item, privateKeyField);
 		privateKeyField.addMouseListener(this);
 
 		frame.getContentPane().add(labelPanel, BorderLayout.WEST);

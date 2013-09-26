@@ -6,6 +6,7 @@ import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.core.Plugin;
+import thaw.gui.IconBox;
 import thaw.plugins.webOfTrust.WebOfTrustTab;
 
 public class WebOfTrustViewer implements Plugin {
@@ -23,7 +24,7 @@ public class WebOfTrustViewer implements Plugin {
 	}
 
 	public ImageIcon getIcon() {
-		return thaw.gui.IconBox.trust;
+		return IconBox.trust;
 	}
 
 	public String getNameForUser() {
@@ -71,7 +72,7 @@ public class WebOfTrustViewer implements Plugin {
 			wotTab = new WebOfTrustTab(db, core.getConfig());
 
 			core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.wot"),
-					thaw.gui.IconBox.trust,
+					IconBox.trust,
 					wotTab.getPanel());
 
 			core.getMainWindow().getMainFrame().validate();

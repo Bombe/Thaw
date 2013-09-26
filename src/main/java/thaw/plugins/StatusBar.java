@@ -1,5 +1,6 @@
 package thaw.plugins;
 
+import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.util.Vector;
 
@@ -66,7 +67,7 @@ public class StatusBar implements ThawRunnable, Plugin, LogListener {
 
 			try {
 				Thread.sleep(StatusBar.INTERVAL);
-			} catch (final java.lang.InterruptedException e) {
+			} catch (final InterruptedException e) {
 				// pfff :P
 			}
 
@@ -99,13 +100,13 @@ public class StatusBar implements ThawRunnable, Plugin, LogListener {
 
 		if (core.isReconnecting()) {
 			core.getMainWindow().setStatus(IconBox.blueBunny,
-					connectingStr, java.awt.Color.RED);
+					connectingStr, Color.RED);
 			return;
 		}
 
 		if (!core.getConnectionManager().isConnected()) {
 			core.getMainWindow().setStatus(IconBox.minDisconnectAction,
-					disconnectedStr, java.awt.Color.RED);
+					disconnectedStr, Color.RED);
 			return;
 		}
 
@@ -177,7 +178,7 @@ public class StatusBar implements ThawRunnable, Plugin, LogListener {
 		return I18n.getMessage("thaw.plugin.statistics.statistics");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
+	public ImageIcon getIcon() {
 		return IconBox.remove;
 	}
 }

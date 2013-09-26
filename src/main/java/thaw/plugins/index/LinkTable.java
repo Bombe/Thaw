@@ -1,6 +1,7 @@
 package thaw.plugins.index;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -8,6 +9,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -16,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
 
 import thaw.core.Config;
 import thaw.core.I18n;
@@ -63,7 +67,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		linkListModel = new LinkListModel();
 		table = new Table(config, "index_link_table", linkListModel);
 		table.setShowGrid(false);
-		table.setIntercellSpacing(new java.awt.Dimension(0, 0));
+		table.setIntercellSpacing(new Dimension(0, 0));
 
 		panel = new JPanel();
 		panel.setLayout(new BorderLayout());
@@ -276,7 +280,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		linkListModel.refresh();
 	}
 
-	public class LinkListModel extends javax.swing.table.AbstractTableModel implements java.util.Observer {
+	public class LinkListModel extends AbstractTableModel implements Observer {
 
 		private static final long serialVersionUID = 1L;
 
@@ -325,7 +329,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public Object getValueAt(final int row, final int column) {
-			final thaw.plugins.index.Link link = (thaw.plugins.index.Link) links[row];
+			final Link link = (Link) links[row];
 
 			switch (column) {
 				case (0):
@@ -357,8 +361,8 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 			fireTableChanged(e);
 		}
 
-		public void update(final java.util.Observable o, final Object param) {
-			if (param instanceof thaw.plugins.index.Link) {
+		public void update(final Observable o, final Object param) {
+			if (param instanceof Link) {
 
 				//link.deleteObserver(this);
 				//link.addObserver(this);

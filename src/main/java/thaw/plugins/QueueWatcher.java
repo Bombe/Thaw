@@ -1,12 +1,15 @@
 package thaw.plugins;
 
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.Vector;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -14,13 +17,14 @@ import javax.swing.event.ChangeListener;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.core.Plugin;
 import thaw.fcp.FCPTransferQuery;
 import thaw.gui.IconBox;
 import thaw.gui.MainWindow;
 import thaw.plugins.queueWatcher.DetailPanel;
 import thaw.plugins.queueWatcher.QueuePanel;
 
-public class QueueWatcher extends ToolbarModifier implements thaw.core.Plugin, PropertyChangeListener, ChangeListener, ActionListener {
+public class QueueWatcher extends ToolbarModifier implements Plugin, PropertyChangeListener, ChangeListener, ActionListener {
 
 	private Core core;
 
@@ -45,7 +49,7 @@ public class QueueWatcher extends ToolbarModifier implements thaw.core.Plugin, P
 
 	private boolean advancedMode = false;
 
-	private java.awt.Container panelAdded;
+	private Container panelAdded;
 
 	private JButton removeSelectedButton;
 
@@ -109,7 +113,7 @@ public class QueueWatcher extends ToolbarModifier implements thaw.core.Plugin, P
 		} else {
 			try {
 				split.setDividerLocation(Integer.parseInt(core.getConfig().getValue("queuePanelSplitLocation")));
-			} catch (java.lang.IllegalArgumentException e) { /* TODO: Shouldn't happen ! */
+			} catch (IllegalArgumentException e) { /* TODO: Shouldn't happen ! */
 				Logger.error(this, "Error while setting split bar position: " + e.toString());
 			}
 		}
@@ -158,11 +162,11 @@ public class QueueWatcher extends ToolbarModifier implements thaw.core.Plugin, P
 		purgeButtonList();
 	}
 
-	public void addMenuItemToTheDownloadTable(final javax.swing.JMenuItem item) {
+	public void addMenuItemToTheDownloadTable(final JMenuItem item) {
 		queuePanels[0].addMenuItem(item);
 	}
 
-	public void addMenuItemToTheInsertionTable(final javax.swing.JMenuItem item) {
+	public void addMenuItemToTheInsertionTable(final JMenuItem item) {
 		queuePanels[1].addMenuItem(item);
 	}
 
@@ -250,7 +254,7 @@ public class QueueWatcher extends ToolbarModifier implements thaw.core.Plugin, P
 		}
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.queueWatcher;
+	public ImageIcon getIcon() {
+		return IconBox.queueWatcher;
 	}
 }

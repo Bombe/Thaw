@@ -1,5 +1,6 @@
 package thaw.plugins;
 
+import javax.swing.ImageIcon;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,6 +13,7 @@ import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.LibraryPlugin;
 import thaw.core.Logger;
+import thaw.gui.IconBox;
 
 public class Hsqldb extends LibraryPlugin {
 
@@ -48,13 +50,13 @@ public class Hsqldb extends LibraryPlugin {
 
 		try {
 			connect();
-		} catch (final java.sql.SQLException e) {
+		} catch (final SQLException e) {
 			Logger.error(this, "SQLException while connecting to the database '" + core.getConfig().getValue("hsqldb.url") + "'");
 			e.printStackTrace();
 		}
 	}
 
-	public void connect() throws java.sql.SQLException {
+	public void connect() throws SQLException {
 		if (core.getConfig().getValue("hsqldb.url") == null)
 			core.getConfig().setValue("hsqldb.url", "jdbc:hsqldb:file:thaw.db");
 
@@ -66,14 +68,14 @@ public class Hsqldb extends LibraryPlugin {
 
 		try {
 			executeQuery("SET LOGSIZE 50;");
-		} catch (final java.sql.SQLException e) {
+		} catch (final SQLException e) {
 			/* Newer versions of HSQLDB have an alternate log size property */
 			executeQuery("SET FILES LOG SIZE 50;");
 		}
 
 		try {
 			executeQuery("SET CHECKPOINT DEFRAG 50;");
-		} catch (final java.sql.SQLException e) {
+		} catch (final SQLException e) {
 			/* Newer versions of HSQLDB use a different property */
 			executeQuery("SET FILES DEFRAG 50;");
 		}
@@ -81,7 +83,7 @@ public class Hsqldb extends LibraryPlugin {
 		executeQuery("SET PROPERTY \"hsqldb.nio_data_file\" FALSE");
 	}
 
-	public void disconnect() throws java.sql.SQLException {
+	public void disconnect() throws SQLException {
 		synchronized (dbLock) {
 			connection.commit();
 			executeQuery("SHUTDOWN");
@@ -98,7 +100,7 @@ public class Hsqldb extends LibraryPlugin {
 
 		try {
 			disconnect();
-		} catch (final java.sql.SQLException e) {
+		} catch (final SQLException e) {
 			Logger.error(this, "SQLException while closing connection !");
 			e.printStackTrace();
 		}
@@ -114,7 +116,7 @@ public class Hsqldb extends LibraryPlugin {
 		return connection;
 	}
 
-	public void executeQuery(final String query) throws java.sql.SQLException {
+	public void executeQuery(final String query) throws SQLException {
 		synchronized (dbLock) {
 			final Statement stmt = connection.createStatement();
 
@@ -124,8 +126,8 @@ public class Hsqldb extends LibraryPlugin {
 		}
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.database;
+	public ImageIcon getIcon() {
+		return IconBox.database;
 	}
 
 	/**

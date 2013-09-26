@@ -3,6 +3,7 @@ package thaw.plugins.index;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 import thaw.core.Logger;
 import thaw.plugins.Hsqldb;
@@ -69,7 +70,7 @@ public class SearchResult implements FileAndLinkList {
 		if (col == null)
 			col = "filename";
 
-		java.util.LinkedList v = new java.util.LinkedList();
+		LinkedList v = new LinkedList();
 
 		synchronized (db.dbLock) {
 			try {
@@ -105,7 +106,7 @@ public class SearchResult implements FileAndLinkList {
 	}
 
 	public Link[] getLinkList(String col, boolean asc) {
-		java.util.LinkedList v = new java.util.LinkedList();
+		LinkedList v = new LinkedList();
 
 		synchronized (db.dbLock) {
 			try {

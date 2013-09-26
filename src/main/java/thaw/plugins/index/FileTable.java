@@ -1,6 +1,7 @@
 package thaw.plugins.index;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -18,6 +19,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -71,7 +73,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 
 	private boolean sortAsc = false;
 
-	private thaw.plugins.index.File firstSelectedFile; /* used for the 'goto corresponding index' option */
+	private File firstSelectedFile; /* used for the 'goto corresponding index' option */
 
 	public FileTable(final FCPQueueManager queueManager,
 					 IndexBrowserPanel indexBrowser,
@@ -83,7 +85,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		table = new Table(config, "index_file_table", fileListModel);
 		//table = new JTable(fileListModel);
 		table.setShowGrid(false);
-		table.setIntercellSpacing(new java.awt.Dimension(0, 0));
+		table.setIntercellSpacing(new Dimension(0, 0));
 		table.specifyColumnWithKeys(2);
 		table.addMouseListener(this);
 
@@ -175,7 +177,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		FileManagementHelper.FileAction action;
 
 		firstSelectedFile = selectedFiles != null && selectedFiles.size() > 0 ?
-				((thaw.plugins.index.File) selectedFiles.get(0)) : null;
+				((File) selectedFiles.get(0)) : null;
 
 		for (final Iterator it = rightClickActions.iterator();
 			 it.hasNext(); ) {
@@ -284,7 +286,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 		fileListModel.refresh();
 	}
 
-	public class FileListModel extends javax.swing.table.AbstractTableModel {
+	public class FileListModel extends AbstractTableModel {
 
 		private static final long serialVersionUID = 1L;
 
@@ -360,7 +362,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 			if (row >= files.length)
 				return null;
 
-			final thaw.plugins.index.File file = (thaw.plugins.index.File) files[row];
+			final File file = (File) files[row];
 
 			if (column == 0)
 				return file.getFilename();
@@ -438,7 +440,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 				File[] files = fileListModel.getFiles();
 
 				for (int i = 0; i < files.length; i++) {
-					thaw.plugins.index.File file = (thaw.plugins.index.File) files[i];
+					File file = (File) files[i];
 
 					if (file.getPublicKey() == null
 							|| !FreenetURIHelper.isAKey(file.getPublicKey())) {

@@ -3,6 +3,8 @@ package thaw.plugins.fetchPlugin;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -22,12 +24,13 @@ import javax.swing.JTextField;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.fcp.FCPClientGet;
 import thaw.gui.FileChooser;
 import thaw.gui.GUIHelper;
 import thaw.gui.WarningWindow;
 import thaw.plugins.FetchPlugin;
 
-public class FetchPanel implements java.awt.event.ActionListener, MouseListener {
+public class FetchPanel implements ActionListener, MouseListener {
 
 	private JPanel mainPanel;
 
@@ -215,7 +218,7 @@ public class FetchPanel implements java.awt.event.ActionListener, MouseListener 
 		return mainPanel;
 	}
 
-	public void actionPerformed(final java.awt.event.ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 		if (e.getSource() == validationButton) {
 			int priority = 6;
 			boolean globalQueue = true;
@@ -234,7 +237,7 @@ public class FetchPanel implements java.awt.event.ActionListener, MouseListener 
 			}
 
 			fetchPlugin.fetchFiles(fileList.getText().split("\n"),
-					priority, thaw.fcp.FCPClientGet.PERSISTENCE_FOREVER,
+					priority, FCPClientGet.PERSISTENCE_FOREVER,
 					globalQueue, destinationField.getText());
 
 			fileList.setText("");

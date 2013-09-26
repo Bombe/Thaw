@@ -3,6 +3,8 @@ package thaw.fcp;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.Observable;
 
@@ -75,9 +77,9 @@ public class SHA256Computer extends Observable implements ThawRunnable {
 			isFinished = true;
 			SHA256.returnMessageDigest(md);
 
-		} catch (java.io.FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			Logger.error(this, "Can't hash file because: " + e.toString());
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "Can't hash file because: " + e.toString());
 		}
 

@@ -3,8 +3,11 @@ package thaw.plugins.miniFrost.frostKSK;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -13,7 +16,9 @@ import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
+import thaw.fcp.FCPClientPut;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.TrayIcon;
 import thaw.plugins.miniFrost.interfaces.Board;
 import thaw.plugins.miniFrost.interfaces.Draft;
 import thaw.plugins.miniFrost.interfaces.Message;
@@ -349,11 +354,11 @@ public class KSKBoard
 
 	/** called by KSKMessage.download(); */
 	protected String getDownloadKey(Date date, int rev) {
-		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy.M.d");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy.M.d");
 
 		StringBuffer keyBuf = new StringBuffer("KSK@" + KEY_HEADER);
 
-		keyBuf = formatter.format(date, keyBuf, new java.text.FieldPosition(0));
+		keyBuf = formatter.format(date, keyBuf, new FieldPosition(0));
 		keyBuf.append("-" + getName() + "-");
 		keyBuf.append(Integer.toString(rev));
 		keyBuf.append(".xml");
@@ -362,7 +367,7 @@ public class KSKBoard
 	}
 
 	protected int getKeyType() {
-		return thaw.fcp.FCPClientPut.KEY_TYPE_KSK;
+		return FCPClientPut.KEY_TYPE_KSK;
 	}
 
 	/** called by KSKDraft */
@@ -372,12 +377,12 @@ public class KSKBoard
 
 	/** called by KSKDraft */
 	protected String getNameForInsertion(Date date, int rev) {
-		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy.M.d");
-		//formatter.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy.M.d");
+		//formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		StringBuffer keyBuf = new StringBuffer(KEY_HEADER);
 
-		keyBuf = formatter.format(date, keyBuf, new java.text.FieldPosition(0));
+		keyBuf = formatter.format(date, keyBuf, new FieldPosition(0));
 		keyBuf.append("-" + getName() + "-");
 		keyBuf.append(Integer.toString(rev));
 		keyBuf.append(".xml");
@@ -386,7 +391,7 @@ public class KSKBoard
 	}
 
 	protected static Date getMidnight(Date date) {
-		Calendar cal = new java.util.GregorianCalendar();
+		Calendar cal = new GregorianCalendar();
 		cal.setTime(date);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -552,7 +557,7 @@ public class KSKBoard
 					st = db.getConnection().prepareStatement("UPDATE frostKSKBoards " +
 							"SET lastUpdate = ? " +
 							"WHERE id = ?");
-					st.setDate(1, new java.sql.Date(new java.util.Date().getTime()));
+					st.setDate(1, new java.sql.Date(new Date().getTime()));
 					st.setInt(2, id);
 					st.execute();
 					st.close();
@@ -568,9 +573,9 @@ public class KSKBoard
 				announce = announce.replaceAll("X", Integer.toString(newMsgs));
 				announce = announce.replaceAll("Y", toString());
 
-				thaw.plugins.TrayIcon.popMessage(factory.getCore().getPluginManager(),
-						"MiniFrost",
-						announce);
+				TrayIcon.popMessage(factory.getCore().getPluginManager(),
+                    "MiniFrost",
+                    announce);
 			}
 
 			refreshing = false;

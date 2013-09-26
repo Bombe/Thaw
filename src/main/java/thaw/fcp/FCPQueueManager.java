@@ -2,6 +2,8 @@ package thaw.fcp;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Vector;
 
 import thaw.core.Logger;
@@ -13,7 +15,7 @@ import thaw.core.ThawThread;
  * runningQueue contains too finished queries. Notify when: a query is added and
  * when a query change to one queue to another.
  */
-public class FCPQueueManager extends java.util.Observable implements ThawRunnable, java.util.Observer {
+public class FCPQueueManager extends Observable implements ThawRunnable, Observer {
 
 	private final static int PRIORITY_MIN = 6; /* So 0 to 6 */
 
@@ -416,7 +418,7 @@ public class FCPQueueManager extends java.util.Observable implements ThawRunnabl
 
 						try {
 							Thread.sleep(300);
-						} catch (final java.lang.InterruptedException e) {
+						} catch (final InterruptedException e) {
 						}
 					}
 				}
@@ -436,14 +438,14 @@ public class FCPQueueManager extends java.util.Observable implements ThawRunnabl
 	public void run() {
 		try {
 			Thread.sleep(5000);
-		} catch (final java.lang.InterruptedException e) {
+		} catch (final InterruptedException e) {
 			/* \_o< */
 		}
 
 		while (!stopThread) {
 			try {
 				Thread.sleep(1000);
-			} catch (final java.lang.InterruptedException e) {
+			} catch (final InterruptedException e) {
 				/* We don't care */
 			}
 
@@ -498,7 +500,7 @@ public class FCPQueueManager extends java.util.Observable implements ThawRunnabl
 		return queryId.startsWith(thawId);
 	}
 
-	public void update(final java.util.Observable o, final Object arg) {
+	public void update(final Observable o, final Object arg) {
 		if ((o == queryManager.getConnection())
 				&& !queryManager.getConnection().isConnected()) {
 

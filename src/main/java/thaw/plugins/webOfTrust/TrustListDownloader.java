@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Observable;
@@ -108,7 +109,7 @@ public class TrustListDownloader implements Observer, Signatures.SignaturesObser
 				/* select all the non-obsolete keys */
 				st = db.getConnection().prepareStatement("SELECT publicKey, sigId FROM wotKeys WHERE keyDate IS NULL OR keyDate >= ?");
 
-				st.setTimestamp(1, new java.sql.Timestamp(new Date().getTime() - KEY_OBSOLETE_AFTER));
+				st.setTimestamp(1, new Timestamp(new Date().getTime() - KEY_OBSOLETE_AFTER));
 
 				ResultSet set = st.executeQuery();
 
@@ -170,7 +171,7 @@ public class TrustListDownloader implements Observer, Signatures.SignaturesObser
 					Logger.notice(this, "Parsing trust list of '" + expectedIdentity.toString() + "'");
 					if (expectedIdentity.loadTrustList(f)) {
 
-						expectedIdentity.updateInfos(q.getFileKey(), new java.util.Date());
+						expectedIdentity.updateInfos(q.getFileKey(), new Date());
 
 						startULPR(q.getFileKey(), expectedIdentity);
 

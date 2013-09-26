@@ -12,6 +12,7 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.InvalidDnDOperationException;
 import java.io.File;
 import java.util.Iterator;
 import java.util.Vector;
@@ -77,7 +78,7 @@ public class DragAndDropManager implements DragGestureListener, DragSourceListen
 
 			dge.startDrag(DragSource.DefaultCopyDrop, transferable);
 
-		} catch (final java.awt.dnd.InvalidDnDOperationException e) {
+		} catch (final InvalidDnDOperationException e) {
 			Logger.warning(this, "InvalideDnDOperation !");
 		}
 	}

@@ -1,7 +1,9 @@
 package thaw.fcp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Observable;
@@ -856,7 +858,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				if (file.exists() || file.createNewFile()) {
 					return file;
 				}
-			} catch (final java.io.IOException e) {
+			} catch (final IOException e) {
 				Logger.notice(this, "First attempted filename failed");
 			}
 		}
@@ -876,7 +878,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				if (file.exists() || file.createNewFile()) {
 					return file;
 				}
-			} catch (final java.io.IOException e) {
+			} catch (final IOException e) {
 				Logger.notice(this, "Simpler filePath name failed: " + e.toString());
 				Logger.notice(this, "filePath: " + filePath);
 			}
@@ -888,7 +890,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				finalPath = file.getPath();
 				file.deleteOnExit();
 				return file;
-			} catch (final java.io.IOException e) {
+			} catch (final IOException e) {
 				Logger.error(this, "Error while creating temporary filePath: " + e.toString());
 			}
 		}
@@ -944,7 +946,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 		try {
 			outputStream = new FileOutputStream(newFile);
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.error(this, "Unable to write file on disk ... disk space / perms / filename ? : " + e.toString());
 			status = "Write error";
 			return false;
@@ -983,7 +985,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 
 						startTime = System.currentTimeMillis();
 					}
-				} catch (final java.io.IOException e) {
+				} catch (final IOException e) {
 					/* Unable to continue writing to the file.  Disable writing, but
 					 * keep reading data from the socket so that the socket doesn't
 					 * get messed up.
@@ -994,7 +996,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 					setStatus(TransferStatus.FAILED);
 					try {
 						outputStream.close();
-					} catch (java.io.IOException ex) {
+					} catch (IOException ex) {
 						Logger.error(this, "Unable to close the file cleanly : " + ex.toString());
 						Logger.error(this, "Things seem to go wrong !");
 					}
@@ -1009,7 +1011,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				setStatus(TransferStatus.FAILED);
 				try {
 					outputStream.close();
-				} catch (java.io.IOException ex) {
+				} catch (IOException ex) {
 					Logger.error(this, "Unable to close the file cleanly : " + ex.toString());
 					Logger.error(this, "Things seem to go wrong !");
 				}
@@ -1027,7 +1029,7 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 				if (!writingSuccessful && (newFile != null))
 					newFile.delete();
 
-			} catch (final java.io.IOException e) {
+			} catch (final IOException e) {
 				Logger.notice(this, "Unable to close correctly file on disk !? : " + e.toString());
 			}
 		}

@@ -15,6 +15,7 @@ import javax.swing.tree.TreeNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import thaw.core.Config;
+import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.fcp.FCPQueueManager;
 import thaw.plugins.Hsqldb;
@@ -1064,7 +1065,7 @@ public class IndexFolder implements IndexTreeNode, MutableTreeNode {
 		return toString();
 	}
 
-	private final static String yourIndexesStr = thaw.core.I18n.getMessage("thaw.plugin.index.yourIndexes");
+	private final static String yourIndexesStr = I18n.getMessage("thaw.plugin.index.yourIndexes");
 
 	public String toString() {
 		if (id < 0)

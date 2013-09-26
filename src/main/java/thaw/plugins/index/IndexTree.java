@@ -2,6 +2,7 @@ package thaw.plugins.index;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,8 +14,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Observable;
 import java.util.Vector;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -22,6 +25,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -39,7 +43,7 @@ import thaw.gui.JDragTree;
 import thaw.plugins.ToolbarModifier;
 
 /** Manages the index tree and its menu (right-click). */
-public class IndexTree extends java.util.Observable implements MouseListener, ActionListener, javax.swing.event.TreeSelectionListener {
+public class IndexTree extends Observable implements MouseListener, ActionListener, TreeSelectionListener {
 
 	public final static Color SELECTION_COLOR = new Color(190, 190, 190);
 
@@ -419,11 +423,11 @@ public class IndexTree extends java.util.Observable implements MouseListener, Ac
 		return toolbarModifier;
 	}
 
-	public javax.swing.JComponent getPanel() {
+	public JComponent getPanel() {
 		return panel;
 	}
 
-	public void addTreeSelectionListener(final javax.swing.event.TreeSelectionListener tsl) {
+	public void addTreeSelectionListener(final TreeSelectionListener tsl) {
 		tree.addTreeSelectionListener(tsl);
 	}
 
@@ -714,7 +718,7 @@ public class IndexTree extends java.util.Observable implements MouseListener, Ac
 			super();
 		}
 
-		public java.awt.Component getTreeCellRendererComponent(final JTree tree,
+		public Component getTreeCellRendererComponent(final JTree tree,
 															   Object value,
 															   final boolean selected,
 															   final boolean expanded,
@@ -843,7 +847,7 @@ public class IndexTree extends java.util.Observable implements MouseListener, Ac
 					st.close();
 			}
 
-		} catch (final java.sql.SQLException e) {
+		} catch (final SQLException e) {
 			Logger.warning(this, "Exception while trying to check if '" + key + "' is already know: '" + e.toString() + "'");
 		}
 

@@ -3,6 +3,7 @@ package thaw.plugins.indexWebGrapher;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -166,7 +167,7 @@ public class GraphBuilder implements ThawRunnable {
 		Logger.info(this, "2) Sorting the nodes according to their number of links ...");
 
 		Vector nodes = new Vector(graphPanel.getNodeList());
-		java.util.Collections.sort(nodes);
+		Collections.sort(nodes);
 
 
 		/* === */

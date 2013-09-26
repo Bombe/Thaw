@@ -3,10 +3,15 @@ package thaw.plugins.miniFrost.frostKSK;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import thaw.core.Logger;
+import thaw.fcp.FCPClientPut;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.miniFrost.interfaces.Draft;
+import thaw.plugins.miniFrost.interfaces.Message;
 
 public class SSKBoard extends KSKBoard {
 
@@ -31,12 +36,12 @@ public class SSKBoard extends KSKBoard {
 
 	/** called by KSKMessage.download(); */
 	protected String getDownloadKey(Date date, int rev) {
-		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy.M.d");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy.M.d");
 
 		StringBuffer keyBuf = new StringBuffer(publicKey);
 
 		keyBuf.append(getName() + "|");
-		keyBuf = formatter.format(date, keyBuf, new java.text.FieldPosition(0));
+		keyBuf = formatter.format(date, keyBuf, new FieldPosition(0));
 		keyBuf.append("-");
 		keyBuf.append(Integer.toString(rev));
 		keyBuf.append(".xml");
@@ -45,7 +50,7 @@ public class SSKBoard extends KSKBoard {
 	}
 
 	protected int getKeyType() {
-		return thaw.fcp.FCPClientPut.KEY_TYPE_SSK;
+		return FCPClientPut.KEY_TYPE_SSK;
 	}
 
 	/** called by KSKDraft */
@@ -59,11 +64,11 @@ public class SSKBoard extends KSKBoard {
 
 	/** called by KSKDraft */
 	protected String getNameForInsertion(Date date, int rev) {
-		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy.M.d");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy.M.d");
 
 		StringBuffer keyBuf = new StringBuffer(getName() + "|");
 
-		keyBuf = formatter.format(date, keyBuf, new java.text.FieldPosition(0));
+		keyBuf = formatter.format(date, keyBuf, new FieldPosition(0));
 		keyBuf.append("-");
 		keyBuf.append(Integer.toString(rev));
 		keyBuf.append(".xml");
@@ -125,7 +130,7 @@ public class SSKBoard extends KSKBoard {
 		return true;
 	}
 
-	public thaw.plugins.miniFrost.interfaces.Draft getDraft(thaw.plugins.miniFrost.interfaces.Message inReplyTo) {
+	public Draft getDraft(Message inReplyTo) {
 		if (privateKey == null) {
 			Logger.warning(this, "Sorry, you need the private key to post on this board");
 			return null;

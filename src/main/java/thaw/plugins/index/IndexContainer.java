@@ -1,5 +1,6 @@
 package thaw.plugins.index;
 
+import java.util.Date;
 import java.util.Vector;
 
 /** This is what you need to implements to use IndexParser. */
@@ -44,7 +45,7 @@ public interface IndexContainer extends FileAndLinkList {
 	/** delete all the files / links / comment blacklisted revs / comments keys */
 	public void purgeIndex();
 
-	public void setInsertionDate(java.util.Date date);
+	public void setInsertionDate(Date date);
 
 	/**
 	 * return false if the parsing must be interrupted (because of db errors or

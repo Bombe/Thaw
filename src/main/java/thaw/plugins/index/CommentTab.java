@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import thaw.core.Config;
 import thaw.core.I18n;
@@ -133,7 +134,7 @@ public class CommentTab implements ActionListener {
 			}
 		};
 
-		javax.swing.SwingUtilities.invokeLater(doScroll);
+		SwingUtilities.invokeLater(doScroll);
 	}
 
 	/** will reset the page to 0 */
@@ -178,7 +179,7 @@ public class CommentTab implements ActionListener {
 		updateCommentList();
 
 		indexBrowser.getMainWindow().addTab(I18n.getMessage("thaw.plugin.index.comment.commentList"),
-				thaw.gui.IconBox.readComments,
+				IconBox.readComments,
 				tabPanel);
 		indexBrowser.getMainWindow().setSelectedTab(tabPanel);
 

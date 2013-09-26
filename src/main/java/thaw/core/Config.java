@@ -1,6 +1,7 @@
 package thaw.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +10,11 @@ import java.util.Random;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -20,6 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * This class manages the thaw config.
@@ -172,17 +177,17 @@ public class Config {
 
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch (final javax.xml.parsers.ParserConfigurationException e) {
+		} catch (final ParserConfigurationException e) {
 			Logger.warning(this, "Unable to load config because: " + e);
 			return false;
 		}
 
 		try {
 			xmlDoc = xmlBuilder.parse(configFile);
-		} catch (final org.xml.sax.SAXException e) {
+		} catch (final SAXException e) {
 			Logger.warning(this, "Unable to load config because: " + e);
 			return false;
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.warning(this, "Unable to load config because: " + e);
 			return false;
 		}
@@ -236,7 +241,7 @@ public class Config {
 				Logger.warning(this, "Unable to write config file '" + configFile.getPath() + "' (can't write)");
 				return false;
 			}
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.warning(this, "Error while checking perms to save config: " + e);
 		}
 
@@ -253,7 +258,7 @@ public class Config {
 
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch (final javax.xml.parsers.ParserConfigurationException e) {
+		} catch (final ParserConfigurationException e) {
 			Logger.error(this, "Unable to save configuration because: " + e.toString());
 			return false;
 		}
@@ -292,7 +297,7 @@ public class Config {
 
 		try {
 			serializer = transformFactory.newTransformer();
-		} catch (final javax.xml.transform.TransformerConfigurationException e) {
+		} catch (final TransformerConfigurationException e) {
 			Logger.error(this, "Unable to save configuration because: " + e.toString());
 			return false;
 		}
@@ -303,7 +308,7 @@ public class Config {
 		/* final step */
 		try {
 			serializer.transform(domSource, configOut);
-		} catch (final javax.xml.transform.TransformerException e) {
+		} catch (final TransformerException e) {
 			Logger.error(this, "Unable to save configuration because: " + e.toString());
 			return false;
 		}

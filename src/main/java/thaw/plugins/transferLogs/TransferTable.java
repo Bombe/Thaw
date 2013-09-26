@@ -3,6 +3,7 @@ package thaw.plugins.transferLogs;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -24,11 +25,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import thaw.core.Config;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.gui.GUIHelper;
 import thaw.gui.IconBox;
 import thaw.gui.Table;
 import thaw.plugins.Hsqldb;
@@ -98,7 +101,7 @@ public class TransferTable implements MouseListener {
 		table.addMouseListener(this);
 
 		table.setShowGrid(true);
-		table.setIntercellSpacing(new java.awt.Dimension(1, 1));
+		table.setIntercellSpacing(new Dimension(1, 1));
 
 		panel.add(new JScrollPane(table), BorderLayout.CENTER);
 		panel.add(pageSelecter.getPanel(), BorderLayout.SOUTH);
@@ -203,7 +206,7 @@ public class TransferTable implements MouseListener {
 	}
 
 	protected class TransferTableModel
-			extends javax.swing.table.AbstractTableModel {
+			extends AbstractTableModel {
 
 		/**
 		 *
@@ -244,7 +247,7 @@ public class TransferTable implements MouseListener {
 			if (v < 0)
 				return I18n.getMessage("thaw.common.unknown");
 
-			return thaw.gui.GUIHelper.getPrintableSize(v) + "/s";
+			return GUIHelper.getPrintableSize(v) + "/s";
 		}
 
 		public Object getValueAt(final int row, int column) {
@@ -276,7 +279,7 @@ public class TransferTable implements MouseListener {
 				str += I18n.getMessage("thaw.plugin.transferLogs.key") + ": ";
 				str += (t.getKey() != null ? t.getKey() : I18n.getMessage("thaw.common.unknown")) + "\n";
 				str += I18n.getMessage("thaw.plugin.transferLogs.fileSize") + ": ";
-				str += thaw.gui.GUIHelper.getPrintableSize(t.getSize()) + "\n";
+				str += GUIHelper.getPrintableSize(t.getSize()) + "\n";
 				str += I18n.getMessage("thaw.plugin.transferLogs.isSuccess") + ": ";
 				if (t.getDateEnd() != null)
 					str += (t.isSuccess() ? I18n.getMessage("thaw.common.yes") : I18n.getMessage("thaw.common.no")) + "\n";

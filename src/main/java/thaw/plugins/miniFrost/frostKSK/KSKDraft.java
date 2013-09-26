@@ -1,5 +1,6 @@
 package thaw.plugins.miniFrost.frostKSK;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Observable;
@@ -12,12 +13,16 @@ import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
 import thaw.fcp.FCPClientPut;
 import thaw.fcp.FCPQueueManager;
+import thaw.gui.SysTrayIcon;
+import thaw.plugins.TrayIcon;
+import thaw.plugins.index.Index;
 import thaw.plugins.miniFrost.interfaces.Attachment;
 import thaw.plugins.miniFrost.interfaces.Board;
+import thaw.plugins.miniFrost.interfaces.Draft;
 import thaw.plugins.signatures.Identity;
 
 public class KSKDraft
-		implements thaw.plugins.miniFrost.interfaces.Draft, Observer {
+		implements Draft, Observer {
 
 	private KSKMessage inReplyTo = null;
 
@@ -132,7 +137,7 @@ public class KSKDraft
 		return date;
 	}
 
-	private java.io.File fileToInsert;
+	private File fileToInsert;
 
 	private FCPQueueManager queueManager;
 
@@ -321,9 +326,9 @@ public class KSKDraft
 				String announce = I18n.getMessage("thaw.plugin.miniFrost.messageSent");
 				announce = announce.replaceAll("X", board.toString());
 
-				thaw.plugins.TrayIcon.popMessage(board.getFactory().getCore().getPluginManager(),
-						"MiniFrost",
-						announce);
+				TrayIcon.popMessage(board.getFactory().getCore().getPluginManager(),
+                    "MiniFrost",
+                    announce);
 
 			} else if (put.isFinished() && !put.isSuccessful()) {
 				if (put.getPutFailedCode() != 9) { /* !Collision */
@@ -344,10 +349,10 @@ public class KSKDraft
 				String announce = I18n.getMessage("thaw.plugin.miniFrost.collision");
 				announce = announce.replaceAll("X", board.toString());
 
-				thaw.plugins.TrayIcon.popMessage(board.getFactory().getCore().getPluginManager(),
+				TrayIcon.popMessage(board.getFactory().getCore().getPluginManager(),
 						"MiniFrost",
 						announce,
-						thaw.gui.SysTrayIcon.MSG_WARNING);
+						SysTrayIcon.MSG_WARNING);
 
 				put.deleteObserver(this);
 				put.stop();
@@ -369,7 +374,7 @@ public class KSKDraft
 		return attachments;
 	}
 
-	public boolean addAttachment(java.io.File file) {
+	public boolean addAttachment(File file) {
 		return addAttachment(new KSKFileAttachment(board.getFactory().getCore().getQueueManager(),
 				file));
 	}
@@ -378,7 +383,7 @@ public class KSKDraft
 		return addAttachment(new KSKBoardAttachment(board));
 	}
 
-	public boolean addAttachment(thaw.plugins.index.Index index) {
+	public boolean addAttachment(Index index) {
 		return false;
 	}
 

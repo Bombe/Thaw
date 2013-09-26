@@ -3,6 +3,7 @@ package thaw.plugins.miniFrost.frostKSK;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,14 +15,17 @@ import javax.swing.JOptionPane;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.fcp.FreenetURIHelper;
 import thaw.gui.MainWindow;
+import thaw.gui.WarningWindow;
 import thaw.plugins.Hsqldb;
 import thaw.plugins.MiniFrost;
 import thaw.plugins.WebOfTrust;
+import thaw.plugins.miniFrost.interfaces.BoardFactory;
 import thaw.plugins.signatures.Identity;
 
 public class KSKBoardFactory
-		implements thaw.plugins.miniFrost.interfaces.BoardFactory {
+		implements BoardFactory {
 
 	/* must correspond at the position in the array of boardfactory in miniFrost */
 	public final static int BOARD_FACTORY_ID = 0;
@@ -148,7 +152,7 @@ public class KSKBoardFactory
 				st.execute();
 				st.close();
 
-				timestamp = new java.sql.Timestamp(new Date().getTime()
+				timestamp = new Timestamp(new Date().getTime()
 						- (((long) archiveAfter) * 24 * 60 * 60 * 1000));
 				Logger.info(this, "Archive older than: " + timestamp.toString() +
 						" (" + Integer.toString(archiveAfter) + ")");
@@ -248,7 +252,7 @@ public class KSKBoardFactory
 
 				while (set.next()) {
 					int id = set.getInt("id");
-					java.sql.Timestamp timestamp = set.getTimestamp("date");
+					Timestamp timestamp = set.getTimestamp("date");
 					java.sql.Date date = new java.sql.Date(timestamp.getTime());
 
 					stUpdate.setDate(1, date);
@@ -531,13 +535,13 @@ public class KSKBoardFactory
 	protected void createBoard(String name, String publicKey, String privateKey,
 							   boolean warningIfExisting) {
 
-		if (!thaw.fcp.FreenetURIHelper.isAKey(publicKey)) {
+		if (!FreenetURIHelper.isAKey(publicKey)) {
 			Logger.error(this, "Invalid publicKey");
 			return;
 		}
 
-		if (thaw.fcp.FreenetURIHelper.isObsolete(publicKey)) {
-			new thaw.gui.WarningWindow(core, I18n.getMessage("thaw.error.obsolete"));
+		if (FreenetURIHelper.isObsolete(publicKey)) {
+			new WarningWindow(core, I18n.getMessage("thaw.error.obsolete"));
 			return;
 		}
 

@@ -13,6 +13,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 import thaw.core.Core;
 import thaw.core.I18n;
@@ -71,7 +72,7 @@ public class BlackList implements ActionListener {
 
 		JPanel centerPanel = new JPanel(new BorderLayout());
 		blackList = new JList();
-		blackList.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		blackList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
 		removeButton = new JButton(I18n.getMessage("thaw.common.remove"), IconBox.delete);
 		removeButton.addActionListener(this);

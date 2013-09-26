@@ -3,6 +3,8 @@ package thaw.plugins.fetchPlugin;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
@@ -10,7 +12,7 @@ import thaw.core.Logger;
 
 public class KeyFileFilter {
 
-	/** Only used to be able to call correctly functions of thaw.core.Logger */
+	/** Only used to be able to call correctly functions of Logger */
 	public KeyFileFilter() {
 
 	}
@@ -23,7 +25,7 @@ public class KeyFileFilter {
 
 		try {
 			fstream = new FileInputStream(file);
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.warning(new KeyFileFilter(), "File not found exception for " + file.getPath());
 			return null;
 		}
@@ -43,7 +45,7 @@ public class KeyFileFilter {
 
 			}
 
-		} catch (final java.io.IOException e) {
+		} catch (final IOException e) {
 			Logger.warning(new KeyFileFilter(), "IOException while reading '" + file.getPath() + "' !");
 			return result;
 		}

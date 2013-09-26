@@ -5,19 +5,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.core.Plugin;
 import thaw.core.ThawRunnable;
 import thaw.core.ThawThread;
 import thaw.fcp.FCPGetNode;
 import thaw.fcp.FCPListPeers;
 import thaw.fcp.FCPQueryManager;
+import thaw.gui.IconBox;
 import thaw.plugins.peerMonitor.PeerMonitorPanel;
 
-public class PeerMonitor implements thaw.core.Plugin, Observer, ActionListener {
+public class PeerMonitor implements Plugin, Observer, ActionListener {
 
 	public final static int DEFAULT_REFRESH_RATE = 10; /* in sec */
 
@@ -149,15 +152,15 @@ public class PeerMonitor implements thaw.core.Plugin, Observer, ActionListener {
 		return I18n.getMessage("thaw.plugin.peerMonitor.peerMonitor");
 	}
 
-	public javax.swing.ImageIcon getIcon() {
-		return thaw.gui.IconBox.peers;
+	public ImageIcon getIcon() {
+		return IconBox.peers;
 	}
 
 	private boolean tabVisible = false;
 
 	public void update(Observable o, Object param) {
 		core.getMainWindow().addTab(I18n.getMessage("thaw.plugin.peerMonitor.peerMonitor"),
-				thaw.gui.IconBox.peers,
+				IconBox.peers,
 				peerPanel.getTabPanel());
 		core.getMainWindow().setSelectedTab(peerPanel.getTabPanel());
 

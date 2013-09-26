@@ -2,15 +2,25 @@ package thaw.plugins.index;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.TimeZone;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -20,6 +30,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import thaw.core.Logger;
@@ -45,9 +56,9 @@ public class IndexParser {
 			generateXML(stream);
 			stream.close();
 			return true;
-		} catch (java.io.FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			Logger.error(this, "File not found exception ?!");
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "IOException while generating the index: " + e.toString());
 		}
 		return false;
@@ -65,7 +76,7 @@ public class IndexParser {
 
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch (final javax.xml.parsers.ParserConfigurationException e) {
+		} catch (final ParserConfigurationException e) {
 			Logger.error(this, "Unable to generate the index because : " + e.toString());
 			return;
 		}
@@ -88,7 +99,7 @@ public class IndexParser {
 
 		try {
 			serializer = transformFactory.newTransformer();
-		} catch (final javax.xml.transform.TransformerConfigurationException e) {
+		} catch (final TransformerConfigurationException e) {
 			Logger.error(this, "Unable to save index because: " + e.toString());
 			return;
 		}
@@ -99,7 +110,7 @@ public class IndexParser {
 		/* final step */
 		try {
 			serializer.transform(domSource, streamResult);
-		} catch (final javax.xml.transform.TransformerException e) {
+		} catch (final TransformerException e) {
 			Logger.error(this, "Unable to save index because: " + e.toString());
 			return;
 		}
@@ -142,10 +153,9 @@ public class IndexParser {
 		/* insertion date */
 		String dateStr;
 
-		java.text.SimpleDateFormat sdf =
-				new java.text.SimpleDateFormat(DATE_FORMAT);
-		sdf.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
-		dateStr = sdf.format(new java.util.Date());
+		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+		dateStr = sdf.format(new Date());
 
 		final Element date = xmlDoc.createElement("date");
 		final Text dateText = xmlDoc.createTextNode(dateStr);
@@ -267,9 +277,9 @@ public class IndexParser {
 			loadXML(stream, clean);
 			stream.close();
 			stream = null;
-		} catch (final java.io.FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			Logger.error(this, "Unable to load XML: FileNotFoundException ('" + filePath + "') ! : " + e.toString());
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.error(this, "IOException while parsing the index: " + e.toString());
 		}
 	}
@@ -289,7 +299,7 @@ public class IndexParser {
 		/**
 		 * Called when parsing is started
 		 *
-		 * @see org.xml.sax.ContentHandler#startDocument()
+		 * @see ContentHandler#startDocument()
 		 */
 		public void startDocument() throws SAXException {
 			if (clean)
@@ -319,8 +329,7 @@ public class IndexParser {
 		 * 		local tag name
 		 * @param rawName
 		 * 		rawName (the one used here)
-		 * @see org.xml.sax.ContentHandler#startElement(java.lang.String,
-		 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+		 * @see ContentHandler#startElement(String, String, String, Attributes)
 		 */
 		public void startElement(String nameSpaceURI, String localName,
 								 String rawName, Attributes attrs) throws SAXException {
@@ -399,8 +408,7 @@ public class IndexParser {
 		/**
 		 * Called when a closing tag is met
 		 *
-		 * @see org.xml.sax.ContentHandler#endElement(java.lang.String,
-		 *      java.lang.String, java.lang.String)
+		 * @see ContentHandler#endElement(String, String, String)
 		 */
 		public void endElement(String nameSpaceURI, String localName,
 							   String rawName) throws SAXException {
@@ -425,9 +433,8 @@ public class IndexParser {
 				return;
 			} else if ("header".equals(rawName)) {
 				if (dateStr != null) {
-					java.text.SimpleDateFormat sdf =
-							new java.text.SimpleDateFormat(DATE_FORMAT);
-					java.util.Date dateUtil = sdf.parse(dateStr, new java.text.ParsePosition(0));
+					SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+					Date dateUtil = sdf.parse(dateStr, new ParsePosition(0));
 
 					index.setInsertionDate(dateUtil);
 				}
@@ -451,7 +458,7 @@ public class IndexParser {
 		 * 		position
 		 * @param end
 		 * 		position
-		 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
+		 * @see ContentHandler#characters(char[], int, int)
 		 */
 		public void characters(char[] ch, int start, int end) throws SAXException {
 			String txt = new String(ch, start, end);
@@ -516,7 +523,7 @@ public class IndexParser {
 		/**
 		 * Called when parsing is finished
 		 *
-		 * @see org.xml.sax.ContentHandler#endDocument()
+		 * @see ContentHandler#endDocument()
 		 */
 		public void endDocument() throws SAXException {
 			if (!hasCommentTag) {
@@ -534,7 +541,7 @@ public class IndexParser {
 		return new IndexHandler(clean);
 	}
 
-	public synchronized void loadXML(final java.io.InputStream input, boolean clean) {
+	public synchronized void loadXML(final InputStream input, boolean clean) {
 		IndexHandler handler = new IndexHandler(clean);
 
 		try {
@@ -548,11 +555,11 @@ public class IndexParser {
 			saxParser.parse(input, handler);
 			Logger.info(this, "Parsing done");
 
-		} catch (javax.xml.parsers.ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			Logger.notice(this, "Error (1) while parsing index: " + e.toString());
-		} catch (org.xml.sax.SAXException e) {
+		} catch (SAXException e) {
 			Logger.notice(this, "Error (2) while parsing index: " + e.toString());
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			Logger.notice(this, "Error (3) while parsing index: " + e.toString());
 		} catch (Exception e) {
 			Logger.notice(this, "Error (4) while parsing index: " + e.toString());

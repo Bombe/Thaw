@@ -2,6 +2,8 @@ package thaw.plugins.peerMonitor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -135,7 +137,7 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 		peerListLabel.setIcon(IconBox.peers);
 
 		/* We are not the listener */
-		/* te listener will be thaw.plugins.PeerMonitor */
+		/* te listener will be PeerMonitor */
 		foldButton = new JButton(">");
 
 		nodeMemBar = new JProgressBar(0, 100);
@@ -186,7 +188,7 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 
 		peerPanel.add(memPanel, BorderLayout.SOUTH);
 
-		peerPanel.setPreferredSize(new java.awt.Dimension(250, 200));
+		peerPanel.setPreferredSize(new Dimension(250, 200));
 
 		mainPanel = new JPanel(new GridLayout(1, 1, 10, 10)); /* obsolete */
 
@@ -298,7 +300,7 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 			setOpaque(true);
 		}
 
-		public java.awt.Component
+		public Component
 		getListCellRendererComponent(JList list,
 									 Object value, // value to display
 									 int index,    // cell index
