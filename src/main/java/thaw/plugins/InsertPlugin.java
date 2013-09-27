@@ -145,7 +145,7 @@ public class InsertPlugin implements Plugin, ActionListener {
 		final String[] files = fileList.split(";");
 
 		if ((keyType > 0) && (files.length > 1)) {
-			new WarningWindow(core, "Can't insert multiple SSH@ / KSK@ files at the same time. Use jSite.");
+			new WarningWindow(core, "Can't insert multiple SSK@ / KSK@ files at the same time. Use jSite.");
 			return false;
 		}
 
