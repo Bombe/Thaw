@@ -93,7 +93,7 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 				return null;
 
 			if (column == 0)
-				return ((Identity) identities.get(row)).toString();
+				return identities.get(row).toString();
 
 			if (column == 1)
 				return ((Identity) identities.get(row)).getTrustLevelStr();

@@ -314,7 +314,7 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 			}
 
 			if (value instanceof Peer) {
-				String txt = ((Peer) value).toString();
+				String txt = value.toString();
 
 				/*
 				if (txt.length() > 25) {

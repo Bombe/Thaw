@@ -461,13 +461,13 @@ public class IndexTree extends Observable implements MouseListener, ActionListen
 			if ((indexBrowser != null) && (selectedNode instanceof Index)) {
 				indexBrowser.getUnknownIndexList().addLinks(((Index) selectedNode));
 
-				if (((Index) selectedNode).hasChanged()) {
-					((Index) selectedNode).setHasChangedFlag(false);
+				if (selectedNode.hasChanged()) {
+					selectedNode.setHasChangedFlag(false);
 					redraw(paths[i]);
 				}
 
-				if (((Index) selectedNode).hasNewComment()) {
-					((Index) selectedNode).setNewCommentFlag(false);
+				if (selectedNode.hasNewComment()) {
+					selectedNode.setNewCommentFlag(false);
 					redraw(paths[i]);
 				}
 			}
@@ -692,7 +692,7 @@ public class IndexTree extends Observable implements MouseListener, ActionListen
 				for (int j = 0; j < nodes.length && nodes[j] != null; j++) {
 					Logger.error(this,
 							" -> "
-									+ Integer.toString(((IndexTreeNode) nodes[j]).getId())
+									+ Integer.toString(nodes[j].getId())
 									+ " - "
 									+ nodes[j].toString());
 				}
@@ -703,7 +703,7 @@ public class IndexTree extends Observable implements MouseListener, ActionListen
 
 		nodes[nmbFolders] = ((IndexFolder) nodes[nmbFolders - 1]).getChildIndex(id);
 
-		TreePath path = new TreePath(((Object[]) nodes));
+		TreePath path = new TreePath(nodes);
 
 		tree.setSelectionPath(path);
 

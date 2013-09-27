@@ -421,7 +421,7 @@ public class JDragTree extends JTree implements DragGestureListener, DragSourceL
 		if (ievent instanceof MouseEvent) {
 			//even though I tell dgRecognizer to ignore the the right mouse button,
 			// it thinks the RMB starts a drag event...argh
-			if ((((MouseEvent) ievent).getModifiers() & InputEvent.BUTTON3_MASK) != 0)
+			if ((ievent.getModifiers() & InputEvent.BUTTON3_MASK) != 0)
 				return;
 		}
 

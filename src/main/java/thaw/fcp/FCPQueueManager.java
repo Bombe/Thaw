@@ -323,15 +323,15 @@ public class FCPQueueManager extends Observable implements ThawRunnable, Observe
 		FCPTransferQuery q;
 
 		if (FreenetURIHelper.isAKey(key)) {
-			q = (FCPTransferQuery) keyTable.get(FreenetURIHelper.getComparablePart(key));
+			q = keyTable.get(FreenetURIHelper.getComparablePart(key));
 
 			if (q != null)
 				return q;
 
-			return (FCPTransferQuery) filenameTable.get(FreenetURIHelper.getFilenameFromKey(key));
+			return filenameTable.get(FreenetURIHelper.getFilenameFromKey(key));
 		}
 
-		return (FCPTransferQuery) filenameTable.get(key);
+		return filenameTable.get(key);
 	}
 
 	/** Compare using the key. */

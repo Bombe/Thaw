@@ -31,7 +31,7 @@ public class KSKBoardAttachment
 
 	public KSKBoardAttachment(Board board) {
 		if (board instanceof KSKBoard) {
-			boardName = ((KSKBoard) board).getName();
+			boardName = board.getName();
 		}
 
 		if (board instanceof SSKBoard) {

@@ -643,7 +643,7 @@ public class MessagePanel
 
 				for (Iterator it = v.iterator();
 					 it.hasNext(); ) {
-					str += ((String) it.next()) + "\n";
+					str += it.next() + "\n";
 				}
 
 				GUIHelper.copyToClipboard(str);

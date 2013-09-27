@@ -92,7 +92,7 @@ public class BoardSelecter implements ActionListener {
 
 		for (Iterator it = boards.iterator();
 			 it.hasNext(); ) {
-			JCheckBox box = new JCheckBox(((Board) it.next()).toString(), false);
+			JCheckBox box = new JCheckBox(it.next().toString(), false);
 			checkBoxes.add(box);
 			checkBoxPanel.add(box);
 		}

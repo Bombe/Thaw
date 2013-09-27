@@ -595,7 +595,7 @@ public class MessageTreeTable implements Observer,
 
 					if (rev >= 0) {
 						value = ("(" + Integer.toString(rev) + ") " +
-								((String) value));
+								value);
 					}
 				}
 			}
@@ -676,7 +676,7 @@ public class MessageTreeTable implements Observer,
 
 			if (column == 1) {
 				synchronized (msgs) {
-					return (MessageNode) msgs.get(row);
+					return msgs.get(row);
 				}
 			}
 
@@ -1062,7 +1062,7 @@ public class MessageTreeTable implements Observer,
 			 node != null;
 			 node = (MessageNode) node.getParent()) {
 
-			TreeNode treeParent = (TreeNode) node.getParent();
+			TreeNode treeParent = node.getParent();
 
 			/* if it has no parent, we return null to let the calling function
 			 * search a new thread in the database (ORDER BY date, etc)

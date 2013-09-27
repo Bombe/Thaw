@@ -513,7 +513,7 @@ public class IndexManagementHelper {
 
 		index.setIsNewFlag();
 
-		((MutableTreeNode) parent).insert((index), pos);
+		parent.insert((index), pos);
 
 		indexBrowser.getIndexTree().refresh(parent);
 
@@ -599,7 +599,7 @@ public class IndexManagementHelper {
 			}
 		}
 
-		((MutableTreeNode) target).insert((folder), 0);
+		target.insert((folder), 0);
 		indexBrowser.getIndexTree().refresh(target);
 
 		return folder;
@@ -664,7 +664,7 @@ public class IndexManagementHelper {
 
 			getIndexBrowserPanel().getUnknownIndexList().addLinks((LinkList) o);
 
-			if (((Index) o).hasChanged() && autoSort) {
+			if (o.hasChanged() && autoSort) {
 				Index index = (Index) o;
 
 				String cat;
@@ -775,7 +775,7 @@ public class IndexManagementHelper {
 			if (cat != null)
 				return autoSortIndex(indexBrowser, (Index) node, cat);
 			else
-				Logger.notice(indexBrowser, "No category for '" + ((Index) node).toString() + "'; can't sort");
+				Logger.notice(indexBrowser, "No category for '" + node.toString() + "'; can't sort");
 
 		} else if (node instanceof IndexFolder) {
 
@@ -849,7 +849,7 @@ public class IndexManagementHelper {
 			}
 
 			autoSortIndexes(getIndexBrowserPanel(),
-					(IndexTreeNode) target,
+					target,
 					getIndexBrowserPanel().getMainWindow());
 		}
 	}
@@ -1227,7 +1227,7 @@ public class IndexManagementHelper {
 		public void setTarget(final IndexTreeNode node) {
 
 			if (getActionSource() != null)
-				getActionSource().setEnabled((node != null) && (node instanceof Index) && ((Index) node).isModifiable());
+				getActionSource().setEnabled((node != null) && (node instanceof Index) && node.isModifiable());
 		}
 
 		public void apply(IndexTreeNode target) {
@@ -1283,7 +1283,7 @@ public class IndexManagementHelper {
 		public void setTarget(final IndexTreeNode node) {
 
 			if (getActionSource() != null)
-				getActionSource().setEnabled((node != null) && (node instanceof Index) && ((Index) node).isModifiable());
+				getActionSource().setEnabled((node != null) && (node instanceof Index) && node.isModifiable());
 		}
 
 		public void apply(IndexTreeNode target) {
@@ -1448,7 +1448,7 @@ public class IndexManagementHelper {
 
 		public void setTarget(final IndexTreeNode node) {
 			if (getActionSource() != null)
-				getActionSource().setEnabled((node != null) && (node instanceof Index) && ((Index) node).isModifiable());
+				getActionSource().setEnabled((node != null) && (node instanceof Index) && node.isModifiable());
 		}
 
 		public void apply(IndexTreeNode target) {
@@ -1651,7 +1651,7 @@ public class IndexManagementHelper {
 
 		public void setTarget(final IndexTreeNode node) {
 			if (getActionSource() != null)
-				getActionSource().setEnabled((node != null) && (node instanceof Index) && ((Index) node).isModifiable());
+				getActionSource().setEnabled((node != null) && (node instanceof Index) && node.isModifiable());
 		}
 
 		public void apply(IndexTreeNode target) {
@@ -2076,7 +2076,7 @@ public class IndexManagementHelper {
 						totalSize = 0;
 
 						for (int i = 0; i < files.length; i++) {
-							totalSize += ((File) files[i]).getSize();
+							totalSize += files[i].getSize();
 						}
 					}
 

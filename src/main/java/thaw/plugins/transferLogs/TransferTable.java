@@ -151,7 +151,7 @@ public class TransferTable implements MouseListener {
 				textAreaRenderer.setText((String) value);
 				cell = textAreaRenderer;
 
-			} else if ((value instanceof String) && "X".equals((String) value)) {
+			} else if ((value instanceof String) && "X".equals(value)) {
 				labelRenderer.setIcon(IconBox.minClose);
 				return labelRenderer;
 			} else if (value instanceof Integer) {

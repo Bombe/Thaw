@@ -288,7 +288,7 @@ public class IndexFolder implements IndexTreeNode, MutableTreeNode {
 				Integer.toString(id) + " (" + toString() + ")");
 
 		if (child instanceof IndexFolder && folders != null) {
-			folders.put(((IndexFolder) child).toString().toLowerCase(), child);
+			folders.put(child.toString().toLowerCase(), child);
 		}
 
 		if (children != null) {

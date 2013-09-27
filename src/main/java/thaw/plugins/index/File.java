@@ -446,10 +446,10 @@ public class File implements Observer, FileContainer {
 									rs.getLong("size"),
 									rs.getInt("indexParent"));
 
-							((Observable) tq).addObserver(file);
+							tq.addObserver(file);
 
 							if (tq.getFileKey() != null)
-								file.update(((Observable) tq), null);
+								file.update(tq, null);
 						}
 
 					} catch (SQLException e) {

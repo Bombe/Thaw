@@ -1,14 +1,12 @@
 package thaw.core;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
 import java.util.Vector;
-import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -554,14 +552,14 @@ public class Core implements Observer {
 	}
 
 	public boolean askDeconnectionConfirmation() {
-		final int ret = JOptionPane.showOptionDialog((Component) null,
+		final int ret = JOptionPane.showOptionDialog(null,
 				I18n.getMessage("thaw.warning.isWriting"),
 				"Thaw - " + I18n.getMessage("thaw.warning.title"),
 				JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE,
-				(Icon) null,
-				(Object[]) null,
-				(Object) null);
+				null,
+				null,
+				null);
 		if ((ret == JOptionPane.CLOSED_OPTION)
 				|| (ret == JOptionPane.CANCEL_OPTION)
 				|| (ret == JOptionPane.NO_OPTION))

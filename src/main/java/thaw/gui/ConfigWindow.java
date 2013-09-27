@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Observable;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -180,14 +179,14 @@ public class ConfigWindow extends Observable implements ActionListener, WindowLi
 	/** Called when apply button is pressed. */
 	public void actionPerformed(final ActionEvent e) {
 		if ((e.getSource() == okButton) && !core.canDisconnect() && needConnectionReset) {
-			final int ret = JOptionPane.showOptionDialog((Component) null,
+			final int ret = JOptionPane.showOptionDialog(null,
 					I18n.getMessage("thaw.warning.isWritingSoApplyLater"),
 					I18n.getMessage("thaw.warning.title"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.WARNING_MESSAGE,
-					(Icon) null,
-					(Object[]) null,
-					(Object) null);
+					null,
+					null,
+					null);
 			if ((ret == JOptionPane.CLOSED_OPTION) || (ret > 0))
 				return;
 		}

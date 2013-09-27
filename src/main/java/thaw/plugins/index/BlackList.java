@@ -208,7 +208,7 @@ public class BlackList implements ActionListener {
 		}
 
 		if (e.getSource() == removeButton) {
-			Object[] targets = (Object[]) blackList.getSelectedValues();
+			Object[] targets = blackList.getSelectedValues();
 
 			for (int i = 0; i < targets.length; i++) {
 				BlackListedLink link = (BlackListedLink) targets[i];

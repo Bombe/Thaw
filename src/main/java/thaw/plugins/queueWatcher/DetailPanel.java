@@ -152,12 +152,12 @@ public class DetailPanel implements Observer {
 
 	public void setQuery(final FCPTransferQuery query) {
 		if (this.query != null)
-			((Observable) this.query).deleteObserver(this);
+			this.query.deleteObserver(this);
 
 		this.query = query;
 
 		if (this.query != null)
-			((Observable) this.query).addObserver(this);
+			this.query.addObserver(this);
 
 		refreshAll();
 	}

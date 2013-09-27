@@ -366,8 +366,8 @@ public class DraftPanel implements ActionListener, MouseListener {
 		public void run() {
 			Vector boards = BoardSelecter.askBoardList(mainPanel,
 					((dialog != null) ?
-							(Object) dialog :
-							(Object) mainPanel.getPluginCore().getCore().getMainWindow().getMainFrame()));
+							dialog :
+							mainPanel.getPluginCore().getCore().getMainWindow().getMainFrame()));
 
 			if (boards == null) {
 				Logger.info(this, "Cancelled");

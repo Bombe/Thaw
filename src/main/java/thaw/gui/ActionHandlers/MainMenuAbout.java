@@ -43,7 +43,7 @@ public class MainMenuAbout implements ActionListener {
 			}
 		}
 
-		((JTextField) labels[0]).setFont(new Font("Dialog", Font.BOLD, 30));
+		labels[0].setFont(new Font("Dialog", Font.BOLD, 30));
 
 		JOptionPane.showMessageDialog(null, labels, I18n.getMessage("thaw.about.title"),
 				JOptionPane.INFORMATION_MESSAGE);

@@ -288,7 +288,7 @@ public class Link extends Observable implements Comparable, LinkContainer {
 
 	public int compareTo(Object o) {
 		if (o instanceof Link) {
-			return toString().toLowerCase().compareTo(((Link) o).toString().toLowerCase());
+			return toString().toLowerCase().compareTo(o.toString().toLowerCase());
 		}
 
 		return 0;

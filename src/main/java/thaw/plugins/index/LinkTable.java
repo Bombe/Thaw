@@ -188,7 +188,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		final Vector links = new Vector();
 
 		for (int i = 0; i < selectedRows.length; i++) {
-			final Link link = (Link) srcList[selectedRows[i]];
+			final Link link = srcList[selectedRows[i]];
 			links.add(link);
 		}
 
@@ -329,7 +329,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public Object getValueAt(final int row, final int column) {
-			final Link link = (Link) links[row];
+			final Link link = links[row];
 
 			switch (column) {
 				case (0):

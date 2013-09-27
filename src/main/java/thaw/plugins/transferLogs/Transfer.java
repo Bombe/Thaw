@@ -54,7 +54,7 @@ public class Transfer implements Observer {
 
 		if (!query.isFinished()
 				&& query instanceof Observable) {
-			((Observable) query).addObserver(this);
+			query.addObserver(this);
 		}
 	}
 

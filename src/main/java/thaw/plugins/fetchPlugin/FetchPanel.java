@@ -223,11 +223,11 @@ public class FetchPanel implements ActionListener, MouseListener {
 			int priority = 6;
 			boolean globalQueue = true;
 
-			if (((String) queueSelecter.getSelectedItem()).equals(I18n.getMessage("thaw.common.false")))
+			if (queueSelecter.getSelectedItem().equals(I18n.getMessage("thaw.common.false")))
 				globalQueue = false;
 
 			for (int i = 0; i < priorities.length; i++) {
-				if (((String) prioritySelecter.getSelectedItem()).equals(I18n.getMessage("thaw.plugin.priority.p" + i)))
+				if (prioritySelecter.getSelectedItem().equals(I18n.getMessage("thaw.plugin.priority.p" + i)))
 					priority = i;
 			}
 

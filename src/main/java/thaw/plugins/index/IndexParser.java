@@ -210,7 +210,7 @@ public class IndexParser {
 
 		for (int i = 0; i < files.length; i++) {
 
-			FileContainer file = (FileContainer) files[i];
+			FileContainer file = files[i];
 
 			String pubKey = file.getPublicKey();
 

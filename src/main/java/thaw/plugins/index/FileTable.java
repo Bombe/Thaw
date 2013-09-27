@@ -362,7 +362,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 			if (row >= files.length)
 				return null;
 
-			final File file = (File) files[row];
+			final File file = files[row];
 
 			if (column == 0)
 				return file.getFilename();
@@ -440,7 +440,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 				File[] files = fileListModel.getFiles();
 
 				for (int i = 0; i < files.length; i++) {
-					File file = (File) files[i];
+					File file = files[i];
 
 					if (file.getPublicKey() == null
 							|| !FreenetURIHelper.isAKey(file.getPublicKey())) {

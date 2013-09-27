@@ -176,7 +176,7 @@ public abstract class FCPTransferQuery extends Observable implements FCPQuery {
 					//averageSpeed = (diffBlocks*BLOCK_SIZE) / diffTimeSec;
 
 					double averageSpeedInBlocksPerSecond = ((double) diffBlocks) / diffTimeSec;
-					averageSpeed = (long) (((double) averageSpeedInBlocksPerSecond) * ((double) BLOCK_SIZE));
+					averageSpeed = (long) (averageSpeedInBlocksPerSecond * ((double) BLOCK_SIZE));
 
 					if (averageSpeed >= 0.00000001) {
 						ETA = (long) ((double) remainingBlocks / averageSpeedInBlocksPerSecond);

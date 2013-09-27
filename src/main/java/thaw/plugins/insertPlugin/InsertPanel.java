@@ -369,14 +369,14 @@ public class InsertPanel implements ActionListener, ItemListener, Observer {
 				}
 			}
 
-			if (((String) globalSelecter.getSelectedItem()).equals(I18n.getMessage("thaw.common.true")))
+			if (globalSelecter.getSelectedItem().equals(I18n.getMessage("thaw.common.true")))
 				global = true;
-			if (((String) globalSelecter.getSelectedItem()).equals(I18n.getMessage("thaw.common.false")))
+			if (globalSelecter.getSelectedItem().equals(I18n.getMessage("thaw.common.false")))
 				global = false;
 
 			String mimeType = null;
 
-			if ((mimeField.getSelectedItem() != null) && !((String) mimeField.getSelectedItem()).equals(""))
+			if ((mimeField.getSelectedItem() != null) && !mimeField.getSelectedItem().equals(""))
 				mimeType = (String) mimeField.getSelectedItem();
 
 			doCompress = doCompressCB.isSelected();
