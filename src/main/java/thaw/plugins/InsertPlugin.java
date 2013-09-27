@@ -167,6 +167,7 @@ public class InsertPlugin implements Plugin, ActionListener {
 					.setPriority(priority)
 					.setGlobal(global)
 					.setPersistence(persistence)
+					.setCompress(doCompress)
 					.build();
 
 			if (mimeType != null) {
