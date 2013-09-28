@@ -1,7 +1,8 @@
 package thaw.fcp;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -167,14 +168,11 @@ public class FCPGetConfig extends Observable implements FCPQuery, Observer {
 		if (!"ConfigData".equals(msg.getMessageName()))
 			return;
 
-		Hashtable fields = msg.getValues();
+		Map<String, String> fields = msg.getValues();
 		Hashtable configSettings = new Hashtable();
 
-		for (Enumeration keysEnum = fields.keys();
-			 keysEnum.hasMoreElements(); ) {
-
-			String key = (String) keysEnum.nextElement();
-			String value = (String) fields.get(key);
+		for (Entry<String, String> fieldEntry : fields.entrySet()) {
+			String key = fieldEntry.getKey();
 
 			int firstPointPos = key.indexOf('.');
 
@@ -188,7 +186,7 @@ public class FCPGetConfig extends Observable implements FCPQuery, Observer {
 				configSettings.put(name, setting);
 			}
 
-			setting.setElement(element, value);
+			setting.setElement(element, fieldEntry.getValue());
 		}
 
 		stop();

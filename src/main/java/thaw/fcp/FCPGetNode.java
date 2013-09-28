@@ -1,6 +1,6 @@
 package thaw.fcp;
 
-import java.util.Hashtable;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -42,7 +42,7 @@ public class FCPGetNode extends Observable implements FCPQuery, Observer {
 
 	private boolean withVolatile;
 
-	private Hashtable allParameters;
+	private Map<String, String> allParameters;
 
 	private final FCPQueryManager queryManager;
 
@@ -128,7 +128,7 @@ public class FCPGetNode extends Observable implements FCPQuery, Observer {
 		return nmbThreads;
 	}
 
-	public Hashtable getAllParameters() {
+	public Map<String, String> getAllParameters() {
 		return allParameters;
 	}
 }

@@ -1,5 +1,8 @@
 package thaw.plugins.peerMonitor;
 
+import static com.google.common.collect.FluentIterable.from;
+import static thaw.plugins.peerMonitor.Peer.Status.parse;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -9,9 +12,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Vector;
 import javax.swing.BorderFactory;
@@ -33,6 +37,7 @@ import thaw.gui.IconBox;
 import thaw.gui.MainWindow;
 import thaw.plugins.PeerMonitor;
 import thaw.plugins.ToolbarModifier;
+import thaw.plugins.peerMonitor.Peer.Status;
 
 /**
  * In fact, here is two panels : A panel with the peer list and a panel with
@@ -40,22 +45,12 @@ import thaw.plugins.ToolbarModifier;
  */
 public class PeerMonitorPanel extends Observable implements ActionListener, MouseListener {
 
-	public final static String[] STR_STATUS = {
-			"CONNECTED",
-			"BACKED OFF",
-			"TOO OLD",
-			"TOO NEW",
-			"DISCONNECTED",
-			"NEVER CONNECTED"
-	};
-
-	public final static Color[] COLOR_STATUS = {
-			new Color(0, 164, 0),  /* CONNECTED */
-			Color.ORANGE,          /* BACKED OFF */
-			Color.RED,             /* TOO OLD */
-			Color.BLUE,            /* TOO NEW */
-			Color.GRAY,            /* DISCONNECTED */
-			Color.PINK             /* NEVER CONNECTED */
+	/** Comparator that sorts peers by their {@link Status}. */
+	private static final Comparator<Map<String, String>> byStatus = new Comparator<Map<String, String>>() {
+		@Override
+		public int compare(Map<String, String> leftPeerInformation, Map<String, String> rightPeerInformation) {
+			return parse(leftPeerInformation.get("volatile.status")).compareTo(parse(rightPeerInformation.get("volatile.status")));
+		}
 	};
 
 	public final static Color JLIST_NODE_STAT_BACKGROUND = Color.WHITE;
@@ -340,24 +335,16 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 
 	private Vector peers;
 
-	private Hashtable nodeInfos = null;
+	private Map<String, String> nodeInfos = null;
 
 	/** \param peers : Hashtable containing Hashtable containing the parameter list */
-	public synchronized void setPeerList(Hashtable pL) {
+	public synchronized void setPeerList(Map<?, Map<String, String>> pL) {
 		peers = new Vector();
 
 		peers.add(nodeStatsStr);
 
-		/* TODO : dirty : should use comparator, etc */
-		for (int i = 0; i < STR_STATUS.length; i++) {
-			for (Enumeration e = pL.elements();
-				 e.hasMoreElements(); ) {
-				Hashtable ht = (Hashtable) e.nextElement();
-
-				if (STR_STATUS[i].equals(ht.get("volatile.status"))) {
-					peers.add(new Peer(ht));
-				}
-			}
+		for (Map<String, String> peerInformation : from(pL.values()).toSortedList(byStatus)) {
+			peers.add(new Peer(peerInformation));
 		}
 
 		/* can it happen ?! */
@@ -365,7 +352,7 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 			peerList.setListData(peers);
 	}
 
-	public synchronized void setNodeInfos(Hashtable infos) {
+	public synchronized void setNodeInfos(Map<String, String> infos) {
 		if (nodeInfos == null) { /* first time */
 			displayInfos(I18n.getMessage("thaw.plugin.peerMonitor.nodeInfos"), infos);
 		}
@@ -545,17 +532,14 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 		return lb;
 	}
 
-	public void displayInfos(String title, Hashtable ht) {
-		if (ht == null)
+	public void displayInfos(String title, Map<String, String> peerInformation) {
+		if (peerInformation == null)
 			return;
 
 		Vector v = new Vector();
 
-		for (Enumeration e = ht.keys();
-			 e.hasMoreElements(); ) {
-			String key = (String) e.nextElement();
-
-			String[] val = getTranslation(key, (String) ht.get(key));
+		for (Entry<String, String> infoEntry : peerInformation.entrySet()) {
+			String[] val = getTranslation(infoEntry.getKey(), infoEntry.getValue());
 
 			if (val != null)
 				v.add(val);

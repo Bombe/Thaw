@@ -1,6 +1,7 @@
 package thaw.fcp;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -10,7 +11,7 @@ public class FCPListPeers extends Observable implements FCPQuery, Observer {
 
 	private boolean withVolatile;
 
-	private Hashtable peers; /* key : peer name -> hashtable : key : parameter name -> parameter value */
+	private final Map<String, Map<String, String>> peers = new HashMap<String, Map<String, String>>();
 
 	private boolean endList;
 
@@ -22,12 +23,10 @@ public class FCPListPeers extends Observable implements FCPQuery, Observer {
 
 		this.withMetadata = withMetadata;
 		this.withVolatile = withVolatile;
-		peers = new Hashtable();
 	}
 
 	public boolean start() {
 		endList = false;
-		peers = new Hashtable();
 
 		FCPMessage msg = new FCPMessage();
 
@@ -68,7 +67,7 @@ public class FCPListPeers extends Observable implements FCPQuery, Observer {
 		return endList;
 	}
 
-	public Hashtable getPeers() {
+	public Map<String, Map<String, String>> getPeers() {
 		return peers;
 	}
 

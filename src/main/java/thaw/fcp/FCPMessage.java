@@ -2,10 +2,9 @@ package thaw.fcp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import thaw.core.Logger;
 
@@ -19,7 +18,7 @@ public class FCPMessage {
 
 	private String messageName = null;
 
-	private Hashtable<String, String> fields; /* String (field) -> String (value) ; See http://new-wiki.freenetproject.org/FCPv2 */
+	private final Map<String, String> fields = new HashMap<String, String>(); /* See http://new-wiki.freenetproject.org/FCPv2 */
 
 	private long dataWaiting = 0;
 
@@ -139,7 +138,6 @@ public class FCPMessage {
 	}
 
 	public FCPMessage() {
-		fields = new Hashtable<String, String>();
 	}
 
 	/**
@@ -147,7 +145,6 @@ public class FCPMessage {
 	 * constructor is not recommended.
 	 */
 	public FCPMessage(final String rawMessage) {
-		this();
 		loadFromRawMessage(rawMessage);
 	}
 
@@ -158,7 +155,6 @@ public class FCPMessage {
 	 */
 	public boolean loadFromRawMessage(final String rawMessage) {
 		/* Loading a new raw message - remove the existing fields */
-		fields = new Hashtable<String, String>();
 		setAmountOfDataWaiting(0);
 
 		if (rawMessage != null) {
@@ -264,8 +260,8 @@ public class FCPMessage {
 		return fields.get(field);
 	}
 
-	public Hashtable<String, String> getValues() {
-		return new Hashtable<String, String>(fields);
+	public Map<String, String> getValues() {
+		return new HashMap<String, String>(fields);
 	}
 
 	public void setValue(final String field, final String value) {
@@ -306,10 +302,8 @@ public class FCPMessage {
 
 		result = result + getMessageName() + "\n";
 
-		for (final Enumeration fieldNames = fields.keys(); fieldNames.hasMoreElements(); ) {
-			final String fieldName = ((String) fieldNames.nextElement());
-
-			result = result + fieldName + "=" + getValue(fieldName) + "\n";
+		for (Entry<String, String> field : fields.entrySet()) {
+			result = result + field.getKey() + "=" + field.getValue() + "\n";
 		}
 
 		if (getAmountOfDataWaiting() == 0)
