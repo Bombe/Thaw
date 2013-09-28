@@ -1138,53 +1138,6 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 		return result;
 	}
 
-	public boolean setParameters(final HashMap parameters) {
-
-		localFile = new File((String) parameters.get("localFile"));
-
-		fileSize = localFile.length();
-
-		keyType = Integer.parseInt((String) parameters.get("keyType"));
-		rev = Integer.parseInt((String) parameters.get("Revision"));
-		name = (String) parameters.get("name");
-
-		privateKey = (String) parameters.get("privateKey");
-		if ((privateKey == null) || privateKey.equals("")) {
-			privateKey = null;
-		}
-
-		publicKey = (String) parameters.get("publicKey");
-		if ((privateKey == null) || (publicKey == null) || publicKey.equals("")) {
-			publicKey = null;
-		}
-
-		priority = Integer.parseInt((String) parameters.get("priority"));
-
-		global = Boolean.valueOf((String) parameters.get("global")).booleanValue();
-
-		persistence = Integer.parseInt((String) parameters.get("persistence"));
-		status = (String) parameters.get("status");
-		attempt = Integer.parseInt((String) parameters.get("attempt"));
-
-		compressFile = Boolean.parseBoolean("compressFile");
-		compressionCodec = Integer.parseInt("compressionCodec");
-
-		setIdentifier((String) parameters.get("identifier"));
-
-		boolean running = Boolean.valueOf((String) parameters.get("running")).booleanValue();
-		boolean successful = Boolean.valueOf((String) parameters.get("successful")).booleanValue();
-		boolean finished = Boolean.valueOf((String) parameters.get("finished")).booleanValue();
-
-		setStatus(TransferStatus.getTransferStatus(running, finished, successful));
-
-		if ((persistence == PERSISTENCE_UNTIL_DISCONNECT) && !isFinished()) {
-			setStatus(TransferStatus.NOT_RUNNING);
-			status = "Waiting";
-		}
-
-		return true;
-	}
-
 	public boolean isPersistent() {
 		return persistence < 2;
 	}
