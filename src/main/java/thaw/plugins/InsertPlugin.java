@@ -14,6 +14,7 @@ import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.Logger;
 import thaw.core.Plugin;
+import thaw.fcp.CompressionCodec;
 import thaw.fcp.FCPClientPut;
 import thaw.gui.IconBox;
 import thaw.gui.WarningWindow;
@@ -139,7 +140,7 @@ public class InsertPlugin implements Plugin, ActionListener {
 							  final String privateKey,
 							  final int priority, final boolean global,
 							  final int persistence, final String mimeType,
-							  final boolean doCompress, final int compressionCodec) {
+							  final boolean doCompress, final CompressionCodec compressionCodec) {
 
 		FCPClientPut clientPut = null;
 		final String[] files = fileList.split(";");
@@ -168,6 +169,7 @@ public class InsertPlugin implements Plugin, ActionListener {
 					.setGlobal(global)
 					.setPersistence(persistence)
 					.setCompress(doCompress)
+					.setCodec(compressionCodec)
 					.build();
 
 			if (mimeType != null) {

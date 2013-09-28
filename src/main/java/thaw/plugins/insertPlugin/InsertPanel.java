@@ -1,6 +1,7 @@
 package thaw.plugins.insertPlugin;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -14,11 +15,13 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -26,6 +29,7 @@ import javax.swing.JTextField;
 import thaw.core.Config;
 import thaw.core.I18n;
 import thaw.core.Logger;
+import thaw.fcp.CompressionCodec;
 import thaw.fcp.FCPClientHello;
 import thaw.fcp.FCPClientPut;
 import thaw.fcp.FCPQueueManager;
@@ -103,8 +107,6 @@ public class InsertPanel implements ActionListener, ItemListener, Observer {
 	private int keyType;
 
 	private boolean doCompress;
-
-	private int compressionCodec;
 
 	private FCPClientPut lastInsert = null;
 
@@ -200,7 +202,6 @@ public class InsertPanel implements ActionListener, ItemListener, Observer {
 
 		// COMPRESSION
 		doCompress = true;
-		compressionCodec = -1;
 		doCompressCB = new JCheckBox(I18n.getMessage("thaw.plugin.insert.doCompress"), true);
 		subSubPanel.add(doCompressCB);
 
@@ -210,6 +211,18 @@ public class InsertPanel implements ActionListener, ItemListener, Observer {
 		compressionLabel = new JLabel(I18n.getMessage("thaw.plugin.insert.compressionType"));
 		subSubPanel.add(compressionLabel);
 		compressionSelecter = new JComboBox(compressionStr);
+		compressionSelecter.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value instanceof String) {
+					setText((String) value);
+				} else if (value instanceof CompressionCodec) {
+					setText(((CompressionCodec) value).getName());
+				}
+				return this;
+			}
+		});
 		compressionSelecter.setSelectedItem(I18n.getMessage("thaw.plugin.insert.best"));
 		subSubPanel.add(compressionSelecter);
 
@@ -308,8 +321,8 @@ public class InsertPanel implements ActionListener, ItemListener, Observer {
 
 		clientHello = queueManager.getQueryManager().getConnection().getClientHello();
 
-		for (int i = 0; i < clientHello.getNmbCompressionCodecs(); i++) {
-			compressionSelecter.addItem(clientHello.getCodec(i));
+		for (CompressionCodec compressionCodec : clientHello.getCodecs()) {
+			compressionSelecter.addItem(compressionCodec);
 		}
 
 		compressionSelecter.setSelectedItem(I18n.getMessage("thaw.plugin.insert.best"));
@@ -380,7 +393,10 @@ public class InsertPanel implements ActionListener, ItemListener, Observer {
 				mimeType = (String) mimeField.getSelectedItem();
 
 			doCompress = doCompressCB.isSelected();
-			compressionCodec = compressionSelecter.getSelectedIndex() - 1;
+			CompressionCodec compressionCodec = null;
+			if (compressionSelecter.getSelectedIndex() > 0) {
+				compressionCodec = (CompressionCodec) compressionSelecter.getSelectedItem();
+			}
 
 			insertPlugin.insertFile(selectedFiles.getText(),
 					keyType, rev, name, privateKey, priority,

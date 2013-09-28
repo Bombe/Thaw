@@ -37,7 +37,7 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 
 	private final boolean getCHKOnly;
 
-	private int compressionCodec = -1;
+	private CompressionCodec compressionCodec;
 
 	private String privateKey; /* must finish by '/' (cf SSKKeypair) */
 
@@ -92,6 +92,9 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 		private String identifier;
 
 		private boolean compress = true;
+
+		/** The selected compression codec. */
+		private CompressionCodec codec;
 
 		private String publicKey;
 
@@ -201,6 +204,19 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 			return this;
 		}
 
+		/**
+		 * Sets the compression codec to use on the insert. In order to enable
+		 * compression you have to call {@link #setCompress(boolean)}, too.
+		 *
+		 * @param codec
+		 * 		The compression codec to use.
+		 * @return This builder
+		 */
+		public Builder setCodec(CompressionCodec codec) {
+			this.codec = codec;
+			return this;
+		}
+
 		public Builder setPublicKey(String publicKey) {
 			this.publicKey = publicKey;
 			return this;
@@ -237,6 +253,7 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 
 		this.queueManager = builder.queueManager;
 		this.compressFile = builder.compress;
+		this.compressionCodec = builder.codec;
 		this.priority = builder.priority;
 		this.global = builder.global;
 		this.persistence = builder.persistence;
@@ -541,8 +558,8 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 			}
 		}
 
-		if (compressFile && compressionCodec != -1)
-			msg.setValue("Codecs", Integer.toString(compressionCodec));
+		if (compressFile && (compressionCodec != null))
+			msg.setValue("Codecs", String.valueOf(compressionCodec.getCode()));
 		else
 			msg.setValue("DontCompress", "true");
 
@@ -1116,7 +1133,7 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 		result.put("successful", Boolean.toString(isSuccessful()));
 		result.put("finished", Boolean.toString(isFinished()));
 		result.put("compressFile", Boolean.toString(compressFile));
-		result.put("compressionCodec", Integer.toString(compressionCodec));
+		result.put("compressionCodec", compressionCodec.toString());
 
 		return result;
 	}

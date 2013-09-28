@@ -1,5 +1,8 @@
 package thaw.fcp;
 
+import static java.util.Collections.unmodifiableCollection;
+
+import java.util.Collection;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -28,9 +31,8 @@ public class FCPClientHello implements FCPQuery, Observer {
 
 	private boolean testnet = false; /* Hmm, in fact, we shouldn't have to bother about this one */
 
-	private int nmbCompressionCodecs = -1;
-
-	private String[] codecs;
+	/** The compression codecs supported by the node. */
+	private Collection<CompressionCodec> codecs;
 
 	private boolean receiveAnswer = false;
 
@@ -60,10 +62,6 @@ public class FCPClientHello implements FCPQuery, Observer {
 
 	public boolean isOnTestnet() {
 		return testnet;
-	}
-
-	public int getNmbCompressionCodecs() {
-		return nmbCompressionCodecs;
 	}
 
 	/** Warning: This query is blocking (only this one) ! */
@@ -132,8 +130,8 @@ public class FCPClientHello implements FCPQuery, Observer {
 				nodeVersion = answer.getValue("Version");
 				nodeName = answer.getValue("Node");
 				testnet = Boolean.valueOf(answer.getValue("Testnet")).booleanValue();
-				codecs = answer.getValue("CompressionCodecs").split(" ");
-				nmbCompressionCodecs = Integer.parseInt(codecs[0]);
+				String codecLine = answer.getValue("CompressionCodecs");
+				codecs = CompressionCodec.parseCodecs(codecLine);
 
 				queryManager.deleteObserver(this);
 
@@ -172,12 +170,14 @@ public class FCPClientHello implements FCPQuery, Observer {
 		return connectionId;
 	}
 
-	public String getCodec(int i) {
-		if (i < nmbCompressionCodecs) {
-			return codecs[i + 2].split("\\(")[0];
-		} else {
-			return "";
-		}
+	/**
+	 * Returns the compression codecs returns by the node on connect.
+	 *
+	 * @return The compression codecs supported by the node
+	 */
+	public Collection<CompressionCodec> getCodecs() {
+		return unmodifiableCollection(codecs);
 	}
+
 }
 
