@@ -110,7 +110,7 @@ public class Peer {
 	public Peer(Map<String, String> parameters) {
 		this.parameters.putAll(parameters);
 
-		displayName = Optional.of(parameters.get("myName")).or(parameters.get("physical.udp"));
+		displayName = Optional.fromNullable(parameters.get("myName")).or(parameters.get("physical.udp"));
 
 		identity = parameters.get("identity");
 
