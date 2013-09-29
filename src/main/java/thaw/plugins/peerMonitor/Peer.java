@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.base.Optional;
 import thaw.core.Logger;
 
 public class Peer {
@@ -99,9 +100,9 @@ public class Peer {
 
 	private final Status status;
 
-	private String displayName = null;
+	private final String displayName;
 
-	private String identity = null;
+	private final String identity;
 
 	/** Information about the peer. */
 	private final Map<String, String> parameters = new HashMap<String, String>();
@@ -109,10 +110,7 @@ public class Peer {
 	public Peer(Map<String, String> parameters) {
 		this.parameters.putAll(parameters);
 
-		displayName = parameters.get("myName");
-
-		if (displayName == null)
-			displayName = parameters.get("physical.udp");
+		displayName = Optional.of(parameters.get("myName")).or(parameters.get("physical.udp"));
 
 		identity = parameters.get("identity");
 
@@ -134,4 +132,5 @@ public class Peer {
 	public String toString() {
 		return displayName;
 	}
+	
 }
