@@ -40,30 +40,15 @@ public class PeerMonitor implements Plugin, Observer, ActionListener {
 
 	protected class DisplayRefresher implements Observer, ThawRunnable {
 
-		private FCPGetNode getNode = null;
-
-		private FCPListPeers listPeers = null;
-
-		public DisplayRefresher() {
-
-		}
-
 		public void run() {
+			FCPGetNode getNode = new FCPGetNode(false /* private */, true /* volatile */, core.getQueueManager().getQueryManager());
+			getNode.addObserver(this);
+			FCPListPeers listPeers = new FCPListPeers(false /* metadata */, true/* volatile */, core.getQueueManager().getQueryManager());
+			listPeers.addObserver(this);
 			while (running) {
-				if (getNode == null) {
-					getNode = new FCPGetNode(false /* private */, true /* volatile */, core.getQueueManager().getQueryManager());
-					getNode.addObserver(this);
-				}
 
 				getNode.start();
-
-				if (listPeers == null) {
-					listPeers = new FCPListPeers(false /* metadata */, true/* volatile */, core.getQueueManager().getQueryManager());
-					listPeers.addObserver(this);
-				}
-
-				if (listPeers.hasEnded())
-					listPeers.start();
+				listPeers.start();
 
 				try {
 					Thread.sleep(DEFAULT_REFRESH_RATE * 1000);
