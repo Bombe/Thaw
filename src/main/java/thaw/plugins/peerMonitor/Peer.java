@@ -132,5 +132,5 @@ public class Peer {
 	public String toString() {
 		return displayName;
 	}
-	
+
 }
