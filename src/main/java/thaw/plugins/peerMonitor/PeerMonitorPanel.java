@@ -67,7 +67,7 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 
 	private JPanel mainPanel;
 
-	private JList peerList;
+	private final JList peerList = new JList();
 
 	private JProgressBar thawMemBar;
 
@@ -116,8 +116,6 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 		tabPanel = new JPanel(new BorderLayout(10, 10));
 
 		peerPanel = new JPanel(new BorderLayout());
-
-		peerList = new JList();
 
 		peerList.setCellRenderer(new PeerCellRenderer());
 		//peerList.addListSelectionListener(this);
@@ -333,13 +331,11 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 		}
 	}
 
-	private Vector peers;
-
 	private Map<String, String> nodeInfos = null;
 
 	/** \param peers : Hashtable containing Hashtable containing the parameter list */
 	public synchronized void setPeerList(Map<?, Map<String, String>> pL) {
-		peers = new Vector();
+		Vector peers = new Vector();
 
 		peers.add(nodeStatsStr);
 
@@ -347,9 +343,7 @@ public class PeerMonitorPanel extends Observable implements ActionListener, Mous
 			peers.add(new Peer(peerInformation));
 		}
 
-		/* can it happen ?! */
-		if (peerList != null && peers != null)
-			peerList.setListData(peers);
+		peerList.setListData(peers);
 	}
 
 	public synchronized void setNodeInfos(Map<String, String> infos) {
