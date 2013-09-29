@@ -27,6 +27,8 @@ public class FCPListPeers extends Observable implements FCPQuery, Observer {
 
 	public boolean start() {
 		endList = false;
+		/* FIXME – this is utterly, completely wrong. every instance of ListPeers should get its own replies. */
+		peers.clear();
 
 		FCPMessage msg = new FCPMessage();
 
