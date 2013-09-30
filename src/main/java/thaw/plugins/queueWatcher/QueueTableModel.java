@@ -1,5 +1,8 @@
 package thaw.plugins.queueWatcher;
 
+import static thaw.fcp.FCPQuery.Type.DOWNLOAD;
+import static thaw.fcp.FCPQuery.Type.UPLOAD;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
@@ -238,10 +241,10 @@ public class QueueTableModel extends AbstractTableModel implements Observer {
 
 	public void addQueries(final Iterable<FCPTransferQuery> queries) {
 		for (FCPTransferQuery query : queries) {
-			if ((query.getQueryType() == 1) && !isForInsertions)
+			if ((query.getQueryType() == DOWNLOAD) && !isForInsertions)
 				addQuery(query);
 
-			if ((query.getQueryType() == 2) && isForInsertions)
+			if ((query.getQueryType() == UPLOAD) && isForInsertions)
 				addQuery(query);
 		}
 	}
@@ -353,10 +356,10 @@ public class QueueTableModel extends AbstractTableModel implements Observer {
 			if (!query.isPersistent())
 				return;
 
-			if ((query.getQueryType() == 1) && isForInsertions)
+			if ((query.getQueryType() == DOWNLOAD) && isForInsertions)
 				return;
 
-			if ((query.getQueryType() == 2) && !isForInsertions)
+			if ((query.getQueryType() == UPLOAD) && !isForInsertions)
 				return;
 
 			if (queueManager.isInTheQueues(query)) { // then it's an adding

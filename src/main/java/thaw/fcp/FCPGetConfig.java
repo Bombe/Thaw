@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.OTHER;
+
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,8 +42,8 @@ public class FCPGetConfig extends Observable implements FCPQuery, Observer {
 		this.queryManager = queryManager;
 	}
 
-	public int getQueryType() {
-		return 0;
+	public Type getQueryType() {
+		return OTHER;
 	}
 
 	public boolean start() {

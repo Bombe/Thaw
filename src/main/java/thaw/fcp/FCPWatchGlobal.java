@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.OTHER;
+
 public class FCPWatchGlobal implements FCPQuery {
 
 	private boolean watch;
@@ -32,8 +34,8 @@ public class FCPWatchGlobal implements FCPQuery {
 		return true;
 	}
 
-	public int getQueryType() {
-		return 0;
+	public Type getQueryType() {
+		return OTHER;
 	}
 
 }

@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.OTHER;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -218,7 +220,7 @@ public class FCPTestDDA extends Observable implements FCPQuery, Observer {
 		return nodeCanWrite;
 	}
 
-	public int getQueryType() {
-		return 0;
+	public Type getQueryType() {
+		return OTHER;
 	}
 }

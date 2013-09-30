@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.DOWNLOAD;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -1154,8 +1156,8 @@ public class FCPClientGet extends FCPTransferQuery implements Observer {
 		notifyChange();
 	}
 
-	public int getQueryType() {
-		return 1;
+	public Type getQueryType() {
+		return DOWNLOAD;
 	}
 
 	public String getStatus() {

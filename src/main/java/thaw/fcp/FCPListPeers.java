@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.OTHER;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -73,7 +75,7 @@ public class FCPListPeers extends Observable implements FCPQuery, Observer {
 		return peers;
 	}
 
-	public int getQueryType() {
-		return 0;
+	public Type getQueryType() {
+		return OTHER;
 	}
 }

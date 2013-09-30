@@ -1,6 +1,7 @@
 package thaw.fcp;
 
 import static java.util.Collections.unmodifiableCollection;
+import static thaw.fcp.FCPQuery.Type.OTHER;
 
 import java.util.Collection;
 import java.util.Observable;
@@ -162,8 +163,8 @@ public class FCPClientHello implements FCPQuery, Observer {
 		return true;
 	}
 
-	public int getQueryType() {
-		return 0;
+	public Type getQueryType() {
+		return OTHER;
 	}
 
 	public String getConnectionId() {

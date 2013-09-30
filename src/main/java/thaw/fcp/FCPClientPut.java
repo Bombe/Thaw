@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.UPLOAD;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -947,8 +949,8 @@ public class FCPClientPut extends FCPTransferQuery implements Observer {
 
 	}
 
-	public int getQueryType() {
-		return 2;
+	public Type getQueryType() {
+		return UPLOAD;
 	}
 
 	public boolean pause(final FCPQueueManager queueManager) {

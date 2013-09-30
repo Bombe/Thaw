@@ -1,5 +1,7 @@
 package thaw.plugins;
 
+import static thaw.fcp.FCPQuery.Type.DOWNLOAD;
+
 import java.awt.GridLayout;
 import java.util.Iterator;
 import java.util.Observable;
@@ -127,7 +129,7 @@ public class Restarter implements Observer, ThawRunnable, Plugin {
 					/* We count how many are really running
 					   and we write down those which are failed */
 					for (final FCPTransferQuery query : runningQueue) {
-						if (query.getQueryType() != 1)
+						if (query.getQueryType() != DOWNLOAD)
 							continue;
 
 						if (query.isRunning() && !query.isFinished()) {
@@ -150,7 +152,7 @@ public class Restarter implements Observer, ThawRunnable, Plugin {
 						while (it.hasNext()) {
 							final FCPTransferQuery query = (FCPTransferQuery) it.next();
 
-							if (query.getQueryType() != 1)
+							if (query.getQueryType() != DOWNLOAD)
 								continue;
 
 							if (query.isFinished() && !query.isSuccessful()
@@ -172,7 +174,7 @@ public class Restarter implements Observer, ThawRunnable, Plugin {
 
 					/* We restart them all */
 					for (final FCPTransferQuery query : runningQueue) {
-						if ((query.getQueryType() == 1) && query.isFinished()
+						if ((query.getQueryType() == DOWNLOAD) && query.isFinished()
 								&& !query.isSuccessful()
 								&& (restartFatals || !query.isFatallyFailed()))
 							restartQuery(query);

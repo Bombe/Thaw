@@ -1,5 +1,8 @@
 package thaw.plugins;
 
+import static thaw.fcp.FCPQuery.Type.DOWNLOAD;
+import static thaw.fcp.FCPQuery.Type.UPLOAD;
+
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -188,10 +191,10 @@ public class QueueWatcher extends ToolbarModifier implements Plugin, PropertyCha
 
 			final FCPTransferQuery query = (FCPTransferQuery) it.next();
 
-			if (query.getQueryType() == 1)
+			if (query.getQueryType() == DOWNLOAD)
 				queuePanels[0].addToTable(query);
 
-			if (query.getQueryType() == 2)
+			if (query.getQueryType() == UPLOAD)
 				queuePanels[1].addToTable(query);
 
 		}

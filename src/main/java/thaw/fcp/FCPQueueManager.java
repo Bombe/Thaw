@@ -1,5 +1,8 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.DOWNLOAD;
+import static thaw.fcp.FCPQuery.Type.UPLOAD;
+
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Observable;
@@ -372,11 +375,11 @@ public class FCPQueueManager extends Observable implements ThawRunnable, Observe
 			for (final Iterator it = runningQueries.iterator(); it.hasNext(); ) {
 				final FCPTransferQuery query = (FCPTransferQuery) it.next();
 
-				if ((query.getQueryType() == 1 /* Download */)
+				if ((query.getQueryType() == DOWNLOAD)
 						&& !query.isFinished())
 					runningDownloads++;
 
-				if ((query.getQueryType() == 2 /* Insertion */)
+				if ((query.getQueryType() == UPLOAD)
 						&& !query.isFinished())
 					runningInsertions++;
 			}
@@ -398,9 +401,9 @@ public class FCPQueueManager extends Observable implements ThawRunnable, Observe
 
 					final FCPTransferQuery query = (FCPTransferQuery) it.next();
 
-					if (((query.getQueryType() == 1)
+					if (((query.getQueryType() == DOWNLOAD)
 							&& ((maxDownloads <= -1) || (runningDownloads < maxDownloads)))
-							|| ((query.getQueryType() == 2)
+							|| ((query.getQueryType() == UPLOAD)
 							&& ((maxInsertions <= -1) || (runningInsertions < maxInsertions)))) {
 
 						Logger.debug(this, "Scheduler : Moving a query from pendingQueue to the runningQueue");
@@ -410,10 +413,10 @@ public class FCPQueueManager extends Observable implements ThawRunnable, Observe
 
 						this.addQueryToTheRunningQueue(query);
 
-						if (query.getQueryType() == 1)
+						if (query.getQueryType() == DOWNLOAD)
 							runningDownloads++;
 
-						if (query.getQueryType() == 2)
+						if (query.getQueryType() == UPLOAD)
 							runningInsertions++;
 
 						try {

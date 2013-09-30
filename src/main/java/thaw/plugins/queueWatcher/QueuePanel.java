@@ -1,5 +1,8 @@
 package thaw.plugins.queueWatcher;
 
+import static thaw.fcp.FCPQuery.Type.DOWNLOAD;
+import static thaw.fcp.FCPQuery.Type.UPLOAD;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -285,8 +288,8 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 	}
 
 	public void addToTable(final FCPTransferQuery query) {
-		if ((insertionQueue && (query.getQueryType() == 2))
-				|| (!insertionQueue && (query.getQueryType() == 1))) {
+		if ((insertionQueue && (query.getQueryType() == UPLOAD))
+				|| (!insertionQueue && (query.getQueryType() == DOWNLOAD))) {
 			tableModel.addQuery(query);
 		}
 	}

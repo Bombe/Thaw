@@ -1,5 +1,7 @@
 package thaw.plugins;
 
+import static thaw.fcp.FCPQuery.Type.UPLOAD;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -235,7 +237,7 @@ public class TrayIcon implements Plugin,
 
 		ImageIcon icon;
 
-		if (q.getQueryType() == 2)
+		if (q.getQueryType() == UPLOAD)
 			icon = IconBox.minInsertions;
 		else
 			icon = IconBox.minDownloads;

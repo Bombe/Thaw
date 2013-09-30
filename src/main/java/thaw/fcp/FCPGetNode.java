@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.OTHER;
+
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -69,8 +71,8 @@ public class FCPGetNode extends Observable implements FCPQuery, Observer {
 		return true;
 	}
 
-	public int getQueryType() {
-		return 0;
+	public Type getQueryType() {
+		return OTHER;
 	}
 
 	public void update(Observable o, Object param) {

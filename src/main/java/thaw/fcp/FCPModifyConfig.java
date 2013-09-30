@@ -1,5 +1,7 @@
 package thaw.fcp;
 
+import static thaw.fcp.FCPQuery.Type.OTHER;
+
 public class FCPModifyConfig implements FCPQuery {
 
 	private String name;
@@ -14,8 +16,8 @@ public class FCPModifyConfig implements FCPQuery {
 		this.queryManager = queryManager;
 	}
 
-	public int getQueryType() {
-		return 0;
+	public Type getQueryType() {
+		return OTHER;
 	}
 
 	public boolean start() {
