@@ -74,8 +74,7 @@ public class Config {
 		String currentValue = getValue(key);
 
 		if ((currentValue != null && !currentValue.equals(value))
-				|| (currentValue == null && value != null)
-				|| (currentValue != null && value == null)) {
+				|| (currentValue == null && value != null)) {
 
 			/* we get the plugin list to reload */
 			List<Plugin> pluginList = listeners.get(key);
@@ -157,11 +156,6 @@ public class Config {
 	 * @return true if success, else false.
 	 */
 	public boolean loadConfig() {
-		if (configFile == null) {
-			Logger.error(this, "loadConfig(): No file specified !");
-			return false;
-		}
-
 		if (!configFile.exists() || !configFile.canRead()) {
 			Logger.notice(this, "Unable to read config file '" + configFile.getPath() + "'");
 			return false;
@@ -200,7 +194,7 @@ public class Config {
 			Element paramEl;
 			final Node paramNode = params.item(i);
 
-			if ((paramNode != null) && (paramNode.getNodeType() == Node.ELEMENT_NODE)) {
+			if (paramNode.getNodeType() == Node.ELEMENT_NODE) {
 				paramEl = (Element) paramNode;
 				parameters.put(paramEl.getAttribute("name"), paramEl.getAttribute("value"));
 			}
@@ -213,7 +207,7 @@ public class Config {
 			Element pluginEl;
 			final Node pluginNode = plugins.item(i);
 
-			if ((pluginNode != null) && (pluginNode.getNodeType() == Node.ELEMENT_NODE)) {
+			if (pluginNode.getNodeType() == Node.ELEMENT_NODE) {
 				pluginEl = (Element) pluginNode;
 				pluginNames.add(pluginEl.getAttribute("name"));
 			}
@@ -229,11 +223,6 @@ public class Config {
 	 */
 	public boolean saveConfig() {
 		StreamResult configOut;
-
-		if (configFile == null) {
-			Logger.error(this, "saveConfig(): No file specified !");
-			return false;
-		}
 
 		try {
 			if ((!configFile.exists() && !configFile.createNewFile())
