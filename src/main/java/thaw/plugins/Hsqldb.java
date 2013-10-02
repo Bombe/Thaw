@@ -3,6 +3,7 @@ package thaw.plugins;
 import javax.swing.ImageIcon;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.regex.Matcher;
@@ -20,8 +21,6 @@ public class Hsqldb extends LibraryPlugin {
 	private Core core;
 
 	public final Object dbLock;
-
-	private Connection connection;
 
 	public Hsqldb() {
 		dbLock = new Object();
@@ -49,81 +48,59 @@ public class Hsqldb extends LibraryPlugin {
 			core.getConfig().setValue("hsqldb.url", "jdbc:hsqldb:file:thaw.db;shutdown=true");
 
 		try {
-			connect();
-		} catch (final SQLException e) {
-			Logger.error(this, "SQLException while connecting to the database '" + core.getConfig().getValue("hsqldb.url") + "'");
-			e.printStackTrace();
-		}
-	}
-
-	public void connect() throws SQLException {
-		if (core.getConfig().getValue("hsqldb.url") == null)
-			core.getConfig().setValue("hsqldb.url", "jdbc:hsqldb:file:thaw.db");
-
-		if (connection != null)
-			disconnect();
-
-		connection = DriverManager.getConnection(core.getConfig().getValue("hsqldb.url"),
-				"sa", "");
-
-		try {
 			executeQuery("SET LOGSIZE 50;");
 		} catch (final SQLException e) {
 			/* Newer versions of HSQLDB have an alternate log size property */
-			executeQuery("SET FILES LOG SIZE 50;");
+			try {
+				executeQuery("SET FILES LOG SIZE 50;");
+			} catch (SQLException e1) {
+				e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+			}
 		}
 
 		try {
 			executeQuery("SET CHECKPOINT DEFRAG 50;");
 		} catch (final SQLException e) {
 			/* Newer versions of HSQLDB use a different property */
-			executeQuery("SET FILES DEFRAG 50;");
+			try {
+				executeQuery("SET FILES DEFRAG 50;");
+			} catch (SQLException e1) {
+				e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+			}
 		}
 
-		executeQuery("SET PROPERTY \"hsqldb.nio_data_file\" FALSE");
+		try {
+			executeQuery("SET PROPERTY \"hsqldb.nio_data_file\" FALSE");
+		} catch (SQLException e) {
+			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+		}
 	}
 
-	public void disconnect() throws SQLException {
-		synchronized (dbLock) {
-			connection.commit();
-			executeQuery("SHUTDOWN");
-			connection.close();
-		}
+	@Override
+	public void realStop() {
+		stop();
+	}
+
+	public Connection getConnection() throws SQLException {
+		if (core.getConfig().getValue("hsqldb.url") == null)
+			core.getConfig().setValue("hsqldb.url", "jdbc:hsqldb:file:thaw.db");
+
+		Connection connection = connection = DriverManager.getConnection(core.getConfig().getValue("hsqldb.url"), "sa", "");
+
+		return connection;
 	}
 
 	public void stop() {
 		/* \_o< */
-	}
-
-	public void realStop() {
-		Logger.info(this, "Disconnecting from the database ...");
-
 		try {
-			disconnect();
-		} catch (final SQLException e) {
-			Logger.error(this, "SQLException while closing connection !");
-			e.printStackTrace();
+			executeQuery("SHUTDOWN");
+		} catch (SQLException sqle1) {
+			Logger.error(this, "Could not shutdown database! " + sqle1.toString());
 		}
-
-		Logger.info(this, "Done.");
 	}
 
 	public String getNameForUser() {
 		return I18n.getMessage("thaw.plugin.hsqldb.database");
-	}
-
-	public Connection getConnection() {
-		return connection;
-	}
-
-	public void executeQuery(final String query) throws SQLException {
-		synchronized (dbLock) {
-			final Statement stmt = connection.createStatement();
-
-			stmt.execute(query);
-
-			stmt.close();
-		}
 	}
 
 	public ImageIcon getIcon() {
@@ -172,4 +149,96 @@ public class Hsqldb extends LibraryPlugin {
 			return null;
 		}
 	}
+
+	/**
+	 * Executes the given query.
+	 *
+	 * @param query
+	 * 		The query to execute
+	 * @throws SQLException
+	 * 		if the query can not be executed
+	 */
+	public void executeQuery(String query) throws SQLException {
+		Statement statement = null;
+		Connection connection = null;
+		try {
+			connection = getConnection();
+			statement = connection.createStatement();
+			statement.execute(query);
+		} finally {
+			if (statement != null) {
+				statement.close();
+			}
+			if (connection != null) {
+				connection.close();
+			}
+		}
+	}
+
+	/**
+	 * Executes the given query, allowing to set parameters on the {@link
+	 * PreparedStatement} generated for it.
+	 *
+	 * @param query
+	 * 		The query to execute
+	 * @param statementProcessor
+	 * 		The prepared statement processor
+	 * @return The number of updated rows
+	 * @throws SQLException
+	 * 		if the query can not be executed
+	 */
+	public int executeUpdate(String query, StatementProcessor statementProcessor) throws SQLException {
+		Connection connection = null;
+		try {
+			connection = getConnection();
+			return executeUpdate(connection, query, statementProcessor);
+		} finally {
+			if (connection != null) {
+				connection.close();
+			}
+		}
+	}
+
+	/**
+	 * Executes the given query, allowing to set parameters on the {@link
+	 * PreparedStatement} generated for it.
+	 *
+	 * @param connection
+	 * 		The connection on which to run the query
+	 * @param query
+	 * 		The query to execute
+	 * @param statementProcessor
+	 * 		The prepared statement processor
+	 * @return The number of updated rows
+	 * @throws SQLException
+	 * 		if the query can not be executed
+	 */
+	public int executeUpdate(Connection connection, String query, StatementProcessor statementProcessor) throws SQLException {
+		PreparedStatement preparedStatement = null;
+		try {
+			preparedStatement = connection.prepareStatement(query);
+			statementProcessor.processStatement(preparedStatement);
+			return preparedStatement.executeUpdate();
+		} finally {
+			if (preparedStatement != null) {
+				preparedStatement.close();
+			}
+		}
+	}
+
+	/** Interface for a {@link PreparedStatement} processor. */
+	public interface StatementProcessor {
+
+		/**
+		 * Sets parameters on the given prepared statement before execution.
+		 *
+		 * @param preparedStatement
+		 * 		The prepared statement to set parameters on
+		 * @throws SQLException
+		 * 		if an SQL error occurs
+		 */
+		public void processStatement(PreparedStatement preparedStatement) throws SQLException;
+
+	}
+
 }

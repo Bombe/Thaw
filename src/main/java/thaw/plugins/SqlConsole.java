@@ -238,12 +238,6 @@ public class SqlConsole implements Plugin, ActionListener {
 				return;
 			}
 
-			if ("reconnect".equals(cmd.toLowerCase())) {
-				hsqldb.connect();
-				addToConsole("Ok\n");
-				return;
-			}
-
 			synchronized (hsqldb.dbLock) {
 				final Statement st = hsqldb.getConnection().createStatement();
 
