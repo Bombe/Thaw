@@ -193,9 +193,7 @@ public class Hsqldb extends LibraryPlugin {
 			connection = getConnection();
 			return executeUpdate(connection, query, statementProcessor);
 		} finally {
-			if (connection != null) {
-				connection.close();
-			}
+			close(connection);
 		}
 	}
 
