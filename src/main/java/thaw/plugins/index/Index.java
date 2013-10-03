@@ -9,6 +9,7 @@ import java.sql.Types;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -1114,7 +1115,7 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	////// Comments black list //////
-	public Vector getCommentBlacklistedRev() {
+	public List<Integer> getCommentBlacklistedRev() {
 		Vector v = new Vector();
 
 		try {

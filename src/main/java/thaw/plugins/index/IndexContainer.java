@@ -1,7 +1,7 @@
 package thaw.plugins.index;
 
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 
 /** This is what you need to implements to use IndexParser. */
 public interface IndexContainer extends FileAndLinkList {
@@ -40,7 +40,7 @@ public interface IndexContainer extends FileAndLinkList {
 	public String getCommentPrivateKey();
 
 	/** @return Vector of Integer */
-	public Vector getCommentBlacklistedRev();
+	public List<Integer> getCommentBlacklistedRev();
 
 	/** delete all the files / links / comment blacklisted revs / comments keys */
 	public void purgeIndex();
