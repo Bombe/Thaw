@@ -7,6 +7,7 @@ import static thaw.plugins.Hsqldb.close;
 import static thaw.plugins.Hsqldb.integerResultCreator;
 import static thaw.plugins.Hsqldb.queue;
 import static thaw.plugins.Hsqldb.setBoolean;
+import static thaw.plugins.Hsqldb.setDate;
 import static thaw.plugins.Hsqldb.setInt;
 import static thaw.plugins.Hsqldb.setNull;
 import static thaw.plugins.Hsqldb.setString;
@@ -18,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -812,21 +812,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 				if (put.isSuccessful()) {
 					try {
-						synchronized (db.dbLock) {
-							PreparedStatement st;
-
-							Calendar cal = Calendar.getInstance();
-							Date dateSql = new Date(cal.getTime().getTime());
-
-							st = db.getConnection().prepareStatement("UPDATE indexes " +
-									"SET insertionDate = ? " +
-									"WHERE id = ?");
-							st.setDate(1, dateSql);
-							st.setInt(2, id);
-
-							st.execute();
-							st.close();
-						}
+						db.executeUpdate("UPDATE indexes SET insertionDate = ? WHERE id = ?", queue(setDate(1, new Date(new java.util.Date().getTime())), setInt(2, id)));
 					} catch (SQLException e) {
 						Logger.error(this, "Error while updating the insertion date : " + e.toString());
 					}
