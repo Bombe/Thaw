@@ -407,6 +407,25 @@ public class Hsqldb extends LibraryPlugin {
 
 	/**
 	 * Returns a statement processor that will set the parameter at the given index
+	 * to the given long value.
+	 *
+	 * @param index
+	 * 		The index of the parameter to set
+	 * @param value
+	 * 		The value to set
+	 * @return A statement processor setting the long value
+	 */
+	public static StatementProcessor setLong(final int index, final long value) {
+		return new StatementProcessor() {
+			@Override
+			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setLong(index, value);
+			}
+		};
+	}
+
+	/**
+	 * Returns a statement processor that will set the parameter at the given index
 	 * to the given boolean value.
 	 *
 	 * @param index
