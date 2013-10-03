@@ -1019,36 +1019,15 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public boolean addLink(String key, String category) {
+		if (key == null) /* it was the beginning of the index */
+			return true;
+
+		key = key.trim();
+		boolean blackListed = (BlackList.isBlackListed(db, key) >= 0);
+
 		try {
-			if (key == null) /* it was the beginning of the index */
-				return true;
-
-			key = key.trim();
-
-			boolean blackListed = (BlackList.isBlackListed(db, key) >= 0);
-
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("INSERT INTO links " +
-						"(publicKey, mark, comment, " +
-						"indexParent, indexTarget, blackListed, category) " +
-						"VALUES (?, 0, ?, ?, NULL, ?, ?)");
-				st.setString(1, key);
-				st.setString(2, "No comment"); /* comment not used at the moment */
-				st.setInt(3, id);
-				st.setBoolean(4, blackListed);
-
-				if (category != null)
-					st.setInt(5, getCategoryId(category));
-				else
-					st.setNull(5, INTEGER);
-
-				st.execute();
-				st.close();
-
-				return true;
-			}
+			db.executeUpdate("INSERT INTO links (publicKey, mark, comment, indexParent, indexTarget, blackListed, category) VALUES (?, 0, ?, ?, NULL, ?, ?)", queue(setString(1, key), setString(2, "No comment"), setInt(3, id), setBoolean(4, blackListed), (category != null) ? setInt(5, getCategoryId(category)) : setNull(5, INTEGER)));
+			return true;
 		} catch (SQLException e) {
 			Logger.error(this, "Error while adding link to index '" + toString() + "' : " + e.toString());
 		}
