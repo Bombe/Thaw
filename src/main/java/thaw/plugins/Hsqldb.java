@@ -241,4 +241,80 @@ public class Hsqldb extends LibraryPlugin {
 
 	}
 
+	/**
+	 * Returns a statement processor that runs all the given statement processors
+	 * in the order they are given.
+	 *
+	 * @param statementProcessors
+	 * 		The statement processors to run
+	 * @return A statement processor that runs all given statement processors
+	 */
+	public static StatementProcessor queue(final StatementProcessor... statementProcessors) {
+		return new StatementProcessor() {
+			@Override
+			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+				for (StatementProcessor statementProcessor : statementProcessors) {
+					statementProcessor.processStatement(preparedStatement);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a statement processor that will set the parameter at the given index
+	 * to a NULL value of the given type.
+	 *
+	 * @param index
+	 * 		The index of the parameter to set
+	 * @param type
+	 * 		The type of the NULL value
+	 * @return A statement processor setting a NULL value
+	 */
+	public static StatementProcessor setNull(final int index, final int type) {
+		return new StatementProcessor() {
+			@Override
+			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setNull(index, type);
+			}
+		};
+	}
+
+	/**
+	 * Returns a statement processor that will set the parameter at the given index
+	 * to the given string value.
+	 *
+	 * @param index
+	 * 		The index of the parameter to set
+	 * @param value
+	 * 		The value to set
+	 * @return A statement processor setting the string value
+	 */
+	public static StatementProcessor setString(final int index, final String value) {
+		return new StatementProcessor() {
+			@Override
+			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setString(index, value);
+			}
+		};
+	}
+
+	/**
+	 * Returns a statement processor that will set the parameter at the given index
+	 * to the given integer value.
+	 *
+	 * @param index
+	 * 		The index of the parameter to set
+	 * @param value
+	 * 		The value to set
+	 * @return A statement processor setting the integer value
+	 */
+	public static StatementProcessor setInt(final int index, final int value) {
+		return new StatementProcessor() {
+			@Override
+			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setInt(index, value);
+			}
+		};
+	}
+
 }

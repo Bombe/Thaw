@@ -32,6 +32,7 @@ import thaw.fcp.FCPTransferQuery;
 import thaw.fcp.FreenetURIHelper;
 import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.Hsqldb.StatementProcessor;
 import thaw.plugins.IndexBrowser;
 import thaw.plugins.TrayIcon;
 import thaw.plugins.signatures.Identity;
@@ -155,53 +156,61 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public void setParent(final int parentId) {
-		synchronized (db.dbLock) {
+		Logger.info(this, "setParent(" + Integer.toString(parentId) + ")");
+		Connection connection = null;
+		try {
+			connection = db.getConnection();
+			connection.setAutoCommit(false);
+			db.executeUpdate(connection, "UPDATE indexes SET parent = ? WHERE id = ?", new StatementProcessor() {
+				@Override
+				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+					if (parentId >= 0) {
+						preparedStatement.setInt(1, parentId);
+					} else {
+						preparedStatement.setNull(1, Types.INTEGER);
+					}
+					preparedStatement.setInt(2, id);
+				}
+			});
+			if (parentId >= 0) {
+				db.executeUpdate(connection, "INSERT INTO indexParents (indexId, folderId)  SELECT ?, parentId FROM folderParents    WHERE folderId = ?", new StatementProcessor() {
+					@Override
+					public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+						preparedStatement.setInt(1, id);
+						preparedStatement.setInt(2, parentId);
+					}
+				});
+			} /* else this parent has no parent ... :) */
 
-			Logger.info(this, "setParent(" + Integer.toString(parentId) + ")");
-			try {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("UPDATE indexes " +
-						"SET parent = ? " +
-						"WHERE id = ?");
-				if (parentId >= 0)
-					st.setInt(1, parentId);
-				else
-					st.setNull(1, Types.INTEGER);
-
-				st.setInt(2, id);
-
-				st.execute();
-
-				st.close();
-
-				if (parentId >= 0) {
-					st = db.getConnection().prepareStatement("INSERT INTO indexParents (indexId, folderId) " +
-							" SELECT ?, parentId FROM folderParents " +
-							"   WHERE folderId = ?");
-					st.setInt(1, id);
-					st.setInt(2, parentId);
-
-					st.execute();
-					st.close();
-				} /* else this parent has no parent ... :) */
-
-				st = db.getConnection().prepareStatement("INSERT INTO indexParents (indexId, folderId) " +
-						"VALUES (?, ?)");
-
-				st.setInt(1, id);
-				if (parentId >= 0)
-					st.setInt(2, parentId);
-				else
-					st.setNull(2, Types.INTEGER);
-
-				st.execute();
-
-				st.close();
-			} catch (SQLException e) {
-				Logger.error(this, "Error while changing parent : " + e.toString());
+			db.executeUpdate(connection, "INSERT INTO indexParents (indexId, folderId) VALUES (?, ?)", new StatementProcessor() {
+				@Override
+				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+					preparedStatement.setInt(1, id);
+					if (parentId >= 0) {
+						preparedStatement.setInt(2, parentId);
+					} else {
+						preparedStatement.setNull(2, Types.INTEGER);
+					}
+				}
+			});
+			connection.commit();
+		} catch (SQLException e) {
+			if (connection != null) {
+				try {
+					connection.rollback();
+				} catch (SQLException sqle2) {
+					Logger.error(this, "Error while rolling back: " + sqle2.toString());
+				}
 			}
-
+			Logger.error(this, "Error while changing parent : " + e.toString());
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException sqle1) {
+					Logger.warning(this, "Could not close database connection! " + sqle1.toString());
+				}
+			}
 		}
 	}
 
@@ -211,20 +220,15 @@ public class Index extends Observable implements MutableTreeNode,
 
 		((IndexFolder) parentNode).remove(this);
 
-		synchronized (db.dbLock) {
-
-			PreparedStatement st;
-
-			try {
-				st = db.getConnection().prepareStatement("DELETE FROM indexParents " +
-						"WHERE indexId = ?");
-				st.setInt(1, id);
-				st.execute();
-				st.close();
-
-			} catch (SQLException e) {
-				Logger.error(this, "Error while removing the index: " + e.toString());
-			}
+		try {
+			db.executeUpdate("DELETE FROM indexParents WHERE indexId = ?", new StatementProcessor() {
+				@Override
+				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+					preparedStatement.setInt(1, id);
+				}
+			});
+		} catch (SQLException e) {
+			Logger.error(this, "Error while removing the index: " + e.toString());
 		}
 	}
 
@@ -253,24 +257,17 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public void rename(final String name) {
-		synchronized (db.dbLock) {
-
-			try {
-				final Connection c = db.getConnection();
-				PreparedStatement st;
-
-				st = c.prepareStatement("UPDATE indexes SET displayName = ? WHERE id = ?");
-				st.setString(1, name);
-				st.setInt(2, id);
-				st.execute();
-
-				st.close();
-
-			} catch (final SQLException e) {
-				Logger.error(this, "Unable to rename the index in '" + name + "', because: " + e.toString());
-			}
+		try {
+			db.executeUpdate("UPDATE indexes SET displayName = ? WHERE id = ?", new StatementProcessor() {
+				@Override
+				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+					preparedStatement.setString(1, name);
+					preparedStatement.setInt(2, id);
+				}
+			});
+		} catch (final SQLException e) {
+			Logger.error(this, "Unable to rename the index in '" + name + "', because: " + e.toString());
 		}
-
 	}
 
 	public void delete() {
