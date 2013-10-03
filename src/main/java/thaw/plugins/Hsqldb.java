@@ -2,6 +2,7 @@ package thaw.plugins;
 
 import javax.swing.ImageIcon;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -419,6 +420,25 @@ public class Hsqldb extends LibraryPlugin {
 			@Override
 			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
 				preparedStatement.setBoolean(index, value);
+			}
+		};
+	}
+
+	/**
+	 * Returns a statement processor that will set the parameter at the given index
+	 * to the given date value.
+	 *
+	 * @param index
+	 * 		The index of the parameter to set
+	 * @param value
+	 * 		The value to set
+	 * @return A statement processor setting the date value
+	 */
+	public static StatementProcessor setDate(final int index, final Date value) {
+		return new StatementProcessor() {
+			@Override
+			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setDate(index, value);
 			}
 		};
 	}
