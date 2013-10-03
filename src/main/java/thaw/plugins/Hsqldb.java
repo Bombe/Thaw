@@ -218,8 +218,7 @@ public class Hsqldb extends LibraryPlugin {
 			statementProcessor.processStatement(preparedStatement);
 			return preparedStatement.executeUpdate();
 		} finally {
-			if (preparedStatement != null) {
-				preparedStatement.close();
+			close(preparedStatement);
 			}
 		}
 	}
