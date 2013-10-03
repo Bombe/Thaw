@@ -3,7 +3,9 @@ package thaw.plugins.index;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import thaw.core.Logger;
 import thaw.plugins.Hsqldb;
@@ -65,12 +67,12 @@ public class SearchResult implements FileAndLinkList {
 		}
 	}
 
-	public File[] getFileList(String col, boolean asc) {
+	public List<File> getFileList(String col, boolean asc) {
 
 		if (col == null)
 			col = "filename";
 
-		LinkedList v = new LinkedList();
+		List<File> v = new ArrayList<File>();
 
 		synchronized (db.dbLock) {
 			try {
@@ -102,7 +104,7 @@ public class SearchResult implements FileAndLinkList {
 			}
 		}
 
-		return (File[]) v.toArray(new File[0]);
+		return v;
 	}
 
 	public Link[] getLinkList(String col, boolean asc) {

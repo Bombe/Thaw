@@ -1,5 +1,7 @@
 package thaw.plugins.index;
 
+import static java.util.Collections.emptyList;
+import static thaw.plugins.Hsqldb.setInt;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -33,6 +35,8 @@ import thaw.fcp.FCPTransferQuery;
 import thaw.fcp.FreenetURIHelper;
 import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
+import thaw.plugins.Hsqldb.ResultCreator;
+import thaw.plugins.Hsqldb.ResultExtractor;
 import thaw.plugins.Hsqldb.StatementProcessor;
 import thaw.plugins.IndexBrowser;
 import thaw.plugins.TrayIcon;
@@ -1162,53 +1166,38 @@ public class Index extends Observable implements MutableTreeNode,
 
 	////// FILE LIST ////////
 
-	public File[] getFileList() {
+	public List<File> getFileList() {
 		return getFileList(null, false);
 	}
 
-	public File[] getFileList(String columnToSort, boolean asc) {
+	public List<File> getFileList(String columnToSort, boolean asc) {
 		synchronized (db.dbLock) {
 
 			try {
-				LinkedList files = new LinkedList();
+				String query = "SELECT id, filename, publicKey, localPath, mime, size " +
+						"FROM files WHERE indexParent = ?" + ((columnToSort != null) ? " ORDER by " + columnToSort + (asc ? "" : " DESC") : "");
+				ResultExtractor<File> fileExtractor = new ResultExtractor<File>(new ResultCreator<File>() {
+					@Override
+					public File createResult(ResultSet resultSet) throws SQLException {
+						int file_id = resultSet.getInt("id");
+						String filename = resultSet.getString("filename");
+						String file_publicKey = resultSet.getString("publicKey");
+						String lp = resultSet.getString("localPath");
+						java.io.File localPath = (lp == null ? null : new java.io.File(lp));
+						String mime = resultSet.getString("mime");
+						long size = resultSet.getLong("size");
 
-				PreparedStatement st;
-
-				if (columnToSort == null) {
-					st = db.getConnection().prepareStatement("SELECT id, filename, publicKey, localPath, mime, size " +
-							"FROM files WHERE indexParent = ?");
-				} else {
-					st = db.getConnection().prepareStatement("SELECT id, filename, publicKey, localPath, mime, size " +
-							"FROM files WHERE indexParent = ? ORDER by " +
-							columnToSort + (asc == true ? "" : " DESC"));
-				}
-
-				st.setInt(1, id);
-
-				ResultSet rs = st.executeQuery();
-
-				while (rs.next()) {
-					int file_id = rs.getInt("id");
-					String filename = rs.getString("filename");
-					String file_publicKey = rs.getString("publicKey");
-					String lp = rs.getString("localPath");
-					java.io.File localPath = (lp == null ? null : new java.io.File(lp));
-					String mime = rs.getString("mime");
-					long size = rs.getLong("size");
-
-					File file = new File(db, file_id, filename, file_publicKey, localPath, mime, size, id, this);
-					files.add(file);
-				}
-
-				st.close();
-
-				return (File[]) files.toArray(new File[0]);
+						return new File(db, file_id, filename, file_publicKey, localPath, mime, size, id, Index.this);
+					}
+				});
+				db.executeQuery(query, setInt(1, id), fileExtractor);
+				return fileExtractor.getResults();
 
 			} catch (SQLException e) {
 				Logger.error(this, "SQLException while getting file list: " + e.toString());
 			}
 		}
-		return null;
+		return emptyList();
 	}
 
 	public boolean addFile(String key, long size, String mime) {

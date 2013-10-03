@@ -7,7 +7,7 @@ import java.util.List;
 public interface IndexContainer extends FileAndLinkList {
 
 	/** @return a vector of FileContainer */
-	public File[] getFileList();
+	public List<File> getFileList();
 
 	/** @return a vector of LinkContainer */
 	public Link[] getLinkList();

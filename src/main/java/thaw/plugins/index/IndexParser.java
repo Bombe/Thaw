@@ -11,6 +11,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TimeZone;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -206,11 +207,9 @@ public class IndexParser {
 	private Element getXMLFileList(final Document xmlDoc) {
 		final Element filesEl = xmlDoc.createElement("files");
 
-		FileContainer[] files = index.getFileList();
+		List<thaw.plugins.index.File> files = index.getFileList();
 
-		for (int i = 0; i < files.length; i++) {
-
-			FileContainer file = files[i];
+		for (FileContainer file : files) {
 
 			String pubKey = file.getPublicKey();
 

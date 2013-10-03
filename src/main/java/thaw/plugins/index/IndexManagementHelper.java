@@ -23,6 +23,7 @@ import java.sql.Types;
 import java.text.DateFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -2067,16 +2068,16 @@ public class IndexManagementHelper {
 
 					} else if (node instanceof Index) {
 						/* mode lazy bastard => on */
-						File[] files = ((Index) node).getFileList(null, true);
+						List<File> files = ((Index) node).getFileList(null, true);
 
-						nmbFilesInt = files.length;
+						nmbFilesInt = files.size();
 						nmbLinksInt = ((Index) node).getLinkList(null, true).length;
 						insertionDate = ((Index) node).getDate();
 
 						totalSize = 0;
 
-						for (int i = 0; i < files.length; i++) {
-							totalSize += files[i].getSize();
+						for (File file : files) {
+							totalSize += file.getSize();
 						}
 					}
 

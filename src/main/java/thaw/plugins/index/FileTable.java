@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -200,11 +201,11 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 
 	protected Vector getSelectedFiles(final int[] selectedRows) {
 		//final Vector srcList = fileList.getFileList(fileListModel.getColumnNameInDb(columnToSort), sortAsc);
-		final File[] srcList = fileListModel.getFiles();
+		final List<File> srcList = fileListModel.getFiles();
 		final Vector files = new Vector();
 
 		for (int i = 0; i < selectedRows.length; i++) {
-			files.add(srcList[selectedRows[i]]);
+			files.add(srcList.get(selectedRows[i]));
 		}
 
 		return files;
@@ -306,7 +307,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 						null
 				};
 
-		public File[] files = null;
+		public List<File> files = null;
 
 		public FileList fileList;
 
@@ -320,7 +321,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 			refresh();
 		}
 
-		public File[] getFiles() {
+		public List<File> getFiles() {
 			return files;
 		}
 
@@ -328,7 +329,7 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 			if (files == null)
 				return 0;
 
-			return files.length;
+			return files.size();
 		}
 
 		public int getColumnCount() {
@@ -359,10 +360,10 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 			if (files == null)
 				return null;
 
-			if (row >= files.length)
+			if (row >= files.size())
 				return null;
 
-			final File file = files[row];
+			final File file = files.get(row);
 
 			if (column == 0)
 				return file.getFilename();
@@ -437,10 +438,10 @@ public class FileTable implements MouseListener, KeyListener, ActionListener {
 				if (fileListModel.getFiles() == null)
 					continue;
 
-				File[] files = fileListModel.getFiles();
+				List<File> files = fileListModel.getFiles();
 
-				for (int i = 0; i < files.length; i++) {
-					File file = files[i];
+				for (int i = 0; i < files.size(); i++) {
+					File file = files.get(i);
 
 					if (file.getPublicKey() == null
 							|| !FreenetURIHelper.isAKey(file.getPublicKey())) {
