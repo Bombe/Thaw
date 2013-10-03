@@ -908,20 +908,10 @@ public class Index extends Observable implements MutableTreeNode,
 
 	public void addBlackListedRev(int rev) {
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("INSERT into indexCommentBlackList (rev, indexId) VALUES (?, ?)");
-				st.setInt(1, rev);
-				st.setInt(2, id);
-
-				st.execute();
-				st.close();
-			}
+			db.executeUpdate("INSERT into indexCommentBlackList (rev, indexId) VALUES (?, ?)", queue(setInt(1, rev), setInt(2, id)));
 		} catch (SQLException e) {
 			Logger.error(this, "Error while adding element to the blackList: " + e.toString());
 		}
-
 	}
 
 	////// FILE LIST ////////
