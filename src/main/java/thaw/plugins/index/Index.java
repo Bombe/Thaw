@@ -47,7 +47,6 @@ import thaw.plugins.Hsqldb;
 import thaw.plugins.Hsqldb.ResultCreator;
 import thaw.plugins.Hsqldb.ResultExtractor;
 import thaw.plugins.Hsqldb.ResultSetProcessor;
-import thaw.plugins.Hsqldb.StatementProcessor;
 import thaw.plugins.IndexBrowser;
 import thaw.plugins.TrayIcon;
 import thaw.plugins.signatures.Identity;
