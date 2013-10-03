@@ -478,25 +478,19 @@ public class Hsqldb extends LibraryPlugin {
 
 	/**
 	 * {@link ResultSetProcessor} implementation that uses a {@link ResultCreator}
-	 * to convert the result set into a value that can be retrieved after the query
+	 * to convert the result set into values that can be retrieved after the query
 	 * has finished.
-	 * <p/>
-	 * If the query results in more than one result, only the last result can be
-	 * extracted.
 	 *
 	 * @param <T>
-	 * 		The type of the value being extracted
+	 * 		The type of the values being extracted
 	 */
-	public static class ResultExtractor<T> implements ResultSetProcessor {
+	public static class ResultExtractor<T> implements ResultSetProcessor, Iterable<T> {
 
 		/** The result creator. */
 		private final ResultCreator<T> resultCreator;
 
-		/** Whether at least one result was created. */
-		private boolean hasResult;
-
 		/** The created result. */
-		private T result;
+		private List<T> results = new ArrayList<T>();
 
 		/**
 		 * Creates a new result extractor.
@@ -509,28 +503,30 @@ public class Hsqldb extends LibraryPlugin {
 		}
 
 		/**
-		 * Returns whether at least one result was extracted.
+		 * Returns the extracted results.
 		 *
-		 * @return {@code true} if at least one result was extracted, {@code false}
-		 *         otherwise
+		 * @return The extracted results
 		 */
-		public boolean hasResult() {
-			return hasResult;
+		public List<T> getResults() {
+			return results;
 		}
 
-		/**
-		 * Returns the last extracted result.
-		 *
-		 * @return The last extracted result
-		 */
-		public T getResult() {
-			return result;
-		}
+		//
+		// RESULTSETPROCESSOR METHODS
+		//
 
 		@Override
 		public void processResultSet(ResultSet resultSet) throws SQLException {
-			hasResult = true;
-			result = resultCreator.createResult(resultSet);
+			results.add(resultCreator.createResult(resultSet));
+		}
+
+		//
+		// ITERABLE METHODS
+		//
+
+		@Override
+		public Iterator<T> iterator() {
+			return results.iterator();
 		}
 
 	}
