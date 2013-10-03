@@ -10,6 +10,8 @@ import static thaw.plugins.Hsqldb.setBoolean;
 import static thaw.plugins.Hsqldb.setInt;
 import static thaw.plugins.Hsqldb.setNull;
 import static thaw.plugins.Hsqldb.setString;
+import static thaw.plugins.Hsqldb.stringResultCreator;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -427,30 +429,16 @@ public class Index extends Observable implements MutableTreeNode,
 		if (realName != null)
 			return realName;
 
-		synchronized (db.dbLock) {
-			try {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT originalName FROM indexes WHERE id = ?");
-
-				st.setInt(1, id);
-				ResultSet set = st.executeQuery();
-
-				if (set.next()) {
-					realName = set.getString("originalName");
-					st.close();
-					return realName;
-				} else {
-					Logger.error(this, "Unable to get index real name: not found");
-					st.close();
-					return null;
-				}
-			} catch (SQLException e) {
-				Logger.error(this, "Unable to get real index name: " + e.toString());
-			}
+		ResultExtractor<String> realNameExtractor = new ResultExtractor<String>(stringResultCreator(1));
+		try {
+			db.executeQuery("SELECT originalName FROM indexes WHERE id = ?", setInt(1, id), realNameExtractor);
+		} catch (SQLException e) {
+			Logger.error(this, "Unable to get real index name: " + e.toString());
 		}
-
-		return null;
+		if (realNameExtractor.getResults().isEmpty()) {
+			return null;
+		}
+		return realName = realNameExtractor.getResults().get(0);
 	}
 
 	public String toString() {
