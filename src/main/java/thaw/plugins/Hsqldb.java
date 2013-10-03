@@ -227,6 +227,22 @@ public class Hsqldb extends LibraryPlugin {
 	}
 
 	/**
+	 * Closes the given connection.
+	 *
+	 * @param connection
+	 * 		The connection to close (may be {@code null})
+	 */
+	public static void close(Connection connection) {
+		if (connection != null) {
+			try {
+				connection.close();
+			} catch (SQLException sqle1) {
+				/* swallow. TODO - log it? */
+			}
+		}
+	}
+
+	/**
 	 * Returns a statement processor that runs all the given statement processors
 	 * in the order they are given.
 	 *
