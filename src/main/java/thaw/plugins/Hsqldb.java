@@ -7,6 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -451,6 +454,121 @@ public class Hsqldb extends LibraryPlugin {
 		 */
 		public void processResultSet(ResultSet resultSet) throws SQLException;
 
+	}
+
+	/**
+	 * {@link ResultSetProcessor} implementation that uses a {@link ResultCreator}
+	 * to convert the result set into a value that can be retrieved after the query
+	 * has finished.
+	 * <p/>
+	 * If the query results in more than one result, only the last result can be
+	 * extracted.
+	 *
+	 * @param <T>
+	 * 		The type of the value being extracted
+	 */
+	public static class ResultExtractor<T> implements ResultSetProcessor {
+
+		/** The result creator. */
+		private final ResultCreator<T> resultCreator;
+
+		/** Whether at least one result was created. */
+		private boolean hasResult;
+
+		/** The created result. */
+		private T result;
+
+		/**
+		 * Creates a new result extractor.
+		 *
+		 * @param resultCreator
+		 * 		The result creator
+		 */
+		public ResultExtractor(ResultCreator<T> resultCreator) {
+			this.resultCreator = resultCreator;
+		}
+
+		/**
+		 * Returns whether at least one result was extracted.
+		 *
+		 * @return {@code true} if at least one result was extracted, {@code false}
+		 *         otherwise
+		 */
+		public boolean hasResult() {
+			return hasResult;
+		}
+
+		/**
+		 * Returns the last extracted result.
+		 *
+		 * @return The last extracted result
+		 */
+		public T getResult() {
+			return result;
+		}
+
+		@Override
+		public void processResultSet(ResultSet resultSet) throws SQLException {
+			hasResult = true;
+			result = resultCreator.createResult(resultSet);
+		}
+
+	}
+
+	/**
+	 * A result creator is responsible for creating an object from a single row of
+	 * a {@link ResultSet}.
+	 *
+	 * @param <T>
+	 * 		The type of object being created
+	 */
+	public interface ResultCreator<T> {
+
+		/**
+		 * Creates an object from the current row of the given result set.
+		 *
+		 * @param resultSet
+		 * 		The result set to create an object from
+		 * @return The created object
+		 * @throws SQLException
+		 * 		if an SQL error occurs
+		 */
+		public T createResult(ResultSet resultSet) throws SQLException;
+
+	}
+
+	/**
+	 * Returns a {@link ResultCreator} that can create integer values from the
+	 * element at the given index of the result set.
+	 *
+	 * @param index
+	 * 		The index of the element to create an integer from
+	 * @return The integer result creator
+	 */
+	public static ResultCreator<Integer> integerResultCreator(final int index) {
+		return new ResultCreator<Integer>() {
+			@Override
+			public Integer createResult(ResultSet resultSet) throws SQLException {
+				return resultSet.getInt(index);
+			}
+		};
+	}
+
+	/**
+	 * Returns a {@link ResultCreator} that can create {@link String} values from
+	 * the element at the given index of the result set.
+	 *
+	 * @param index
+	 * 		The index of the element to create a string from
+	 * @return The string result creator
+	 */
+	public static ResultCreator<String> stringResultCreator(final int index) {
+		return new ResultCreator<String>() {
+			@Override
+			public String createResult(ResultSet resultSet) throws SQLException {
+				return resultSet.getString(index);
+			}
+		};
 	}
 
 }
