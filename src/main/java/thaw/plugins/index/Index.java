@@ -897,30 +897,13 @@ public class Index extends Observable implements MutableTreeNode,
 
 	////// Comments black list //////
 	public List<Integer> getCommentBlacklistedRev() {
-		Vector v = new Vector();
-
+		ResultExtractor<Integer> commentBlacklistRevisions = new ResultExtractor<Integer>(integerResultCreator(1));
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT rev " +
-						"FROM indexCommentBlackList " +
-						"WHERE indexId = ?");
-				st.setInt(1, id);
-
-				ResultSet set = st.executeQuery();
-
-				while (set.next()) {
-					v.add(new Integer(set.getInt("rev")));
-				}
-
-				st.close();
-			}
+			db.executeQuery("SELECT rev FROM indexCommentBlackList WHERE indexId = ?", setInt(1, id), commentBlacklistRevisions);
 		} catch (SQLException e) {
 			Logger.error(this, "Unable to get comment black list  because: " + e.toString());
 		}
-
-		return v;
+		return commentBlacklistRevisions.getResults();
 	}
 
 	public void addBlackListedRev(int rev) {
