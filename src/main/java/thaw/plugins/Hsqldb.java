@@ -4,6 +4,7 @@ import javax.swing.ImageIcon;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.regex.Matcher;
@@ -219,7 +220,60 @@ public class Hsqldb extends LibraryPlugin {
 			return preparedStatement.executeUpdate();
 		} finally {
 			close(preparedStatement);
+		}
+	}
+
+	/**
+	 * Executes the given query.
+	 *
+	 * @param query
+	 * 		The query to execute
+	 * @param statementProcessor
+	 * 		Processor for the statement
+	 * @param resultSetProcessor
+	 * 		Processor for the result set
+	 * @throws SQLException
+	 * 		if an SQL error occurs
+	 */
+	public void executeQuery(String query, StatementProcessor statementProcessor, ResultSetProcessor resultSetProcessor) throws SQLException {
+		Connection connection = null;
+		try {
+			connection = getConnection();
+			executeQuery(connection, query, statementProcessor, resultSetProcessor);
+		} finally {
+			if (connection != null) {
+				connection.close();
 			}
+		}
+	}
+
+	/**
+	 * Executes the given query.
+	 *
+	 * @param connection
+	 * 		The connection to execute the query on
+	 * @param query
+	 * 		The query to execute
+	 * @param statementProcessor
+	 * 		Processor for the statement
+	 * @param resultSetProcessor
+	 * 		Processor for the result set
+	 * @throws SQLException
+	 * 		if an SQL error occurs
+	 */
+	public void executeQuery(Connection connection, String query, StatementProcessor statementProcessor, ResultSetProcessor resultSetProcessor) throws SQLException {
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			preparedStatement = connection.prepareStatement(query);
+			statementProcessor.processStatement(preparedStatement);
+			resultSet = preparedStatement.executeQuery();
+			while (resultSet.next()) {
+				resultSetProcessor.processResultSet(resultSet);
+			}
+		} finally {
+			close(resultSet);
+			close(preparedStatement);
 		}
 	}
 
@@ -249,6 +303,22 @@ public class Hsqldb extends LibraryPlugin {
 		if (statement != null) {
 			try {
 				statement.close();
+			} catch (SQLException sqle1) {
+				/* swallow. TODO - log it? */
+			}
+		}
+	}
+
+	/**
+	 * Closes the given result set.
+	 *
+	 * @param resultSet
+	 * 		The result set to close (may be {@code null})
+	 */
+	public static void close(ResultSet resultSet) {
+		if (resultSet != null) {
+			try {
+				resultSet.close();
 			} catch (SQLException sqle1) {
 				/* swallow. TODO - log it? */
 			}
@@ -343,6 +413,24 @@ public class Hsqldb extends LibraryPlugin {
 		 * 		if an SQL error occurs
 		 */
 		public void processStatement(PreparedStatement preparedStatement) throws SQLException;
+
+	}
+
+	/**
+	 * Interface for a result set processor. This processor is called for every row
+	 * of a {@link ResultSet}.
+	 */
+	public interface ResultSetProcessor {
+
+		/**
+		 * Processes the given result set.
+		 *
+		 * @param resultSet
+		 * 		The result set to process
+		 * @throws SQLException
+		 * 		if an SQL error occurs
+		 */
+		public void processResultSet(ResultSet resultSet) throws SQLException;
 
 	}
 
