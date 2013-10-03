@@ -390,51 +390,19 @@ public class Index extends Observable implements MutableTreeNode,
 		this.publicKey = publicKey;
 		this.rev = rev;
 
-		synchronized (db.dbLock) {
-
-			try {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("UPDATE indexes " +
-						"SET publicKey = ?, revision = ? " +
-						"WHERE id = ?");
-				st.setString(1, publicKey);
-				st.setInt(2, rev);
-				st.setInt(3, id);
-
-				st.execute();
-				st.close();
-
-
-				/* we update also all the links in the index with the private key */
-
-				st = db.getConnection().prepareStatement("SELECT links.id, links.publicKey " +
-						"FROM LINKS JOIN INDEXES ON links.indexParent = indexes.id " +
-						"WHERE indexes.privateKey IS NOT NULL AND LOWER(publicKey) LIKE ?");
-
-				st.setString(1, FreenetURIHelper.getComparablePart(publicKey) + "%");
-				ResultSet res = st.executeQuery();
-
-				PreparedStatement updateLinkSt;
-
-				updateLinkSt = db.getConnection().prepareStatement("UPDATE links SET publicKey = ? WHERE id = ?");
-
-				while (res.next()) {
-					String pubKey = res.getString("publicKey").replaceAll(".xml", ".frdx");
-
-					if (FreenetURIHelper.compareKeys(pubKey, publicKey)) {
-						updateLinkSt.setString(1, publicKey);
-						updateLinkSt.setInt(2, res.getInt("id"));
-						updateLinkSt.execute();
+		try {
+			db.executeUpdate("UPDATE indexes SET publicKey = ?, revision = ? WHERE id = ?", queue(setString(1, publicKey), setInt(2, rev), setInt(3, id)));
+			db.executeQuery("SELECT links.id, links.publicKey FROM LINKS JOIN INDEXES ON links.indexParent = indexes.id WHERE indexes.privateKey IS NOT NULL AND LOWER(publicKey) LIKE ?", setString(1, FreenetURIHelper.getComparablePart(publicKey)), new ResultSetProcessor() {
+				@Override
+				public void processResultSet(ResultSet resultSet) throws SQLException {
+					String publicKey = resultSet.getString("publicKey").replaceAll(".xml", ".frdx");
+					if (FreenetURIHelper.compareKeys(publicKey, Index.this.publicKey)) {
+						db.executeUpdate("UPDATE links SET publicKey = ? WHERE id = ?", queue(setString(1, publicKey), setInt(2, resultSet.getInt("id"))));
 					}
 				}
-
-				st.close();
-				updateLinkSt.close();
-
-			} catch (SQLException e) {
-				Logger.error(this, "Unable to set public Key because: " + e.toString());
-			}
+			});
+		} catch (SQLException e) {
+			Logger.error(this, "Unable to set public Key because: " + e.toString());
 		}
 	}
 
