@@ -475,29 +475,13 @@ public class Index extends Observable implements MutableTreeNode,
 		if (indexBrowser != null && indexBrowser.getMainWindow() != null) {
 			indexTree = indexBrowser.getIndexTree();
 
-			boolean hasLink = false;
-			synchronized (db.dbLock) {
-				PreparedStatement st = null;
-				try {
-
-					st = db.getConnection().prepareStatement("SELECT id FROM links where indexParent = ? LIMIT 1");
-					st.setInt(1, id);
-
-					ResultSet set = st.executeQuery();
-
-					hasLink = set.next();
-				} catch (SQLException e) {
-					Logger.error(this, "Error while checking the link number before insertion : " + e.toString());
-				} finally {
-					if (st != null) {
-						try {
-							st.close();
-						} catch (SQLException sqle1) {
-							/* swallow this one. */
-						}
-					}
-				}
+			ResultExtractor<Integer> linkedIndexIdExtractor = new ResultExtractor<Integer>(integerResultCreator(1));
+			try {
+				db.executeQuery("SELECT id FROM links where indexParent = ? LIMIT 1", setInt(1, id), linkedIndexIdExtractor);
+			} catch (SQLException e) {
+				Logger.error(this, "Error while checking the link number before insertion : " + e.toString());
 			}
+			boolean hasLink = !linkedIndexIdExtractor.getResults().isEmpty();
 
 			if (!hasLink) {
 				/* no link ?! we will warn the user */
@@ -604,23 +588,8 @@ public class Index extends Observable implements MutableTreeNode,
 			setPublicKey(key, rev);
 
 			try {
-				synchronized (db.dbLock) {
-					PreparedStatement st;
-
-					String query = "UPDATE # SET dontDelete = FALSE WHERE indexParent = ?";
-
-					st = db.getConnection().prepareStatement(query.replaceFirst("#", "files"));
-					st.setInt(1, id);
-					st.execute();
-					st.close();
-
-					st = db.getConnection().prepareStatement(query.replaceFirst("#", "links"));
-					st.setInt(1, id);
-					st.execute();
-
-					st.close();
-				}
-
+				db.executeUpdate("UPDATE files SET dontDelete = FALSE WHERE indexParent = ?", setInt(1, id));
+				db.executeUpdate("UPDATE links SET dontDelete = FALSE WHERE indexParent = ?", setInt(1, id));
 			} catch (SQLException e) {
 				Logger.error(this, "Error while reseting dontDelete flags: " + e.toString());
 			}
