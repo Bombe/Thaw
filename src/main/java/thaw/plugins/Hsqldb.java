@@ -401,6 +401,25 @@ public class Hsqldb extends LibraryPlugin {
 		};
 	}
 
+	/**
+	 * Returns a statement processor that will set the parameter at the given index
+	 * to the given boolean value.
+	 *
+	 * @param index
+	 * 		The index of the parameter to set
+	 * @param value
+	 * 		The value to set
+	 * @return A statement processor setting the boolean value
+	 */
+	public static StatementProcessor setBoolean(final int index, final boolean value) {
+		return new StatementProcessor() {
+			@Override
+			public void processStatement(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setBoolean(index, value);
+			}
+		};
+	}
+
 	/** Interface for a {@link PreparedStatement} processor. */
 	public interface StatementProcessor {
 
