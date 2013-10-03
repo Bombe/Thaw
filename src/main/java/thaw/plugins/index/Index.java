@@ -43,6 +43,7 @@ import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
 import thaw.plugins.Hsqldb.ResultCreator;
 import thaw.plugins.Hsqldb.ResultExtractor;
+import thaw.plugins.Hsqldb.ResultSetProcessor;
 import thaw.plugins.Hsqldb.StatementProcessor;
 import thaw.plugins.IndexBrowser;
 import thaw.plugins.TrayIcon;
@@ -289,47 +290,25 @@ public class Index extends Observable implements MutableTreeNode,
 		return id;
 	}
 
-	public boolean loadData() {
+	public void loadData() {
 		Logger.debug(this, "loadData()");
-		synchronized (db.dbLock) {
-			try {
-				PreparedStatement st =
-						db.getConnection().prepareStatement("SELECT publicKey, " +
-								"       revision, " +
-								"       privateKey, " +
-								"       publishPrivateKey, " +
-								"       displayName, " +
-								"       newRev, " +
-								"       newComment, " +
-								"       insertionDate " +
-								"FROM indexes " +
-								"WHERE id = ? LIMIT 1");
-
-				st.setInt(1, id);
-
-				ResultSet set = st.executeQuery();
-
-				if (set.next()) {
-					publicKey = set.getString("publicKey");
-					privateKey = set.getString("privateKey");
-					publishPrivateKey = set.getBoolean("publishPrivateKey");
-					rev = set.getInt("revision");
-					displayName = set.getString("displayName");
-					hasChanged = set.getBoolean("newRev");
-					newComment = set.getBoolean("newComment");
-					date = set.getDate("insertionDate");
-					st.close();
-					return true;
-				} else {
-					Logger.error(this, "Unable to find index " + Integer.toString(id) + " in the database ?!");
-					st.close();
-					return false;
+		try {
+			db.executeQuery("SELECT publicKey, revision, privateKey, publishPrivateKey, displayName, newRev, newComment, insertionDate FROM indexes WHERE id = ? LIMIT 1", setInt(1, id), new ResultSetProcessor() {
+				@Override
+				public void processResultSet(ResultSet resultSet) throws SQLException {
+					publicKey = resultSet.getString("publicKey");
+					privateKey = resultSet.getString("privateKey");
+					publishPrivateKey = resultSet.getBoolean("publishPrivateKey");
+					rev = resultSet.getInt("revision");
+					displayName = resultSet.getString("displayName");
+					hasChanged = resultSet.getBoolean("newRev");
+					newComment = resultSet.getBoolean("newComment");
+					date = resultSet.getDate("insertionDate");
 				}
-			} catch (final SQLException e) {
-				Logger.error(this, "Unable to get public key because: " + e.toString());
-			}
+			});
+		} catch (final SQLException e) {
+			Logger.error(this, "Unable to load data because: " + e.toString());
 		}
-		return false;
 	}
 
 	public String getPublicKey() {
