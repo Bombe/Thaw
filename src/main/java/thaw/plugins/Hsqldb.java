@@ -226,21 +226,6 @@ public class Hsqldb extends LibraryPlugin {
 		}
 	}
 
-	/** Interface for a {@link PreparedStatement} processor. */
-	public interface StatementProcessor {
-
-		/**
-		 * Sets parameters on the given prepared statement before execution.
-		 *
-		 * @param preparedStatement
-		 * 		The prepared statement to set parameters on
-		 * @throws SQLException
-		 * 		if an SQL error occurs
-		 */
-		public void processStatement(PreparedStatement preparedStatement) throws SQLException;
-
-	}
-
 	/**
 	 * Returns a statement processor that runs all the given statement processors
 	 * in the order they are given.
@@ -315,6 +300,21 @@ public class Hsqldb extends LibraryPlugin {
 				preparedStatement.setInt(index, value);
 			}
 		};
+	}
+
+	/** Interface for a {@link PreparedStatement} processor. */
+	public interface StatementProcessor {
+
+		/**
+		 * Sets parameters on the given prepared statement before execution.
+		 *
+		 * @param preparedStatement
+		 * 		The prepared statement to set parameters on
+		 * @throws SQLException
+		 * 		if an SQL error occurs
+		 */
+		public void processStatement(PreparedStatement preparedStatement) throws SQLException;
+
 	}
 
 }
