@@ -297,7 +297,7 @@ public class Index extends Observable implements MutableTreeNode,
 		try {
 			db.executeQuery("SELECT publicKey, revision, privateKey, publishPrivateKey, displayName, newRev, newComment, insertionDate FROM indexes WHERE id = ? LIMIT 1", setInt(1, id), new ResultSetProcessor() {
 				@Override
-				public void processResultSet(ResultSet resultSet) throws SQLException {
+				public boolean processResultSet(ResultSet resultSet) throws SQLException {
 					publicKey = resultSet.getString("publicKey");
 					privateKey = resultSet.getString("privateKey");
 					publishPrivateKey = resultSet.getBoolean("publishPrivateKey");
@@ -306,6 +306,7 @@ public class Index extends Observable implements MutableTreeNode,
 					hasChanged = resultSet.getBoolean("newRev");
 					newComment = resultSet.getBoolean("newComment");
 					date = resultSet.getDate("insertionDate");
+					return true;
 				}
 			});
 		} catch (final SQLException e) {
@@ -395,11 +396,12 @@ public class Index extends Observable implements MutableTreeNode,
 			db.executeUpdate("UPDATE indexes SET publicKey = ?, revision = ? WHERE id = ?", queue(setString(1, publicKey), setInt(2, rev), setInt(3, id)));
 			db.executeQuery("SELECT links.id, links.publicKey FROM LINKS JOIN INDEXES ON links.indexParent = indexes.id WHERE indexes.privateKey IS NOT NULL AND LOWER(publicKey) LIKE ?", setString(1, FreenetURIHelper.getComparablePart(publicKey)), new ResultSetProcessor() {
 				@Override
-				public void processResultSet(ResultSet resultSet) throws SQLException {
+				public boolean processResultSet(ResultSet resultSet) throws SQLException {
 					String publicKey = resultSet.getString("publicKey").replaceAll(".xml", ".frdx");
 					if (FreenetURIHelper.compareKeys(publicKey, Index.this.publicKey)) {
 						db.executeUpdate("UPDATE links SET publicKey = ? WHERE id = ?", queue(setString(1, publicKey), setInt(2, resultSet.getInt("id"))));
 					}
+					return true;
 				}
 			});
 		} catch (SQLException e) {

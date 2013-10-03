@@ -272,8 +272,9 @@ public class Hsqldb extends LibraryPlugin {
 			preparedStatement = connection.prepareStatement(query);
 			statementProcessor.processStatement(preparedStatement);
 			resultSet = preparedStatement.executeQuery();
-			while (resultSet.next()) {
-				resultSetProcessor.processResultSet(resultSet);
+			boolean finished = false;
+			while (!finished && resultSet.next()) {
+				finished = resultSetProcessor.processResultSet(resultSet);
 			}
 		} finally {
 			close(resultSet);
@@ -488,10 +489,12 @@ public class Hsqldb extends LibraryPlugin {
 		 *
 		 * @param resultSet
 		 * 		The result set to process
+		 * @return {@code true} if the next row should be processed, {@code false} to
+		 *         stop processing
 		 * @throws SQLException
 		 * 		if an SQL error occurs
 		 */
-		public void processResultSet(ResultSet resultSet) throws SQLException;
+		public boolean processResultSet(ResultSet resultSet) throws SQLException;
 
 	}
 
@@ -535,8 +538,9 @@ public class Hsqldb extends LibraryPlugin {
 		//
 
 		@Override
-		public void processResultSet(ResultSet resultSet) throws SQLException {
+		public boolean processResultSet(ResultSet resultSet) throws SQLException {
 			results.add(resultCreator.createResult(resultSet));
+			return true;
 		}
 
 		//
