@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import static thaw.plugins.Hsqldb.close;
 import static thaw.plugins.Hsqldb.integerResultCreator;
 import static thaw.plugins.Hsqldb.queue;
+import static thaw.plugins.Hsqldb.setBoolean;
 import static thaw.plugins.Hsqldb.setInt;
 import static thaw.plugins.Hsqldb.setNull;
 import static thaw.plugins.Hsqldb.setString;
@@ -364,21 +365,9 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public void setPublishPrivateKey(boolean val) {
-
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st =
-						db.getConnection().prepareStatement("UPDATE indexes " +
-								"SET publishPrivateKey = ? " +
-								"WHERE id = ?");
-				st.setBoolean(1, val);
-				st.setInt(2, id);
-				st.execute();
-				st.close();
-			}
-
+			db.executeUpdate("UPDATE indexes SET publishPrivateKey = ? WHERE id = ?", queue(setBoolean(1, val), setInt(2, id)));
 			publishPrivateKey = val;
-
 		} catch (SQLException e) {
 			Logger.error(this, "Unable to set publishPrivateKey value because: " + e.toString());
 		}
