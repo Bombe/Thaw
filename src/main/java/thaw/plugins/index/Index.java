@@ -29,6 +29,7 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import com.google.common.base.Predicate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import thaw.core.Config;
@@ -1056,55 +1057,35 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	/** @return the index id if found ; -1 else */
-	public static int isAlreadyKnown(Hsqldb db, String key, boolean strict) {
+	public static int isAlreadyKnown(Hsqldb db, String key, final boolean strict) {
 		if (key.length() < 40) {
 			Logger.error(new Index(), "isAlreadyKnown(): Invalid key: " + key);
 			return -1;
 		}
 
-		key = key.replaceAll(".xml", ".frdx");
-
-		synchronized (db.dbLock) {
-			try {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT id, publicKey from indexes WHERE LOWER(publicKey) LIKE ?"
-						+ (strict ? "" : " LIMIT 1"));
-
-				st.setString(1, FreenetURIHelper.getComparablePart(key) + "%");
-
-				ResultSet res = st.executeQuery();
-
-				if (strict) {
-					while (res.next()) {
-						String pubKey = res.getString("publicKey").replaceAll(".xml", ".frdx");
-
-						if (FreenetURIHelper.compareKeys(pubKey, key)) {
-							int r = res.getInt("id");
-							st.close();
-							return r;
-						}
-					}
-
-					st.close();
-					return -1;
-				} else {
-					if (!res.next()) {
-						st.close();
-						return -1;
-					}
-
-					int r = res.getInt("id");
-					st.close();
-					return r;
-				}
-
-			} catch (final SQLException e) {
-				Logger.error(new Index(), "isAlreadyKnown: Unable to check if link '" + key + "' point to a know index because: " + e.toString());
+		final String cleanedKey = key.replaceAll(".xml", ".frdx");
+		ResultCreator<KeyId> keyIdCreator = new ResultCreator<KeyId>() {
+			@Override
+			public KeyId createResult(ResultSet resultSet) throws SQLException {
+				return new KeyId(resultSet.getString("publicKey").replaceAll(".xml", ".frdx"), resultSet.getInt("id"));
 			}
+		};
+		ResultExtractor<KeyId> matchingIds = new ResultExtractor<KeyId>(keyIdCreator, new Predicate<KeyId>() {
+			@Override
+			public boolean apply(KeyId indexId) {
+				return strict && FreenetURIHelper.compareKeys(indexId.key, cleanedKey);
+			}
+		});
+		try {
+			db.executeQuery("SELECT id, publicKey from indexes WHERE LOWER(publicKey) LIKE ?"
+					+ (strict ? "" : " LIMIT 1"), setString(1, FreenetURIHelper.getComparablePart(key) + "%"), matchingIds);
+		} catch (final SQLException e) {
+			Logger.error(new Index(), "isAlreadyKnown: Unable to check if link '" + key + "' point to a know index because: " + e.toString());
 		}
-
-		return -1;
+		if (matchingIds.getResults().isEmpty()) {
+			return -1;
+		}
+		return matchingIds.getResults().get(0).id;
 	}
 
 	public void forceFlagsReload() {
@@ -1807,6 +1788,30 @@ public class Index extends Observable implements MutableTreeNode,
 		private Key(String key, int revision) {
 			this.key = key;
 			this.revision = revision;
+		}
+
+	}
+
+	/** Container for a key and an ID. */
+	private static class KeyId {
+
+		/** The key. */
+		public final String key;
+
+		/** The ID. */
+		public final int id;
+
+		/**
+		 * Creates a new container for a key and an ID.
+		 *
+		 * @param key
+		 * 		The key
+		 * @param id
+		 * 		The ID
+		 */
+		private KeyId(String key, int id) {
+			this.key = key;
+			this.id = id;
 		}
 
 	}
