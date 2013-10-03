@@ -19,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -986,43 +985,22 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public List<Link> getLinkList(String columnToSort, boolean asc) {
-		synchronized (db.dbLock) {
-
-			try {
-				LinkedList links = new LinkedList();
-
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT links.id AS id, " +
-						" links.publicKey AS publicKey, " +
-						" links.blackListed AS blacklisted," +
-						" links.indexParent AS indexParent, " +
-						" categories.name AS categoryName " +
-						" FROM links LEFT OUTER JOIN categories " +
-						" ON links.category = categories.id " +
-						"WHERE links.indexParent = ?");
-
-				st.setInt(1, id);
-
-				ResultSet res = st.executeQuery();
-
-				while (res.next()) {
-					Link l = new Link(db, res.getInt("id"), res.getString("publicKey"),
-							res.getString("categoryName"), res.getBoolean("blackListed"),
-							this);
-					links.add(l);
+		try {
+			ResultExtractor<Link> linkExtractor = new ResultExtractor<Link>(new ResultCreator<Link>() {
+				@Override
+				public Link createResult(ResultSet resultSet) throws SQLException {
+					return new Link(db, resultSet.getInt("id"), resultSet.getString("publicKey"),
+							resultSet.getString("categoryName"), resultSet.getBoolean("blackListed"),
+							Index.this);
 				}
-
-				st.close();
-
-				return links;
-
-			} catch (SQLException e) {
-				Logger.error(this, "SQLException while getting link list: " + e.toString());
-			}
+			});
+			db.executeQuery("SELECT links.id AS id,  links.publicKey AS publicKey,  links.blackListed AS blacklisted, links.indexParent AS indexParent,  categories.name AS categoryName  FROM links LEFT OUTER JOIN categories  ON links.category = categories.id WHERE links.indexParent = ?", setInt(1, id), linkExtractor);
+			return linkExtractor.getResults();
+		} catch (SQLException e) {
+			Logger.error(this, "SQLException while getting link list: " + e.toString());
 		}
 
-		return null;
+		return emptyList();
 	}
 
 	public static String getNameFromKey(final String key) {
