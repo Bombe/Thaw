@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import static thaw.plugins.Hsqldb.queue;
 import static thaw.plugins.Hsqldb.setInt;
 import static thaw.plugins.Hsqldb.setNull;
+import static thaw.plugins.Hsqldb.setString;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -235,13 +236,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 	public void rename(final String name) {
 		try {
-			db.executeUpdate("UPDATE indexes SET displayName = ? WHERE id = ?", new StatementProcessor() {
-				@Override
-				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
-					preparedStatement.setString(1, name);
-					preparedStatement.setInt(2, id);
-				}
-			});
+			db.executeUpdate("UPDATE indexes SET displayName = ? WHERE id = ?", queue(setString(1, name), setInt(2, id)));
 		} catch (final SQLException e) {
 			Logger.error(this, "Unable to rename the index in '" + name + "', because: " + e.toString());
 		}
