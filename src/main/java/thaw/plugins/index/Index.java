@@ -1036,37 +1036,22 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public String findTheLatestKey(String linkKey) {
-		synchronized (db.dbLock) {
-			try {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT publicKey, revision " +
-						"FROM indexes " +
-						"WHERE publicKey LIKE ?");
-
-				st.setString(1, FreenetURIHelper.getComparablePart(linkKey));
-
-				ResultSet set = st.executeQuery();
-
-				while (set.next()) {
-					/* we will assume that we have *always* the latest version of the index */
-
-					String oKey = set.getString("publicKey");
-					if (FreenetURIHelper.compareKeys(oKey, linkKey)) {
-						String key = FreenetURIHelper.changeUSKRevision(oKey,
-								set.getInt("revision"),
-								0);
-						st.close();
-						return key;
-					}
-				}
-
-				st.close();
-			} catch (SQLException e) {
-				Logger.error(this, "Can't find the latest key of a link because : " + e.toString());
+		ResultExtractor<Key> keyExtractor = new ResultExtractor<Key>(new ResultCreator<Key>() {
+			@Override
+			public Key createResult(ResultSet resultSet) throws SQLException {
+				return new Key(resultSet.getString("publicKey"), resultSet.getInt("revision"));
+			}
+		});
+		try {
+			db.executeQuery("SELECT publicKey, revision FROM indexes WHERE publicKey LIKE ?", setString(1, FreenetURIHelper.getComparablePart(linkKey)), keyExtractor);
+		} catch (SQLException e) {
+			Logger.error(this, "Can't find the latest key of a link because : " + e.toString());
+		}
+		for (Key key : keyExtractor) {
+			if (FreenetURIHelper.compareKeys(key.key, linkKey)) {
+				return FreenetURIHelper.changeUSKRevision(key.key, key.revision, 0);
 			}
 		}
-
 		return linkKey;
 	}
 
@@ -1812,4 +1797,29 @@ public class Index extends Observable implements MutableTreeNode,
 			e.printStackTrace();
 		}
 	}
+
+	/** Container for key and revision data. */
+	private static class Key {
+
+		/** The key. */
+		public final String key;
+
+		/** The revision. */
+		public final int revision;
+
+		/**
+		 * Creates a new key container.
+		 *
+		 * @param key
+		 * 		The key
+		 * @param revision
+		 * 		The revision
+		 */
+		private Key(String key, int revision) {
+			this.key = key;
+			this.revision = revision;
+		}
+
+	}
+
 }
