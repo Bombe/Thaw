@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import thaw.core.Logger;
@@ -107,8 +106,8 @@ public class SearchResult implements FileAndLinkList {
 		return v;
 	}
 
-	public Link[] getLinkList(String col, boolean asc) {
-		LinkedList v = new LinkedList();
+	public List<Link> getLinkList(String col, boolean asc) {
+		List<Link> v = new ArrayList<Link>();
 
 		synchronized (db.dbLock) {
 			try {
@@ -143,7 +142,7 @@ public class SearchResult implements FileAndLinkList {
 			}
 		}
 
-		return (Link[]) v.toArray(new Link[0]);
+		return v;
 	}
 
 }

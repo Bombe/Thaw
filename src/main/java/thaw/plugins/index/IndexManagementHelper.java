@@ -2071,7 +2071,7 @@ public class IndexManagementHelper {
 						List<File> files = ((Index) node).getFileList(null, true);
 
 						nmbFilesInt = files.size();
-						nmbLinksInt = ((Index) node).getLinkList(null, true).length;
+						nmbLinksInt = ((Index) node).getLinkList(null, true).size();
 						insertionDate = ((Index) node).getDate();
 
 						totalSize = 0;

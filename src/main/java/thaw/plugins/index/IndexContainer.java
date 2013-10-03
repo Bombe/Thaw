@@ -10,7 +10,7 @@ public interface IndexContainer extends FileAndLinkList {
 	public List<File> getFileList();
 
 	/** @return a vector of LinkContainer */
-	public Link[] getLinkList();
+	public List<Link> getLinkList();
 
 	/** @return true if the private key must be published */
 	public boolean publishPrivateKey();

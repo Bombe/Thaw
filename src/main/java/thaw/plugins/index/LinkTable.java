@@ -9,6 +9,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -184,11 +185,11 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 	protected Vector getSelectedLinks(final int[] selectedRows) {
 		//final Vector srcList = linkList.getLinkList(null, false);
-		final Link[] srcList = linkListModel.getLinks();
+		final List<Link> srcList = linkListModel.getLinks();
 		final Vector links = new Vector();
 
 		for (int i = 0; i < selectedRows.length; i++) {
-			final Link link = srcList[selectedRows[i]];
+			final Link link = srcList.get(selectedRows[i]);
 			links.add(link);
 		}
 
@@ -286,7 +287,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 		public Vector columnNames;
 
-		public Link[] links = null; /* thaw.plugins.index.Link Vector */
+		public List<Link> links = null; /* thaw.plugins.index.Link Vector */
 
 		public LinkList linkList;
 
@@ -309,7 +310,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 		}
 
-		public Link[] getLinks() {
+		public List<Link> getLinks() {
 			return links;
 		}
 
@@ -317,7 +318,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 			if (links == null)
 				return 0;
 
-			return links.length;
+			return links.size();
 		}
 
 		public int getColumnCount() {
@@ -329,7 +330,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public Object getValueAt(final int row, final int column) {
-			final Link link = links[row];
+			final Link link = links.get(row);
 
 			switch (column) {
 				case (0):

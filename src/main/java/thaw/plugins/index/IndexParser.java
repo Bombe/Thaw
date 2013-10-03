@@ -183,11 +183,9 @@ public class IndexParser {
 	private Element getXMLLinks(final Document xmlDoc) {
 		final Element linksEl = xmlDoc.createElement("indexes");
 
-		LinkContainer[] links = index.getLinkList();
+		List<Link> links = index.getLinkList();
 
-		for (int i = 0; i < links.length; i++) {
-			LinkContainer link = links[i];
-
+		for (Link link : links) {
 			String key = index.findTheLatestKey(link.getPublicKey());
 			String cat = link.getCategory();
 

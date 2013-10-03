@@ -1,7 +1,9 @@
 package thaw.plugins.index;
 
+import java.util.List;
+
 public interface LinkList {
 
-	public Link[] getLinkList(String columnToSort, boolean asc);
+	public List<Link> getLinkList(String columnToSort, boolean asc);
 
 }

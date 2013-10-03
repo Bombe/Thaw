@@ -981,11 +981,11 @@ public class Index extends Observable implements MutableTreeNode,
 
 	//// LINKS ////
 
-	public Link[] getLinkList() {
+	public List<Link> getLinkList() {
 		return getLinkList(null, false);
 	}
 
-	public Link[] getLinkList(String columnToSort, boolean asc) {
+	public List<Link> getLinkList(String columnToSort, boolean asc) {
 		synchronized (db.dbLock) {
 
 			try {
@@ -1015,7 +1015,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 				st.close();
 
-				return (Link[]) links.toArray(new Link[0]);
+				return links;
 
 			} catch (SQLException e) {
 				Logger.error(this, "SQLException while getting link list: " + e.toString());

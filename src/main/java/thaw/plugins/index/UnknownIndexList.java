@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -167,13 +168,13 @@ public class UnknownIndexList implements MouseListener, ActionListener {
 		public void run() {
 			boolean ret = false;
 
-			final Link[] ll = index.getLinkList(null, false);
+			final List<Link> ll = index.getLinkList(null, false);
 
-			if ((ll == null) || (ll.length == 0))
+			if ((ll == null) || (ll.size() == 0))
 				return;
 
-			for (int i = 0; i < ll.length && running; i++) {
-				if (addLink(ll[i], false))
+			for (int i = 0; i < ll.size() && running; i++) {
+				if (addLink(ll.get(i), false))
 					ret = true;
 			}
 
