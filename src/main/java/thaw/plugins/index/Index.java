@@ -889,20 +889,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 	public void setInsertionDate(java.util.Date date) {
 		try {
-			synchronized (db.dbLock) {
-				Date dateSql = null;
-				dateSql = new Date(date.getTime());
-
-				PreparedStatement st =
-						db.getConnection().prepareStatement("UPDATE indexes " +
-								"SET insertionDate = ? " +
-								"WHERE id = ?");
-				st.setDate(1, dateSql);
-				st.setInt(2, id);
-
-				st.execute();
-				st.close();
-			}
+			db.executeUpdate("UPDATE indexes SET insertionDate = ? WHERE id = ?", queue(setDate(1, new Date(date.getTime())), setInt(2, id)));
 		} catch (SQLException e) {
 			Logger.error(this, "Error while updating index insertion date: " + e.toString());
 		}
