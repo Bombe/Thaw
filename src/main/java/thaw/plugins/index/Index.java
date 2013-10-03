@@ -9,6 +9,7 @@ import static thaw.plugins.Hsqldb.queue;
 import static thaw.plugins.Hsqldb.setBoolean;
 import static thaw.plugins.Hsqldb.setDate;
 import static thaw.plugins.Hsqldb.setInt;
+import static thaw.plugins.Hsqldb.setLong;
 import static thaw.plugins.Hsqldb.setNull;
 import static thaw.plugins.Hsqldb.setString;
 import static thaw.plugins.Hsqldb.stringResultCreator;
@@ -948,29 +949,15 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public boolean addFile(String key, long size, String mime) {
+		String filename = FreenetURIHelper.getFilenameFromKey(key);
+		if (filename == null)
+			filename = key;
+
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("INSERT INTO files "
-						+ "(filename, publicKey, localPath, mime, size, category, indexParent) "
-						+ "VALUES (?, ?, NULL, ?, ?, NULL, ?)");
-
-				String filename = FreenetURIHelper.getFilenameFromKey(key);
-				if (filename == null)
-					filename = key;
-
-				st.setString(1, filename);
-				st.setString(2, key);
-				st.setString(3, mime);
-				st.setLong(4, size);
-				st.setInt(5, id);
-
-				st.execute();
-				st.close();
-
-				return true;
-			}
+			db.executeUpdate("INSERT INTO files "
+					+ "(filename, publicKey, localPath, mime, size, category, indexParent) "
+					+ "VALUES (?, ?, NULL, ?, ?, NULL, ?)", queue(setString(1, filename), setString(2, key), setString(3, mime), setLong(4, size), setInt(5, id)));
+			return true;
 		} catch (SQLException e) {
 			Logger.error(this, "Error while adding file to index '" + toString() + "' : " + e.toString());
 		}
