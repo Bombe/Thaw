@@ -278,22 +278,10 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public void purgeFileList(boolean useDontDelete) {
-		synchronized (db.dbLock) {
-			try {
-				final Connection c = db.getConnection();
-				final PreparedStatement st;
-
-				if (!useDontDelete)
-					st = c.prepareStatement("DELETE FROM files WHERE indexParent = ?");
-				else
-					st = c.prepareStatement("DELETE FROM files WHERE indexParent = ? AND dontDelete = FALSE");
-				st.setInt(1, getId());
-				st.execute();
-
-				st.close();
-			} catch (final SQLException e) {
-				Logger.error(this, "Unable to purge da list ! Exception: " + e.toString());
-			}
+		try {
+			db.executeUpdate("DELETE FROM files WHERE indexParent = ?" + (useDontDelete ? " AND dontDelete = FALSE" : ""), setInt(1, getId()));
+		} catch (final SQLException e) {
+			Logger.error(this, "Unable to purge da list ! Exception: " + e.toString());
 		}
 	}
 
