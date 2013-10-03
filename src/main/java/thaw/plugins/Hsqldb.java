@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.google.common.base.Predicate;
 import thaw.core.Core;
 import thaw.core.I18n;
 import thaw.core.LibraryPlugin;
@@ -511,6 +512,9 @@ public class Hsqldb extends LibraryPlugin {
 		/** The result creator. */
 		private final ResultCreator<T> resultCreator;
 
+		/** Predicate for abortion. */
+		private final Predicate<T> abortionPredicate;
+
 		/** The created result. */
 		private List<T> results = new ArrayList<T>();
 
@@ -521,7 +525,20 @@ public class Hsqldb extends LibraryPlugin {
 		 * 		The result creator
 		 */
 		public ResultExtractor(ResultCreator<T> resultCreator) {
+			this(resultCreator, null);
+		}
+
+		/**
+		 * Creates a new result extractor.
+		 *
+		 * @param resultCreator
+		 * 		The result creator
+		 * @param abortionPredicate
+		 * 		The abortion predicate
+		 */
+		public ResultExtractor(ResultCreator<T> resultCreator, Predicate<T> abortionPredicate) {
 			this.resultCreator = resultCreator;
+			this.abortionPredicate = abortionPredicate;
 		}
 
 		/**
@@ -539,8 +556,9 @@ public class Hsqldb extends LibraryPlugin {
 
 		@Override
 		public boolean processResultSet(ResultSet resultSet) throws SQLException {
-			results.add(resultCreator.createResult(resultSet));
-			return true;
+			T result = resultCreator.createResult(resultSet);
+			results.add(result);
+			return (abortionPredicate == null) || abortionPredicate.apply(result);
 		}
 
 		//
