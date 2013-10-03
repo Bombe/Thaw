@@ -1,7 +1,10 @@
 package thaw.plugins.index;
 
+import static java.sql.Types.INTEGER;
 import static java.util.Collections.emptyList;
+import static thaw.plugins.Hsqldb.queue;
 import static thaw.plugins.Hsqldb.setInt;
+import static thaw.plugins.Hsqldb.setNull;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -166,38 +169,12 @@ public class Index extends Observable implements MutableTreeNode,
 		try {
 			connection = db.getConnection();
 			connection.setAutoCommit(false);
-			db.executeUpdate(connection, "UPDATE indexes SET parent = ? WHERE id = ?", new StatementProcessor() {
-				@Override
-				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
-					if (parentId >= 0) {
-						preparedStatement.setInt(1, parentId);
-					} else {
-						preparedStatement.setNull(1, Types.INTEGER);
-					}
-					preparedStatement.setInt(2, id);
-				}
-			});
+			db.executeUpdate(connection, "UPDATE indexes SET parent = ? WHERE id = ?", queue((parentId >= 0) ? setInt(1, parentId) : setNull(1, INTEGER), setInt(2, id)));
 			if (parentId >= 0) {
-				db.executeUpdate(connection, "INSERT INTO indexParents (indexId, folderId)  SELECT ?, parentId FROM folderParents    WHERE folderId = ?", new StatementProcessor() {
-					@Override
-					public void processStatement(PreparedStatement preparedStatement) throws SQLException {
-						preparedStatement.setInt(1, id);
-						preparedStatement.setInt(2, parentId);
-					}
-				});
+				db.executeUpdate(connection, "INSERT INTO indexParents (indexId, folderId)  SELECT ?, parentId FROM folderParents  WHERE folderId = ?", queue(setInt(1, id), setInt(2, parentId)));
 			} /* else this parent has no parent ... :) */
 
-			db.executeUpdate(connection, "INSERT INTO indexParents (indexId, folderId) VALUES (?, ?)", new StatementProcessor() {
-				@Override
-				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
-					preparedStatement.setInt(1, id);
-					if (parentId >= 0) {
-						preparedStatement.setInt(2, parentId);
-					} else {
-						preparedStatement.setNull(2, Types.INTEGER);
-					}
-				}
-			});
+			db.executeUpdate(connection, "INSERT INTO indexParents (indexId, folderId) VALUES (?, ?)", queue(setInt(1, id), (parentId >= 0) ? setInt(2, parentId) : setNull(2, INTEGER)));
 			connection.commit();
 		} catch (SQLException e) {
 			if (connection != null) {
