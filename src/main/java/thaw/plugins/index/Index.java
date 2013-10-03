@@ -18,7 +18,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -1066,7 +1065,7 @@ public class Index extends Observable implements MutableTreeNode,
 				if (category != null)
 					st.setInt(5, getCategoryId(category));
 				else
-					st.setNull(5, Types.INTEGER);
+					st.setNull(5, INTEGER);
 
 				st.execute();
 				st.close();
