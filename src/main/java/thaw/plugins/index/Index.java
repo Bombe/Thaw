@@ -1,6 +1,7 @@
 package thaw.plugins.index;
 
 import static java.sql.Types.INTEGER;
+import static java.sql.Types.VARCHAR;
 import static java.util.Collections.emptyList;
 import static thaw.plugins.Hsqldb.close;
 import static thaw.plugins.Hsqldb.integerResultCreator;
@@ -415,24 +416,10 @@ public class Index extends Observable implements MutableTreeNode,
 		if (privateKey != null && !FreenetURIHelper.isAKey(privateKey))
 			privateKey = null;
 
-		synchronized (db.dbLock) {
-			try {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("UPDATE indexes " +
-						"SET privateKey = ? " +
-						"WHERE id = ?");
-				if (privateKey != null)
-					st.setString(1, privateKey);
-				else
-					st.setNull(1, Types.VARCHAR);
-				st.setInt(2, indexId);
-
-				st.execute();
-				st.close();
-			} catch (SQLException e) {
-				Logger.error(new Index(), "Unable to set private Key because: " + e.toString());
-			}
+		try {
+			db.executeUpdate("UPDATE indexes SET privateKey = ? WHERE id = ?", queue((privateKey != null) ? setString(1, privateKey) : setNull(1, VARCHAR), setInt(2, indexId)));
+		} catch (SQLException e) {
+			Logger.error(new Index(), "Unable to set private Key because: " + e.toString());
 		}
 	}
 
