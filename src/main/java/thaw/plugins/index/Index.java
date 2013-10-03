@@ -203,12 +203,7 @@ public class Index extends Observable implements MutableTreeNode,
 		((IndexFolder) parentNode).remove(this);
 
 		try {
-			db.executeUpdate("DELETE FROM indexParents WHERE indexId = ?", new StatementProcessor() {
-				@Override
-				public void processStatement(PreparedStatement preparedStatement) throws SQLException {
-					preparedStatement.setInt(1, id);
-				}
-			});
+			db.executeUpdate("DELETE FROM indexParents WHERE indexId = ?", setInt(1, id));
 		} catch (SQLException e) {
 			Logger.error(this, "Error while removing the index: " + e.toString());
 		}
