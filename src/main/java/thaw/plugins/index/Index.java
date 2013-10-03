@@ -2,6 +2,8 @@ package thaw.plugins.index;
 
 import static java.sql.Types.INTEGER;
 import static java.util.Collections.emptyList;
+import static thaw.plugins.Hsqldb.close;
+import static thaw.plugins.Hsqldb.integerResultCreator;
 import static thaw.plugins.Hsqldb.queue;
 import static thaw.plugins.Hsqldb.setInt;
 import static thaw.plugins.Hsqldb.setNull;
@@ -245,33 +247,15 @@ public class Index extends Observable implements MutableTreeNode,
 	public void delete() {
 		removeFromParent();
 
-		synchronized (db.dbLock) {
-
-			try {
-
-				PreparedStatement st;
-
-				purgeFileList(false);
-				purgeLinkList(false);
-				purgeCommentKeys();
-
-				st = db.getConnection().prepareStatement("DELETE FROM indexParents " +
-						"WHERE indexId = ?");
-				st.setInt(1, id);
-				st.execute();
-
-				st.close();
-
-				Logger.notice(this, "DELETING AN INDEX");
-
-				st = db.getConnection().prepareStatement("DELETE FROM indexes WHERE id = ?");
-				st.setInt(1, id);
-				st.execute();
-
-				st.close();
-			} catch (SQLException e) {
-				Logger.error(this, "Unable to delete the index because : " + e.toString());
-			}
+		Connection connection = null;
+		try {
+			connection = db.getConnection();
+			db.executeUpdate(connection, "DELETE FROM indexParents WHERE indexId = ?", setInt(1, id));
+			db.executeUpdate(connection, "DELETE FROM indexes WHERE id = ?", setInt(1, id));
+		} catch (SQLException e) {
+			Logger.error(this, "Unable to delete the index because : " + e.toString());
+		} finally {
+			close(connection);
 		}
 	}
 
