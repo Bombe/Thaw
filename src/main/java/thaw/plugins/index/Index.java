@@ -1491,7 +1491,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 	protected class CommentKeyRegenerator implements Observer {
 
-		private FCPGenerateSSK sskGenerator;
+		private final FCPGenerateSSK sskGenerator;
 
 		public CommentKeyRegenerator(FCPQueueManager queueManager) {
 			sskGenerator = new FCPGenerateSSK(queueManager);
