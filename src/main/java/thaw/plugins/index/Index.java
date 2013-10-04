@@ -922,31 +922,28 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public List<File> getFileList(String columnToSort, boolean asc) {
-		synchronized (db.dbLock) {
+		try {
+			String query = "SELECT id, filename, publicKey, localPath, mime, size " +
+					"FROM files WHERE indexParent = ?" + ((columnToSort != null) ? " ORDER by " + columnToSort + (asc ? "" : " DESC") : "");
+			ResultExtractor<File> fileExtractor = new ResultExtractor<File>(new ResultCreator<File>() {
+				@Override
+				public File createResult(ResultSet resultSet) throws SQLException {
+					int file_id = resultSet.getInt("id");
+					String filename = resultSet.getString("filename");
+					String file_publicKey = resultSet.getString("publicKey");
+					String lp = resultSet.getString("localPath");
+					java.io.File localPath = (lp == null ? null : new java.io.File(lp));
+					String mime = resultSet.getString("mime");
+					long size = resultSet.getLong("size");
 
-			try {
-				String query = "SELECT id, filename, publicKey, localPath, mime, size " +
-						"FROM files WHERE indexParent = ?" + ((columnToSort != null) ? " ORDER by " + columnToSort + (asc ? "" : " DESC") : "");
-				ResultExtractor<File> fileExtractor = new ResultExtractor<File>(new ResultCreator<File>() {
-					@Override
-					public File createResult(ResultSet resultSet) throws SQLException {
-						int file_id = resultSet.getInt("id");
-						String filename = resultSet.getString("filename");
-						String file_publicKey = resultSet.getString("publicKey");
-						String lp = resultSet.getString("localPath");
-						java.io.File localPath = (lp == null ? null : new java.io.File(lp));
-						String mime = resultSet.getString("mime");
-						long size = resultSet.getLong("size");
+					return new File(db, file_id, filename, file_publicKey, localPath, mime, size, id, Index.this);
+				}
+			});
+			db.executeQuery(query, setInt(1, id), fileExtractor);
+			return fileExtractor.getResults();
 
-						return new File(db, file_id, filename, file_publicKey, localPath, mime, size, id, Index.this);
-					}
-				});
-				db.executeQuery(query, setInt(1, id), fileExtractor);
-				return fileExtractor.getResults();
-
-			} catch (SQLException e) {
-				Logger.error(this, "SQLException while getting file list: " + e.toString());
-			}
+		} catch (SQLException e) {
+			Logger.error(this, "SQLException while getting file list: " + e.toString());
 		}
 		return emptyList();
 	}
