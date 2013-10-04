@@ -991,10 +991,7 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public static String getNameFromKey(final String key) {
-		String name = null;
-
-		name = FreenetURIHelper.getFilenameFromKey(key);
-
+		String name = FreenetURIHelper.getFilenameFromKey(key);
 		if (name == null)
 			return null;
 
@@ -1359,15 +1356,13 @@ public class Index extends Observable implements MutableTreeNode,
 		else
 			path[1] = indexTree.getRoot().getChildIndex(id, false);
 
-		int non_null_elements = 0;
 				/* we may have null elements if the tree wasn't fully loaded for this path */
 		for (i = 0; i < path.length; i++) {
 			if (path[i] == null)
 				break;
 		}
 
-		non_null_elements = i;
-
+		int non_null_elements = i;
 		if (non_null_elements != nmb_folders) {
 					/* we eliminate the null elements */
 			Object[] new_path = new Object[non_null_elements];
@@ -1495,8 +1490,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 			str = str.substring(5);
 
-			int spacePos = -1;
-
+			int spacePos;
 			if ((spacePos = str.indexOf(" ")) < 0) { /* hu ? */
 				Logger.notice(this, "Can't parse the Thaw version in the index '" + toString(false) + "' ?!");
 				return;
