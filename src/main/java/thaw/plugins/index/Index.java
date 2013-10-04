@@ -1476,30 +1476,17 @@ public class Index extends Observable implements MutableTreeNode,
 
 	/** create it if it doesn't exist */
 	public void setCategory(String category) {
-
 		cleanUpCategoryName(category);
 
 		if (category == null || "".equals(category))
 			return;
 
+		int catId = getCategoryId(category);
+		if (catId < 0)
+			return;
+
 		try {
-
-			synchronized (db.dbLock) {
-				int catId = getCategoryId(category);
-
-				if (catId < 0)
-					return;
-
-				/* set the categoryId of the index */
-
-				PreparedStatement st = db.getConnection().prepareStatement("UPDATE indexes SET categoryId = ? " +
-						"WHERE id = ?");
-				st.setInt(1, catId);
-				st.setInt(2, id);
-				st.execute();
-				st.close();
-			}
-
+			db.executeUpdate("UPDATE indexes SET categoryId = ? WHERE id = ?", queue(setInt(1, catId), setInt(2, id)));
 		} catch (SQLException e) {
 			Logger.error(this, "Can't set the category because : " + e.toString());
 		}
