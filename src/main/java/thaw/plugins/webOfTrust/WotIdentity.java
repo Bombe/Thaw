@@ -5,9 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -354,7 +355,7 @@ public class WotIdentity extends Identity implements TrustListParser.TrustListCo
 		}
 	}
 
-	public Vector getTrustList() {
+	public List<TrustLink> getTrustList() {
 		return getTrustList(getDb(), this);
 	}
 
@@ -363,15 +364,15 @@ public class WotIdentity extends Identity implements TrustListParser.TrustListCo
 	 * @param idSrc
 	 * @return a vector of TrustLink
 	 */
-	public static Vector getTrustList(Hsqldb db, Identity idSrc) {
-		Vector v = new Vector();
+	public static List<TrustLink> getTrustList(Hsqldb db, Identity idSrc) {
+		List<TrustLink> v = new ArrayList<TrustLink>();
 
 		WotIdentity src = new WotIdentity(idSrc);
 
 		if (idSrc.getPrivateKey() != null) {
 
 			/* mode lazy bastard => on */
-			Vector oids = getOtherWotIdentities(db);
+			List<WotIdentity> oids = getOtherWotIdentities(db);
 
 			for (Iterator it = oids.iterator(); it.hasNext(); ) {
 				WotIdentity id = (WotIdentity) it.next();
@@ -424,8 +425,8 @@ public class WotIdentity extends Identity implements TrustListParser.TrustListCo
 	}
 
 	/** Returns only the identities with a trust > 0 */
-	public static Vector getOtherWotIdentities(Hsqldb db) {
-		Vector v = new Vector();
+	public static List<WotIdentity> getOtherWotIdentities(Hsqldb db) {
+		List<WotIdentity> v = new ArrayList<WotIdentity>();
 
 		try {
 			synchronized (db.dbLock) {

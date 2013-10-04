@@ -3,11 +3,13 @@ package thaw.plugins.webOfTrust;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
 import thaw.gui.GUIHelper;
 import thaw.plugins.signatures.Identity;
+import thaw.plugins.webOfTrust.WotIdentity.TrustLink;
 
 public class WotGraphNode {
 
@@ -88,7 +90,7 @@ public class WotGraphNode {
 			return;
 
 		/* search neighbours */
-		Vector trustList = identity.getTrustList();
+		List<TrustLink> trustList = identity.getTrustList();
 
 		neighbours = new WotGraphNode[trustList.size()];
 		trustLinks = new int[trustList.size()];

@@ -1,5 +1,6 @@
 package thaw.plugins.webOfTrust;
 
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -11,6 +12,7 @@ import thaw.gui.Table;
 import thaw.plugins.Hsqldb;
 import thaw.plugins.signatures.Identity;
 import thaw.plugins.signatures.IdentityTable;
+import thaw.plugins.webOfTrust.WotIdentity.TrustLink;
 
 public class TrustListTable extends Observable implements Observer {
 
@@ -36,7 +38,7 @@ public class TrustListTable extends Observable implements Observer {
 
 		private static final long serialVersionUID = 2742525676359889703L;
 
-		private Vector trustLinks = null;
+		private List<TrustLink> trustLinks = null;
 
 		public TrustListModel() {
 			super(false);
@@ -49,7 +51,7 @@ public class TrustListTable extends Observable implements Observer {
 				I18n.getMessage("thaw.plugin.wot.wotTrustLevel")
 		};
 
-		public void setIdentities(Vector i) {
+		public void setIdentities(List<TrustLink> i) {
 			trustLinks = i;
 
 			final TableModelEvent event = new TableModelEvent(this);
@@ -101,7 +103,7 @@ public class TrustListTable extends Observable implements Observer {
 	}
 
 	public void refresh(Identity src) {
-		Vector ids;
+		List<TrustLink> ids;
 
 		if (src != null)
 			ids = WotIdentity.getTrustList(db, src);
