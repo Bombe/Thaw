@@ -284,6 +284,22 @@ public class Hsqldb extends LibraryPlugin {
 	}
 
 	/**
+	 * Performs a rollback on the given connection, if it is non-null.
+	 *
+	 * @param connection
+	 * 		The connection to perform a rollback on (may be {@code null})
+	 */
+	public static void rollback(Connection connection) {
+		if (connection != null) {
+			try {
+				connection.rollback();
+			} catch (SQLException sqle1) {
+				/* swallow. */
+			}
+		}
+	}
+
+	/**
 	 * Closes the given connection.
 	 *
 	 * @param connection
