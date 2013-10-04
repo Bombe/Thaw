@@ -1287,37 +1287,15 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public int getNmbComments() {
-
+		ResultExtractor<Integer> countExtractor = new ResultExtractor<Integer>(integerResultCreator(1), Hsqldb.<Integer>stopOnFirst());
 		try {
-			int nmb = 0;
-
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT count(indexComments.id) " +
-						"FROM indexComments " +
-						"WHERE indexComments.indexId = ? " +
-						"AND indexComments.rev NOT IN " +
-						" (SELECT indexCommentBlackList.rev " +
-						"  FROM indexCommentBlackList " +
-						"  WHERE indexCommentBlackList.indexId = ?)");
-
-				st.setInt(1, id);
-				st.setInt(2, id);
-
-				ResultSet set = st.executeQuery();
-
-				if (set.next())
-					nmb = set.getInt(1);
-
-				st.close();
-
-				return nmb;
-			}
+			db.executeQuery("SELECT count(indexComments.id) FROM indexComments WHERE indexComments.indexId = ? AND indexComments.rev NOT IN (SELECT indexCommentBlackList.rev FROM indexCommentBlackList WHERE indexCommentBlackList.indexId = ?)", queue(setInt(1, id), setInt(2, id)), countExtractor);
 		} catch (SQLException e) {
 			Logger.error(this, "Error while fetching comment list : " + e.toString());
 		}
-
+		if (!countExtractor.getResults().isEmpty()) {
+			countExtractor.getResults().get(0);
+		}
 		return 0;
 	}
 
