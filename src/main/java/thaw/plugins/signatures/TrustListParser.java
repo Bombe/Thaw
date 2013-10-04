@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,7 +41,7 @@ public class TrustListParser {
 
 	/** ****************** EXPORT  ***************************** */
 
-	public static boolean exportTrustList(Vector identities, File outputFile) {
+	public static boolean exportTrustList(List<Identity> identities, File outputFile) {
 		try {
 			FileOutputStream out = new FileOutputStream(outputFile);
 
@@ -114,13 +115,10 @@ public class TrustListParser {
 	 * @param xmlDoc
 	 * @return
 	 */
-	public static boolean fillInRootElement(Vector identities, Element rootEl, Document xmlDoc) {
+	public static boolean fillInRootElement(List<Identity> identities, Element rootEl, Document xmlDoc) {
 		//rootEl.appendChild(getXMLHeader(xmlDoc));
 
-		for (Iterator it = identities.iterator();
-			 it.hasNext(); ) {
-			Identity id = (Identity) it.next();
-
+		for (Identity id : identities) {
 			if (id.getTrustLevel() != 0 /* no just 'SIGNED' */
 					&& id.getTrustLevel() != Identity.trustLevelInt[0]) /* and no dev */
 				rootEl.appendChild(getXMLIdentity(id, xmlDoc));

@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 import java.util.Observable;
 import java.util.Vector;
 import javax.swing.JTable;
@@ -52,7 +53,7 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 				I18n.getMessage("thaw.plugin.signature.isDup")
 		};
 
-		private Vector identities;
+		private List<Identity> identities;
 
 		private boolean showDup;
 
@@ -67,7 +68,7 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 			fireTableChanged(event);
 		}
 
-		public Vector getIdentities() {
+		public List<Identity> getIdentities() {
 			return identities;
 		}
 
@@ -96,13 +97,13 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 				return identities.get(row).toString();
 
 			if (column == 1)
-				return ((Identity) identities.get(row)).getTrustLevelStr();
+				return identities.get(row).getTrustLevelStr();
 
 			return null;
 		}
 
 		public Identity getIdentity(int line) {
-			return (Identity) identities.get(line);
+			return identities.get(line);
 		}
 	}
 
@@ -154,7 +155,7 @@ public class IdentityTable extends Observable implements MouseListener, KeyListe
 		return model.getIdentity(row);
 	}
 
-	public Vector getIdentities() {
+	public List<Identity> getIdentities() {
 		return model.getIdentities();
 	}
 
