@@ -1135,29 +1135,12 @@ public class Index extends Observable implements MutableTreeNode,
 	/** @return true if a change was done */
 	public boolean setNewCommentFlag(boolean flag) {
 		setNewCommentFlagInMem(flag);
-
-		synchronized (db.dbLock) {
-			try {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("UPDATE indexes SET newComment = ? " +
-						"WHERE id = ?");
-
-				st.setBoolean(1, flag);
-				st.setInt(2, id);
-				if (st.executeUpdate() > 0) {
-					st.close();
-					return true;
-				}
-
-				st.close();
-				return false;
-			} catch (SQLException e) {
-				Logger.error(this, "Unable to change 'newComment' flag because: " + e.toString());
-			}
+		try {
+			return db.executeUpdate("UPDATE indexes SET newComment = ? WHERE id = ?", queue(setBoolean(1, flag), setInt(2, id))) > 0;
+		} catch (SQLException e) {
+			Logger.error(this, "Unable to change 'newComment' flag because: " + e.toString());
+			return false;
 		}
-
-		return false;
 	}
 
 	public Element do_export(Document xmlDoc, boolean withContent) {
