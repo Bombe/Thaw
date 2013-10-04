@@ -1418,32 +1418,15 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public String getCategory() {
+		ResultExtractor<String> nameExtrator = new ResultExtractor<String>(stringResultCreator(1), Hsqldb.<String>stopOnFirst());
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-				st = db.getConnection().prepareStatement("SELECT categories.name AS name " +
-						"FROM categories INNER JOIN indexes " +
-						" ON categories.id = indexes.categoryId " +
-						"WHERE indexes.id = ? LIMIT 1");
-				st.setInt(1, id);
-
-				ResultSet set = st.executeQuery();
-
-				if (!set.next()) {
-					st.close();
-					return null;
-				}
-
-				String r = set.getString("name").toLowerCase();
-				st.close();
-				return r;
-			}
+			db.executeQuery("SELECT categories.name AS name FROM categories INNER JOIN indexes ON categories.id = indexes.categoryId WHERE indexes.id = ? LIMIT 1", setInt(1, id), nameExtrator);
 		} catch (SQLException e) {
-			Logger.error(this,
-					"Unable to get the category of the index because : " +
-							e.toString());
+			Logger.error(this, "Unable to get the category of the index because : " + e.toString());
 		}
-
+		if (!nameExtrator.getResults().isEmpty()) {
+			return nameExtrator.getResults().get(0).toLowerCase();
+		}
 		return null;
 	}
 
