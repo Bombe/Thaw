@@ -4,16 +4,16 @@ import static java.sql.Types.INTEGER;
 import static java.sql.Types.VARCHAR;
 import static java.util.Collections.emptyList;
 import static thaw.plugins.Hsqldb.close;
-import static thaw.plugins.Hsqldb.integerResultCreator;
-import static thaw.plugins.Hsqldb.queue;
+import static thaw.plugins.hsql.ResultCreators.integerResultCreator;
+import static thaw.plugins.hsql.StatementProcessors.queue;
 import static thaw.plugins.Hsqldb.rollback;
-import static thaw.plugins.Hsqldb.setBoolean;
-import static thaw.plugins.Hsqldb.setDate;
-import static thaw.plugins.Hsqldb.setInt;
-import static thaw.plugins.Hsqldb.setLong;
-import static thaw.plugins.Hsqldb.setNull;
-import static thaw.plugins.Hsqldb.setString;
-import static thaw.plugins.Hsqldb.stringResultCreator;
+import static thaw.plugins.hsql.StatementProcessors.setBoolean;
+import static thaw.plugins.hsql.StatementProcessors.setDate;
+import static thaw.plugins.hsql.StatementProcessors.setInt;
+import static thaw.plugins.hsql.StatementProcessors.setLong;
+import static thaw.plugins.hsql.StatementProcessors.setNull;
+import static thaw.plugins.hsql.StatementProcessors.setString;
+import static thaw.plugins.hsql.ResultCreators.stringResultCreator;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -44,9 +44,10 @@ import thaw.fcp.FCPTransferQuery;
 import thaw.fcp.FreenetURIHelper;
 import thaw.gui.MainWindow;
 import thaw.plugins.Hsqldb;
-import thaw.plugins.Hsqldb.ResultCreator;
-import thaw.plugins.Hsqldb.ResultExtractor;
-import thaw.plugins.Hsqldb.ResultSetProcessor;
+import thaw.plugins.hsql.ResultCreator;
+import thaw.plugins.hsql.ResultExtractor;
+import thaw.plugins.hsql.ResultExtractors;
+import thaw.plugins.hsql.ResultSetProcessor;
 import thaw.plugins.IndexBrowser;
 import thaw.plugins.TrayIcon;
 import thaw.plugins.signatures.Identity;
@@ -1283,7 +1284,7 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public int getNmbComments() {
-		ResultExtractor<Integer> countExtractor = new ResultExtractor<Integer>(integerResultCreator(1), Hsqldb.<Integer>stopOnFirst());
+		ResultExtractor<Integer> countExtractor = new ResultExtractor<Integer>(integerResultCreator(1), ResultExtractors.<Integer>stopOnFirst());
 		try {
 			db.executeQuery("SELECT count(indexComments.id) FROM indexComments WHERE indexComments.indexId = ? AND indexComments.rev NOT IN (SELECT indexCommentBlackList.rev FROM indexCommentBlackList WHERE indexCommentBlackList.indexId = ?)", queue(setInt(1, id), setInt(2, id)), countExtractor);
 		} catch (SQLException e) {
@@ -1386,7 +1387,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 	/** @return -1 if none */
 	public int getCategoryId() {
-		ResultExtractor<Integer> categoryIdExtractor = new ResultExtractor<Integer>(integerResultCreator(1), Hsqldb.<Integer>stopOnFirst());
+		ResultExtractor<Integer> categoryIdExtractor = new ResultExtractor<Integer>(integerResultCreator(1), ResultExtractors.<Integer>stopOnFirst());
 		try {
 			db.executeQuery("SELECT categoryId FROM indexes WHERE id = ? LIMIT 1", setInt(1, id), categoryIdExtractor);
 		} catch (SQLException e) {
@@ -1399,7 +1400,7 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public String getCategory() {
-		ResultExtractor<String> nameExtrator = new ResultExtractor<String>(stringResultCreator(1), Hsqldb.<String>stopOnFirst());
+		ResultExtractor<String> nameExtrator = new ResultExtractor<String>(stringResultCreator(1), ResultExtractors.<String>stopOnFirst());
 		try {
 			db.executeQuery("SELECT categories.name AS name FROM categories INNER JOIN indexes ON categories.id = indexes.categoryId WHERE indexes.id = ? LIMIT 1", setInt(1, id), nameExtrator);
 		} catch (SQLException e) {
