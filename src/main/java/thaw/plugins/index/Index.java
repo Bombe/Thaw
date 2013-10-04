@@ -1184,27 +1184,14 @@ public class Index extends Observable implements MutableTreeNode,
 	/** @return an SSK@ */
 	public String getCommentPrivateKey() {
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT privateKey FROM indexCommentKeys WHERE indexId = ? LIMIT 1");
-				st.setInt(1, id);
-
-				ResultSet set = st.executeQuery();
-
-				String r = null;
-
-				if (set != null && set.next())
-					r = set.getString("privateKey");
-
-				st.close();
-
-				return r;
+			ResultExtractor<String> privateKeyExtractor = new ResultExtractor<String>(stringResultCreator(1));
+			db.executeQuery("SELECT privateKey FROM indexCommentKeys WHERE indexId = ? LIMIT 1", setInt(1, id), privateKeyExtractor);
+			if (!privateKeyExtractor.getResults().isEmpty()) {
+				return privateKeyExtractor.getResults().get(0);
 			}
 		} catch (SQLException e) {
 			Logger.error(this, "Unable to get comment public key because : " + e.toString());
 		}
-
 		return null;
 	}
 
