@@ -1235,26 +1235,6 @@ public class Index extends Observable implements MutableTreeNode,
 		}
 	}
 
-	protected class CommentKeyRegenerator implements Observer {
-
-		private FCPGenerateSSK sskGenerator;
-
-		public CommentKeyRegenerator(FCPQueueManager queueManager) {
-			sskGenerator = new FCPGenerateSSK(queueManager);
-			sskGenerator.addObserver(this);
-
-			sskGenerator.start();
-		}
-
-		public void update(Observable o, Object param) {
-			if (o instanceof FCPGenerateSSK) {
-				setCommentKeys(((FCPGenerateSSK) o).getPublicKey(),
-						((FCPGenerateSSK) o).getPrivateKey());
-			}
-		}
-
-	}
-
 	public void regenerateCommentKeys(FCPQueueManager queueManager) {
 		new CommentKeyRegenerator(queueManager);
 	}
@@ -1687,6 +1667,26 @@ public class Index extends Observable implements MutableTreeNode,
 					"' because : " + e.toString());
 			e.printStackTrace();
 		}
+	}
+
+	protected class CommentKeyRegenerator implements Observer {
+
+		private FCPGenerateSSK sskGenerator;
+
+		public CommentKeyRegenerator(FCPQueueManager queueManager) {
+			sskGenerator = new FCPGenerateSSK(queueManager);
+			sskGenerator.addObserver(this);
+
+			sskGenerator.start();
+		}
+
+		public void update(Observable o, Object param) {
+			if (o instanceof FCPGenerateSSK) {
+				setCommentKeys(((FCPGenerateSSK) o).getPublicKey(),
+						((FCPGenerateSSK) o).getPrivateKey());
+			}
+		}
+
 	}
 
 	/** Container for key and revision data. */
