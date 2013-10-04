@@ -24,7 +24,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Vector;
 import javax.swing.JOptionPane;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -1273,40 +1272,18 @@ public class Index extends Observable implements MutableTreeNode,
 	}
 
 	public List<Comment> getComments() {
-		try {
-			synchronized (db.dbLock) {
-				Vector comments = new Vector();
-
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("SELECT authorId, text, rev " +
-						"FROM indexComments WHERE indexId = ? ORDER BY rev" +
-						(asc ? "" : " DESC"));
-
-				st.setInt(1, id);
-
-				ResultSet set = st.executeQuery();
-
-				while (set.next())
-					comments.add(new Comment(db, this,
-							set.getInt("rev"),
-							Identity.getIdentity(db, set.getInt("authorId")),
-							set.getString("text")));
-
-				st.close();
-
-				if (comments.size() == 0)
-					Logger.notice(this, "No comment for this index");
-				else
-					Logger.info(this, Integer.toString(comments.size()) + " comments for this index");
-
-				return comments;
+		ResultExtractor<Comment> commentExtractor = new ResultExtractor<Comment>(new ResultCreator<Comment>() {
+			@Override
+			public Comment createResult(ResultSet resultSet) throws SQLException {
+				return new Comment(db, Index.this, resultSet.getInt("rev"), Identity.getIdentity(db, resultSet.getInt("authorId")), resultSet.getString("text"));
 			}
+		});
+		try {
+			db.executeQuery("SELECT authorId, text, rev FROM indexComments WHERE indexId = ? ORDER BY rev", setInt(1, id), commentExtractor);
 		} catch (SQLException e) {
 			Logger.error(this, "Error while fetching comment list : " + e.toString());
 		}
-
-		return null;
+		return commentExtractor.getResults();
 	}
 
 	public int getNmbComments() {
