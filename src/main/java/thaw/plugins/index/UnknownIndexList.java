@@ -29,7 +29,7 @@ import thaw.plugins.ToolbarModifier;
 
 public class UnknownIndexList implements MouseListener, ActionListener {
 
-	private Vector linkList;
+	private final Vector<Link> linkList = new Vector<Link>();
 
 	private JPanel panel;
 
@@ -54,8 +54,6 @@ public class UnknownIndexList implements MouseListener, ActionListener {
 	public UnknownIndexList(final FCPQueueManager queueManager, IndexBrowserPanel indexBrowser) {
 		this.queueManager = queueManager;
 		this.indexBrowser = indexBrowser;
-
-		linkList = new Vector();
 
 		list = new JList(linkList);
 
@@ -109,7 +107,8 @@ public class UnknownIndexList implements MouseListener, ActionListener {
 		/* to avoid iterator collisions */
 
 		for (int i = 0; i < linkList.size(); i++) {
-			Link l = (Link) linkList.get(i);
+			/* FIXME - this seems to be highly broken. */
+			Link l = linkList.get(i);
 			if (l.compare(index)) {
 				ret = true;
 				linkList.remove(l);
