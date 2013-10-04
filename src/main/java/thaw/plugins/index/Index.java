@@ -1272,12 +1272,7 @@ public class Index extends Observable implements MutableTreeNode,
 		}
 	}
 
-	public Vector getComments() {
-		return getComments(true);
-	}
-
-	public Vector getComments(boolean asc) {
-
+	public List<Comment> getComments() {
 		try {
 			synchronized (db.dbLock) {
 				Vector comments = new Vector();

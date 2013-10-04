@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -93,7 +94,7 @@ public class CommentTab implements ActionListener {
 
 		JPanel insidePanel = new JPanel();
 
-		Vector comments = null;
+		List<Comment> comments = null;
 
 		if (index != null)
 			comments = index.getComments();
@@ -101,18 +102,14 @@ public class CommentTab implements ActionListener {
 		if (comments != null) {
 			int nmbCommentToDisplay = 0;
 
-			for (Iterator it = comments.iterator();
-				 it.hasNext(); ) {
-				if (!(((Comment) it.next()).mustBeIgnored(config)))
+			for (Comment comment : comments) {
+				if (!comment.mustBeIgnored(config))
 					nmbCommentToDisplay++;
 			}
 
 			insidePanel.setLayout(new GridLayout(nmbCommentToDisplay, 1, 20, 20));
 
-			for (Iterator it = comments.iterator();
-				 it.hasNext(); ) {
-				Comment c = ((Comment) it.next());
-
+			for (Comment c : comments) {
 				if (!c.mustBeIgnored(config)) {
 					JPanel panel = c.getPanel(this);
 
