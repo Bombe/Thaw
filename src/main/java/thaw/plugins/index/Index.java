@@ -1288,7 +1288,7 @@ public class Index extends Observable implements MutableTreeNode,
 			Logger.error(this, "Error while fetching comment list : " + e.toString());
 		}
 		if (!countExtractor.getResults().isEmpty()) {
-			countExtractor.getResults().get(0);
+			return countExtractor.getResults().get(0);
 		}
 		return 0;
 	}
