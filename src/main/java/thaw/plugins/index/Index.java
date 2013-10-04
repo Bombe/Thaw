@@ -6,6 +6,7 @@ import static java.util.Collections.emptyList;
 import static thaw.plugins.Hsqldb.close;
 import static thaw.plugins.Hsqldb.integerResultCreator;
 import static thaw.plugins.Hsqldb.queue;
+import static thaw.plugins.Hsqldb.rollback;
 import static thaw.plugins.Hsqldb.setBoolean;
 import static thaw.plugins.Hsqldb.setDate;
 import static thaw.plugins.Hsqldb.setInt;
@@ -1197,28 +1198,19 @@ public class Index extends Observable implements MutableTreeNode,
 
 	/** Will also purge comments ! */
 	public void purgeCommentKeys() {
+		Connection connection = null;
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("DELETE FROM indexCommentBlackList WHERE indexId = ?");
-				st.setInt(1, id);
-				st.execute();
-				st.close();
-
-				st = db.getConnection().prepareStatement("DELETE FROM indexComments WHERE indexId = ?");
-				st.setInt(1, id);
-				st.execute();
-				st.close();
-
-				st = db.getConnection().prepareStatement("DELETE FROM indexCommentKeys WHERE indexId = ?");
-				st.setInt(1, id);
-				st.execute();
-				st.close();
-
-			}
+			connection = db.getConnection();
+			connection.setAutoCommit(false);
+			db.executeUpdate(connection, "DELETE FROM indexCommentBlackList WHERE indexId = ?", setInt(1, id));
+			db.executeUpdate(connection, "DELETE FROM indexComments WHERE indexId = ?", setInt(1, id));
+			db.executeUpdate(connection, "DELETE FROM indexCommentKeys WHERE indexId = ?", setInt(1, id));
+			connection.commit();
 		} catch (SQLException e) {
+			rollback(connection);
 			Logger.error(this, "Unable to purge comment keys, because : " + e.toString());
+		} finally {
+			close(connection);
 		}
 	}
 
