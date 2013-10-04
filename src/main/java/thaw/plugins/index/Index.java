@@ -17,7 +17,6 @@ import static thaw.plugins.Hsqldb.stringResultCreator;
 
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
@@ -1308,92 +1307,77 @@ public class Index extends Observable implements MutableTreeNode,
 		for (int i = 0; i < folderIds.length; i++)
 			folderIds[i] = -1;
 
-		synchronized (db.dbLock) {
-			try {
-				/* we find the id of the parents */
-
-				PreparedStatement st = db.getConnection().prepareStatement("SELECT folderId FROM indexParents " +
-						"WHERE indexId = ? LIMIT 1");
-				st.setInt(1, id);
-				ResultSet res = st.executeQuery();
-
-				if (!res.next()) {
-					Logger.error(this, "Can't find the index " + Integer.toString(id) + "in the db! The tree is probably broken !");
-					st.close();
-					return null;
-				}
-
-				int i = 0;
-
-				do {
-					int j = res.getInt("folderId");
-
-					if (j != 0) /* root */
-						folderIds[i] = j;
-
-					i++;
-				} while (res.next());
-
-				st.close();
-
-				int nmb_folders = i + 1; /* i + root */
-
-				Object[] path = new Object[nmb_folders + 1]; /* folders + the index */
-
-				for (i = 0; i < path.length; i++)
-					path[i] = null;
-
-				path[0] = indexTree.getRoot();
-
-				for (i = 1; i < nmb_folders; i++) {
-					IndexFolder folder = null;
-
-					for (int j = 0;
-						 folder == null && j < folderIds.length && folderIds[j] != -1;
-						 j++) {
-
-						folder = ((IndexFolder) path[i - 1]).getChildFolder(folderIds[j], false);
-
-					}
-
-					if (folder == null)
-						break;
-
-					path[i] = folder;
-				}
-
-				if (i >= 2)
-					path[i - 1] = ((IndexFolder) path[i - 2]).getChildIndex(id, false);
-				else
-					path[1] = indexTree.getRoot().getChildIndex(id, false);
-
-				int non_null_elements = 0;
-				/* we may have null elements if the tree wasn't fully loaded for this path */
-				for (i = 0; i < path.length; i++) {
-					if (path[i] == null)
-						break;
-				}
-
-				non_null_elements = i;
-
-				if (non_null_elements != nmb_folders) {
-					/* we eliminate the null elements */
-					Object[] new_path = new Object[non_null_elements];
-
-					for (i = 0; i < non_null_elements; i++)
-						new_path[i] = path[i];
-
-					path = new_path;
-				}
-
-				return new TreePath(path);
-
-			} catch (SQLException e) {
-				Logger.error(this, "Error while getting index tree path : " + e.toString());
-			}
+		/* we find the id of the parents */
+		ResultExtractor<Integer> idExtractor = new ResultExtractor<Integer>(integerResultCreator(1));
+		try {
+			db.executeQuery("SELECT folderId FROM indexParents WHERE indexId = ? LIMIT 1", setInt(1, id), idExtractor);
+		} catch (SQLException e) {
+			Logger.error(this, "Error while getting index tree path : " + e.toString());
+			return null;
+		}
+		if (idExtractor.getResults().isEmpty()) {
+			Logger.error(this, "Can't find the index " + Integer.toString(id) + "in the db! The tree is probably broken !");
+			return null;
 		}
 
-		return null;
+		int i = 0;
+		for (int j : idExtractor) {
+			if (j != 0) /* root */
+				folderIds[i] = j;
+			i++;
+		}
+
+		int nmb_folders = i + 1; /* i + root */
+
+		Object[] path = new Object[nmb_folders + 1]; /* folders + the index */
+
+		for (i = 0; i < path.length; i++)
+			path[i] = null;
+
+		path[0] = indexTree.getRoot();
+
+		for (i = 1; i < nmb_folders; i++) {
+			IndexFolder folder = null;
+
+			for (int j = 0;
+					folder == null && j < folderIds.length && folderIds[j] != -1;
+					j++) {
+
+				folder = ((IndexFolder) path[i - 1]).getChildFolder(folderIds[j], false);
+
+			}
+
+			if (folder == null)
+				break;
+
+			path[i] = folder;
+		}
+
+		if (i >= 2)
+			path[i - 1] = ((IndexFolder) path[i - 2]).getChildIndex(id, false);
+		else
+			path[1] = indexTree.getRoot().getChildIndex(id, false);
+
+		int non_null_elements = 0;
+				/* we may have null elements if the tree wasn't fully loaded for this path */
+		for (i = 0; i < path.length; i++) {
+			if (path[i] == null)
+				break;
+		}
+
+		non_null_elements = i;
+
+		if (non_null_elements != nmb_folders) {
+					/* we eliminate the null elements */
+			Object[] new_path = new Object[non_null_elements];
+
+			for (i = 0; i < non_null_elements; i++)
+				new_path[i] = path[i];
+
+			path = new_path;
+		}
+
+		return new TreePath(path);
 	}
 
 	public String getClientVersion() {
