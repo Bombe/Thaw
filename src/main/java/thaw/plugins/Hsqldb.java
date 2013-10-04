@@ -639,7 +639,11 @@ public class Hsqldb extends LibraryPlugin {
 		return new ResultCreator<Integer>() {
 			@Override
 			public Integer createResult(ResultSet resultSet) throws SQLException {
-				return resultSet.getInt(index);
+				Integer result = resultSet.getInt(index);
+				if (resultSet.wasNull()) {
+					return null;
+				}
+				return result;
 			}
 		};
 	}
