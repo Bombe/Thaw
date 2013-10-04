@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -28,6 +29,9 @@ import thaw.fcp.FCPQueueManager;
 import thaw.gui.IconBox;
 import thaw.gui.Table;
 import thaw.plugins.ToolbarModifier;
+import thaw.plugins.index.LinkManagementHelper.BasicLinkAction;
+import thaw.plugins.index.LinkManagementHelper.LinkAction;
+import thaw.plugins.transferLogs.TransferManagementHelper.TransferAction;
 
 public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
@@ -43,7 +47,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 	private JPopupMenu rightClickMenu;
 
-	private Vector rightClickActions;
+	private final List<LinkAction> rightClickActions = new ArrayList<LinkAction>();
 
 	private JMenuItem gotoItem;
 
@@ -51,7 +55,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 	private ToolbarModifier toolbarModifier;
 
-	private Vector toolbarActions;
+	private final List<LinkAction> toolbarActions = new ArrayList<LinkAction>();
 
 	private int[] selectedRows;
 
@@ -79,10 +83,8 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		table.addMouseListener(this);
 
 		rightClickMenu = new JPopupMenu();
-		rightClickActions = new Vector();
 
 		toolbarModifier = new ToolbarModifier(indexBrowser.getMainWindow());
-		toolbarActions = new Vector();
 
 		JMenuItem item;
 		JButton button;
@@ -147,15 +149,11 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		return panel;
 	}
 
-	protected void updateRightClickMenu(final Vector selectedLinks) {
-		LinkManagementHelper.LinkAction action;
-
+	protected void updateRightClickMenu(final List<Link> selectedLinks) {
 		firstSelectedLink = selectedLinks != null && selectedLinks.size() > 0 ?
-				((Link) selectedLinks.get(0)) : null;
+				selectedLinks.get(0) : null;
 
-		for (final Iterator it = rightClickActions.iterator();
-			 it.hasNext(); ) {
-			action = (LinkManagementHelper.LinkAction) it.next();
+		for (LinkAction action : rightClickActions) {
 			action.setTarget(selectedLinks);
 		}
 

@@ -6,7 +6,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.AbstractButton;
 
 import thaw.core.Logger;
@@ -24,7 +24,7 @@ public class LinkManagementHelper {
 		 * @param links
 		 * 		can be null
 		 */
-		public void setTarget(Vector links);
+		public void setTarget(List<Link> links);
 	}
 
 	public static abstract class BasicLinkAction implements LinkAction, ThawRunnable {
@@ -50,8 +50,6 @@ public class LinkManagementHelper {
 			/* \_o< */
 		}
 
-		public abstract void setTarget(Vector files);
-
 		public abstract void apply();
 	}
 
@@ -61,7 +59,7 @@ public class LinkManagementHelper {
 
 		private AbstractButton actionSource;
 
-		private Vector target;
+		private List<Link> target;
 
 		public LinkRemover(IndexBrowserPanel indexBrowser, final AbstractButton actionSource) {
 			this.actionSource = actionSource;
@@ -70,7 +68,7 @@ public class LinkManagementHelper {
 				actionSource.addActionListener(this);
 		}
 
-		public void setTarget(final Vector target) {
+		public void setTarget(final List<Link> target) {
 			boolean isOk;
 
 			isOk = true;
@@ -91,13 +89,11 @@ public class LinkManagementHelper {
 		}
 	}
 
-	public static void removeLinks(IndexBrowserPanel indexBrowser, final Vector links) {
+	public static void removeLinks(IndexBrowserPanel indexBrowser, final List<Link> links) {
 		if (links == null)
 			return;
 
-		for (final Iterator it = links.iterator();
-			 it.hasNext(); ) {
-			final Link link = (Link) it.next();
+		for (Link link : links) {
 			link.delete();
 		}
 
@@ -112,7 +108,7 @@ public class LinkManagementHelper {
 
 		private AbstractButton src;
 
-		private Vector t;
+		private List<Link> t;
 
 		private boolean addToParent; /* (== add to the same parent folder) */
 
@@ -137,7 +133,7 @@ public class LinkManagementHelper {
 			this.addToParent = addToParent;
 		}
 
-		public void setTarget(final Vector targets) {
+		public void setTarget(final List<Link> targets) {
 			t = targets;
 			src.setEnabled((targets != null) && (targets.size() > 0));
 		}
@@ -167,7 +163,7 @@ public class LinkManagementHelper {
 
 		private AbstractButton src;
 
-		private Vector t;
+		private List<Link> t;
 
 		public PublicKeyCopier(final AbstractButton actionSource) {
 			src = actionSource;
@@ -175,7 +171,7 @@ public class LinkManagementHelper {
 				actionSource.addActionListener(this);
 		}
 
-		public void setTarget(final Vector targets) {
+		public void setTarget(final List<Link> targets) {
 			t = targets;
 			src.setEnabled((targets != null) && (targets.size() > 0));
 		}
@@ -185,7 +181,7 @@ public class LinkManagementHelper {
 		}
 	}
 
-	public static void copyPublicKeyFrom(final Vector targets) {
+	public static void copyPublicKeyFrom(final List<Link> targets) {
 		String keys = "";
 
 		if (targets == null)
@@ -193,9 +189,7 @@ public class LinkManagementHelper {
 
 		final Toolkit tk = Toolkit.getDefaultToolkit();
 
-		for (final Iterator it = targets.iterator();
-			 it.hasNext(); ) {
-			final Link link = (Link) it.next();
+		for (Link link : targets) {
 			keys = keys + link.getPublicKey() + "\n";
 		}
 
@@ -219,7 +213,7 @@ public class LinkManagementHelper {
 			this.blackList = blackList;
 		}
 
-		public void setTarget(final Vector targets) {
+		public void setTarget(final List<Link> targets) {
 			src.setEnabled(true);
 		}
 
@@ -232,7 +226,7 @@ public class LinkManagementHelper {
 
 		private AbstractButton src;
 
-		private Vector t;
+		private List<Link> t;
 
 		private IndexBrowserPanel indexBrowser;
 
@@ -245,7 +239,7 @@ public class LinkManagementHelper {
 				actionSource.addActionListener(this);
 		}
 
-		public void setTarget(final Vector targets) {
+		public void setTarget(final List<Link> targets) {
 			t = targets;
 			src.setEnabled((targets != null) && (targets.size() > 0));
 		}
