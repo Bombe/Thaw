@@ -1229,17 +1229,7 @@ public class Index extends Observable implements MutableTreeNode,
 		purgeCommentKeys();
 
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-
-				st = db.getConnection().prepareStatement("INSERT INTO indexCommentKeys (publicKey, privateKey, indexId) VALUES (?, ?, ?)");
-				st.setString(1, publicKey);
-				st.setString(2, privateKey);
-				st.setInt(3, id);
-
-				st.execute();
-				st.close();
-			}
+			db.executeUpdate("INSERT INTO indexCommentKeys (publicKey, privateKey, indexId) VALUES (?, ?, ?)", queue(setString(1, publicKey), setString(2, privateKey), setInt(3, id)));
 		} catch (SQLException e) {
 			Logger.error(this, "Unable to set comment keys, because : " + e.toString());
 		}
