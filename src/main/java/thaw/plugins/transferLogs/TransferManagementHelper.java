@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.AbstractButton;
 
 import thaw.gui.GUIHelper;
@@ -20,7 +20,7 @@ public class TransferManagementHelper {
 		 * @param files
 		 * 		can be null
 		 */
-		public void setTarget(Vector transfers);
+		public void setTarget(List<Transfer> transfers);
 	}
 
 	/*
@@ -30,7 +30,7 @@ public class TransferManagementHelper {
 
 		private AbstractButton b;
 
-		private Vector targets;
+		private List<Transfer> targets;
 
 		private TransferTable tt;
 
@@ -43,7 +43,7 @@ public class TransferManagementHelper {
 			}
 		}
 
-		public void setTarget(Vector transfers) {
+		public void setTarget(List<Transfer> transfers) {
 			targets = transfers;
 		}
 
@@ -82,7 +82,7 @@ public class TransferManagementHelper {
 
 		private AbstractButton b;
 
-		private Vector targets;
+		private List<Transfer> targets;
 
 		public TransferKeyCopier(AbstractButton b) {
 			this.b = b;
@@ -92,7 +92,7 @@ public class TransferManagementHelper {
 			}
 		}
 
-		public void setTarget(Vector transfers) {
+		public void setTarget(List<Transfer> transfers) {
 			targets = transfers;
 		}
 

@@ -12,8 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.util.Iterator;
-import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -27,6 +25,8 @@ import javax.swing.JTextArea;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import java.util.ArrayList;
+import java.util.List;
 
 import thaw.core.Config;
 import thaw.core.I18n;
@@ -36,6 +36,7 @@ import thaw.gui.IconBox;
 import thaw.gui.Table;
 import thaw.plugins.Hsqldb;
 import thaw.plugins.TransferLogs;
+import thaw.plugins.transferLogs.TransferManagementHelper.TransferAction;
 
 /**
  * Allow to see entry page per page. columns : "dates" (start,end), transfer
@@ -70,7 +71,7 @@ public class TransferTable implements MouseListener {
 
 	private JPopupMenu rightClickMenu;
 
-	private Vector rightClickActions;
+	private final List<TransferAction> rightClickActions = new ArrayList<TransferAction>();
 
 	private TransferManagementHelper.TransferRemover remover;
 
@@ -80,7 +81,6 @@ public class TransferTable implements MouseListener {
 		this.dateFormat = DateFormat.getDateTimeInstance();
 
 		rightClickMenu = new JPopupMenu();
-		rightClickActions = new Vector();
 
 		JMenuItem item;
 
@@ -215,7 +215,7 @@ public class TransferTable implements MouseListener {
 
 		private int page;
 
-		private Vector transfers = null;
+		private List<Transfer> transfers = null;
 
 		private final Hsqldb db;
 
@@ -257,7 +257,7 @@ public class TransferTable implements MouseListener {
 			if (row > transfers.size())
 				return null;
 
-			Transfer t = (Transfer) transfers.get(row);
+			Transfer t = transfers.get(row);
 
 			if (column == 0) { /* dates */
 				String dates = I18n.getMessage("thaw.plugin.transferLogs.dateStart") + " ";
@@ -313,14 +313,13 @@ public class TransferTable implements MouseListener {
 			fireTableChanged(new TableModelEvent(this, row));
 		}
 
-		public Vector getRows(int[] rows) {
+		public List<Transfer> getRows(int[] rows) {
 			if (transfers == null)
 				return null;
 
-			Vector v = new Vector();
-
-			for (int i = 0; i < rows.length; i++) {
-				v.add(transfers.get(rows[i]));
+			List<Transfer> v = new ArrayList<Transfer>();
+			for (int rowIndex : rows) {
+				v.add(transfers.get(rowIndex));
 			}
 
 			return v;
@@ -344,7 +343,7 @@ public class TransferTable implements MouseListener {
 							" OFFSET " + Integer.toString(offset));
 					ResultSet res = st.executeQuery();
 
-					transfers = new Vector();
+					transfers = new ArrayList<Transfer>();
 
 					while (res.next()) {
 						transfers.add(new Transfer(db, res.getInt("id"),
@@ -493,16 +492,12 @@ public class TransferTable implements MouseListener {
 		pageSelecter.refresh();
 	}
 
-	private void updateToolbar(Vector selection) {
+	private void updateToolbar(List<Transfer> selection) {
 
 	}
 
-	private void updateRightClickMenu(Vector selection) {
-		TransferManagementHelper.TransferAction action;
-
-		for (final Iterator it = rightClickActions.iterator();
-			 it.hasNext(); ) {
-			action = (TransferManagementHelper.TransferAction) it.next();
+	private void updateRightClickMenu(List<Transfer> selection) {
+		for (TransferAction action : rightClickActions) {
 			action.setTarget(selection);
 		}
 	}
@@ -517,7 +512,7 @@ public class TransferTable implements MouseListener {
 	}
 
 	public void mouseClicked(final MouseEvent e) {
-		Vector selection;
+		List<Transfer> selection;
 
 		int[] selectedRows = table.getSelectedRows();
 
