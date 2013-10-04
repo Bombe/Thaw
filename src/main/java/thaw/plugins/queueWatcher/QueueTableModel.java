@@ -5,8 +5,10 @@ import static thaw.fcp.FCPQuery.Type.UPLOAD;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -44,9 +46,9 @@ public class QueueTableModel extends AbstractTableModel implements Observer {
 
 	private final static String unspecifiedStr = I18n.getMessage("thaw.common.unspecified");
 
-	private final Vector<String> columnNames;
+	private final List<String> columnNames = new ArrayList<String>();
 
-	private final Vector<FCPTransferQuery> queries = new Vector<FCPTransferQuery>();
+	private final List<FCPTransferQuery> queries = new ArrayList<FCPTransferQuery>();
 
 	private final boolean isForInsertions;
 
@@ -66,8 +68,6 @@ public class QueueTableModel extends AbstractTableModel implements Observer {
 		this.pluginManager = pluginManager;
 		this.queueManager = queueManager;
 		this.isForInsertions = isForInsertions;
-
-		columnNames = new Vector<String>();
 
 		columnNames.add(" ");
 		columnNames.add(I18n.getMessage("thaw.common.file"));
@@ -232,7 +232,7 @@ public class QueueTableModel extends AbstractTableModel implements Observer {
 
 		addQueries(queueManager.getRunningQueue());
 
-		final Vector<Vector<FCPTransferQuery>> pendings = queueManager.getPendingQueues();
+		final List<Vector<FCPTransferQuery>> pendings = queueManager.getPendingQueues();
 
 		for (Vector<FCPTransferQuery> pending : pendings) {
 			addQueries(pending);
@@ -306,16 +306,10 @@ public class QueueTableModel extends AbstractTableModel implements Observer {
 	}
 
 	/** returns a *copy* */
-	public Vector<FCPTransferQuery> getQueries() {
-		final Vector<FCPTransferQuery> newVect = new Vector<FCPTransferQuery>();
-
+	public List<FCPTransferQuery> getQueries() {
 		synchronized (queries) {
-			for (FCPTransferQuery query : queries) {
-				newVect.add(query);
-			}
+			return new ArrayList<FCPTransferQuery>(queries);
 		}
-
-		return newVect;
 	}
 
 	public void notifyObservers() {

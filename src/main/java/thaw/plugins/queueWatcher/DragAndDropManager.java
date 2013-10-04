@@ -14,7 +14,9 @@ import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 import java.awt.dnd.InvalidDnDOperationException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import thaw.core.Core;
@@ -90,11 +92,11 @@ public class DragAndDropManager implements DragGestureListener, DragSourceListen
 				DataFlavor.stringFlavor,
 		};
 
-		private Vector queries; /* FCPTransferQuery */
+		private List<FCPTransferQuery> queries; /* FCPTransferQuery */
 
 		private boolean insert;
 
-		public DragableFinishedTransfers(final Vector queries, final boolean insert) {
+		public DragableFinishedTransfers(final List<FCPTransferQuery> queries, final boolean insert) {
 			if ((queries == null) || (queries.size() <= 0)) {
 				Logger.warning(this, "Selection null ?!");
 			}
@@ -107,12 +109,9 @@ public class DragAndDropManager implements DragGestureListener, DragSourceListen
 			if ((flavor == DataFlavor.javaFileListFlavor)
 					|| flavor.equals(DataFlavor.javaFileListFlavor)) {
 
-				final Vector fileList = new Vector();
+				final List<File> fileList = new ArrayList<File>();
 
-				for (final Iterator queryIt = queries.iterator();
-					 queryIt.hasNext(); ) {
-					final FCPTransferQuery query = (FCPTransferQuery) queryIt.next();
-
+				for (FCPTransferQuery query : queries) {
 					if (!query.isFinished() || !query.isSuccessful())
 						continue;
 
@@ -129,10 +128,7 @@ public class DragAndDropManager implements DragGestureListener, DragSourceListen
 					|| flavor.equals(DataFlavor.stringFlavor)) {
 				String result = "";
 
-				for (final Iterator queryIt = queries.iterator();
-					 queryIt.hasNext(); ) {
-					final FCPTransferQuery query = (FCPTransferQuery) queryIt.next();
-
+				for (FCPTransferQuery query : queries) {
 					if (!query.isFinished() || !query.isSuccessful())
 						continue;
 

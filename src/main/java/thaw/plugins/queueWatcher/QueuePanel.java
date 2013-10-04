@@ -12,6 +12,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -227,7 +229,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 		if (core.getQueueManager() != null) {
 			this.addToTable(core.getQueueManager().getRunningQueue());
 
-			final Vector<Vector<FCPTransferQuery>> pendingQueues = core.getQueueManager().getPendingQueues();
+			final List<Vector<FCPTransferQuery>> pendingQueues = core.getQueueManager().getPendingQueues();
 			for (Vector<FCPTransferQuery> pendingQueue : pendingQueues) {
 				this.addToTable(pendingQueue);
 			}
@@ -267,9 +269,9 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 	}
 
 	/** return a vector made of FCPTransferQueries. Doesn't refresh the selection ! */
-	public Vector<FCPTransferQuery> getSelectedQueries() {
-		final Vector<FCPTransferQuery> queries = new Vector<FCPTransferQuery>();
-		final Vector<FCPTransferQuery> initialQueries = tableModel.getQueries();
+	public List<FCPTransferQuery> getSelectedQueries() {
+		final List<FCPTransferQuery> queries = new ArrayList<FCPTransferQuery>();
+		final List<FCPTransferQuery> initialQueries = tableModel.getQueries();
 
 		if (selectedRows == null)
 			return queries;
@@ -336,7 +338,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 
 		private int new_priority;
 
-		private final Vector<FCPTransferQuery> queries;
+		private final List<FCPTransferQuery> queries;
 
 		public ActionReplier(final int action, final int new_priority) {
 			this.action = action;
@@ -344,7 +346,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 			if (selectedRows != null)
 				this.queries = getSelectedQueries();
 			else
-				this.queries = new Vector<FCPTransferQuery>();
+				this.queries = new ArrayList<FCPTransferQuery>();
 
 			this.new_priority = (action == ACTION_CHANGE_PRIORITY_SELECTED) ? new_priority : -1;
 		}
@@ -354,7 +356,7 @@ public class QueuePanel implements MouseListener, ActionListener, KeyListener {
 			File dir = null;
 
 			if (action == ACTION_REMOVE_FINISHED) {
-				final Vector<FCPTransferQuery> qs = tableModel.getQueries();
+				final List<FCPTransferQuery> qs = tableModel.getQueries();
 
 				for (final FCPTransferQuery query : qs) {
 					if (query.isFinished() && query.isSuccessful() &&
