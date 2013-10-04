@@ -575,6 +575,16 @@ public class Hsqldb extends LibraryPlugin {
 		}
 
 		/**
+		 * Resets this result extractor.
+		 *
+		 * @return The reset result extractor
+		 */
+		public ResultExtractor<T> reset() {
+			results.clear();
+			return this;
+		}
+
+		/**
 		 * Returns the extracted results.
 		 *
 		 * @return The extracted results

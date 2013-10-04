@@ -1459,50 +1459,19 @@ public class Index extends Observable implements MutableTreeNode,
 			return -1;
 
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-				ResultSet set;
-
-				int catId = 1;
-
-				st = db.getConnection().prepareStatement("SELECT id FROM categories " +
-						"WHERE name = ? LIMIT 1");
-				st.setString(1, cat);
-
-				set = st.executeQuery();
-
-				/* if it doesn't exist, we create it */
-				if (!set.next()) {
-
-					st = db.getConnection().prepareStatement("SELECT id FROM categories " +
-							"ORDER by id DESC LIMIT 1");
-					set = st.executeQuery();
-					if (set.next())
-						catId = set.getInt("id") + 1;
-
-					st.close();
-
-					/* insertion */
-					st = db.getConnection().prepareStatement("INSERT INTO categories " +
-							"(id, name) VALUES (?, ?)");
-					st.setInt(1, catId);
-					st.setString(2, cat);
-					st.execute();
-					st.close();
-
-					return catId;
-				} else {
-					/* else we return the existing id */
-					int i = set.getInt("id");
-					st.close();
-					return i;
-				}
+			ResultExtractor<Integer> idExtractor = new ResultExtractor<Integer>(integerResultCreator(1));
+			db.executeQuery("SELECT id FROM categories WHERE name = ? LIMIT 1", setString(1, cat), idExtractor);
+			if (!idExtractor.getResults().isEmpty()) {
+				return idExtractor.getResults().get(0);
 			}
+			db.executeQuery("SELECT id FROM categories ORDER by id DESC LIMIT 1", queue(), idExtractor.reset());
+			int nextCategoryId = idExtractor.getResults().isEmpty() ? 1 : idExtractor.getResults().get(0);
+			db.executeUpdate("INSERT INTO categories (id, name) VALUES (?, ?)", queue(setInt(1, nextCategoryId), setString(2, cat)));
+			return nextCategoryId;
 		} catch (SQLException e) {
 			Logger.error(this, "Can't create/find the category '" + cat + "'");
+			return -1;
 		}
-
-		return -1;
 	}
 
 	/** create it if it doesn't exist */
