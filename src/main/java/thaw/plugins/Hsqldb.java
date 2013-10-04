@@ -480,6 +480,23 @@ public class Hsqldb extends LibraryPlugin {
 		};
 	}
 
+	/**
+	 * Predicate that will always stop a {@link ResultExtractor} after the first
+	 * item.
+	 *
+	 * @param <T>
+	 * 		The type of the results being extracted
+	 * @return A predicate that will stop after the first extracted item
+	 */
+	public static final <T> Predicate<T> stopOnFirst() {
+		return new Predicate<T>() {
+			@Override
+			public boolean apply(T input) {
+				return true;
+			}
+		};
+	}
+
 	/** Interface for a {@link PreparedStatement} processor. */
 	public interface StatementProcessor {
 
