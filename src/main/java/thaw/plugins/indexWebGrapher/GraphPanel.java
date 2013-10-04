@@ -5,9 +5,10 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.JComponent;
 
 import thaw.plugins.IndexWebGrapher;
@@ -20,7 +21,7 @@ public class GraphPanel extends JComponent implements MouseListener {
 
 	private Hashtable nodeHashtable;
 
-	private Vector nodeList;
+	private List<Node> nodeList;
 
 	private int lastId;
 
@@ -43,7 +44,7 @@ public class GraphPanel extends JComponent implements MouseListener {
 	public void reinit() {
 		lastSelectedNode = null;
 		nodeHashtable = new Hashtable();
-		nodeList = new Vector();
+		nodeList = new ArrayList<Node>();
 		lastId = 0;
 	}
 
@@ -60,7 +61,7 @@ public class GraphPanel extends JComponent implements MouseListener {
 		return (Node) nodeHashtable.get(key.substring(4, 40));
 	}
 
-	public Vector getNodeList() {
+	public List<Node> getNodeList() {
 		return nodeList;
 	}
 

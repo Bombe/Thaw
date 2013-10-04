@@ -2,8 +2,9 @@ package thaw.plugins.indexWebGrapher;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import thaw.gui.GUIHelper;
 
@@ -19,9 +20,9 @@ public class Node implements Comparable {
 
 	private String indexKey;
 
-	private Vector linkTo;
+	private final List<Node> linkTo = new ArrayList<Node>();
 
-	private Vector linkedFrom;
+	private final List<Node> linkedFrom = new ArrayList<Node>();
 
 	/**
 	 * @param indexId
@@ -36,9 +37,6 @@ public class Node implements Comparable {
 		this.indexId = indexId;
 		this.indexName = indexName;
 		this.indexKey = indexKey;
-
-		linkTo = new Vector();
-		linkedFrom = new Vector();
 
 		graphPanel.registerNode(this);
 	}
@@ -68,7 +66,7 @@ public class Node implements Comparable {
 		linkedFrom.add(node);
 	}
 
-	public Vector getLinkList() {
+	public List<Node> getLinkList() {
 		return linkTo;
 	}
 
@@ -176,7 +174,7 @@ public class Node implements Comparable {
 	 *
 	 * @return velocity
 	 */
-	public double computeVelocity(Vector nodeList) {
+	public double computeVelocity(List<Node> nodeList) {
 		double netForceX = 0.0;
 		double netForceY = 0.0;
 
