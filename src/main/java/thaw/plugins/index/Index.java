@@ -130,11 +130,6 @@ public class Index extends Observable implements MutableTreeNode,
 		isNew = true;
 	}
 
-	/** Won't apply in the database ! */
-	public void setId(int id) {
-		this.id = id;
-	}
-
 	/** Is this node coming from the tree ? */
 	public boolean isInTree() {
 		return (getParent() != null);
@@ -263,27 +258,17 @@ public class Index extends Observable implements MutableTreeNode,
 		}
 	}
 
-	/** call purgeLinkList(false) */
 	public void purgeLinkList() {
-		purgeLinkList(false);
-	}
-
-	public void purgeLinkList(boolean useDontDelete) {
 		try {
-			db.executeUpdate("DELETE FROM links WHERE indexParent = ?" + (useDontDelete ? " AND dontDelete = FALSE" : ""), setInt(1, getId()));
+			db.executeUpdate("DELETE FROM links WHERE indexParent = ? AND dontDelete = FALSE", setInt(1, getId()));
 		} catch (final SQLException e) {
 			Logger.error(this, "Unable to purge da list ! Exception: " + e.toString());
 		}
 	}
 
-	/** call purgeFileList(false) */
 	public void purgeFileList() {
-		purgeFileList(false);
-	}
-
-	public void purgeFileList(boolean useDontDelete) {
 		try {
-			db.executeUpdate("DELETE FROM files WHERE indexParent = ?" + (useDontDelete ? " AND dontDelete = FALSE" : ""), setInt(1, getId()));
+			db.executeUpdate("DELETE FROM files WHERE indexParent = ? AND dontDelete = FALSE", setInt(1, getId()));
 		} catch (final SQLException e) {
 			Logger.error(this, "Unable to purge da list ! Exception: " + e.toString());
 		}
@@ -876,16 +861,9 @@ public class Index extends Observable implements MutableTreeNode,
 
 	}
 
-	/** call purgeIndex(true) */
 	public void purgeIndex() {
-		purgeIndex(true);
-	}
-
-	public void purgeIndex(boolean useDontDelete) {
-		purgeFileList(useDontDelete);
-		purgeLinkList(useDontDelete);
-		if (!useDontDelete)
-			purgeCommentKeys();
+		purgeFileList();
+		purgeLinkList();
 	}
 
 	public void setInsertionDate(java.util.Date date) {
