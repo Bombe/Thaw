@@ -1356,7 +1356,7 @@ public class Index extends Observable implements MutableTreeNode,
 		else
 			path[1] = indexTree.getRoot().getChildIndex(id, false);
 
-				/* we may have null elements if the tree wasn't fully loaded for this path */
+		/* we may have null elements if the tree wasn't fully loaded for this path */
 		for (i = 0; i < path.length; i++) {
 			if (path[i] == null)
 				break;
@@ -1364,7 +1364,7 @@ public class Index extends Observable implements MutableTreeNode,
 
 		int non_null_elements = i;
 		if (non_null_elements != nmb_folders) {
-					/* we eliminate the null elements */
+			/* we eliminate the null elements */
 			Object[] new_path = new Object[non_null_elements];
 
 			for (i = 0; i < non_null_elements; i++)
