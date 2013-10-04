@@ -9,11 +9,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -171,20 +169,15 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 				&& firstSelectedLinkCorrespondingIndexId >= 0);
 	}
 
-	protected void updateToolbar(final Vector selectedLinks) {
-		LinkManagementHelper.LinkAction action;
-
-		for (final Iterator it = toolbarActions.iterator();
-			 it.hasNext(); ) {
-			action = (LinkManagementHelper.LinkAction) it.next();
+	protected void updateToolbar(final List<Link> selectedLinks) {
+		for (LinkAction action : toolbarActions) {
 			action.setTarget(selectedLinks);
 		}
 	}
 
-	protected Vector getSelectedLinks(final int[] selectedRows) {
-		//final Vector srcList = linkList.getLinkList(null, false);
+	protected List<Link> getSelectedLinks(final int[] selectedRows) {
 		final List<Link> srcList = linkListModel.getLinks();
-		final Vector links = new Vector();
+		final List<Link> links = new ArrayList<Link>();
 
 		for (int i = 0; i < selectedRows.length; i++) {
 			final Link link = srcList.get(selectedRows[i]);
@@ -207,7 +200,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 	}
 
 	public void mouseClicked(final MouseEvent e) {
-		Vector selection;
+		List<Link> selection;
 
 		if (linkList == null) {
 			selectedRows = null;
@@ -283,16 +276,14 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 
 		private static final long serialVersionUID = 1L;
 
-		public Vector columnNames;
+		public final List<String> columnNames = new ArrayList<String>();
 
-		public List<Link> links = null; /* thaw.plugins.index.Link Vector */
+		public List<Link> links = null;
 
 		public LinkList linkList;
 
 		public LinkListModel() {
 			super();
-
-			columnNames = new Vector();
 
 			columnNames.add(I18n.getMessage("thaw.plugin.index.index"));
 			columnNames.add(I18n.getMessage("thaw.plugin.index.category"));
@@ -324,7 +315,7 @@ public class LinkTable implements MouseListener, KeyListener, ActionListener {
 		}
 
 		public String getColumnName(final int column) {
-			return (String) columnNames.get(column);
+			return columnNames.get(column);
 		}
 
 		public Object getValueAt(final int row, final int column) {
