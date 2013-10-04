@@ -1405,38 +1405,15 @@ public class Index extends Observable implements MutableTreeNode,
 
 	/** @return -1 if none */
 	public int getCategoryId() {
+		ResultExtractor<Integer> categoryIdExtractor = new ResultExtractor<Integer>(integerResultCreator(1), Hsqldb.<Integer>stopOnFirst());
 		try {
-			synchronized (db.dbLock) {
-				PreparedStatement st;
-				st = db.getConnection().prepareStatement("SELECT categoryId " +
-						"FROM indexes " +
-						"WHERE id = ? LIMIT 1");
-				st.setInt(1, id);
-
-				ResultSet set = st.executeQuery();
-
-				if (!set.next()) {
-					st.close();
-					return -1;
-				}
-
-				Object o = set.getObject("categoryId");
-
-				if (o == null) {
-					st.close();
-					return -1;
-				}
-
-				int i = set.getInt("categoryId");
-				st.close();
-				return i;
-			}
+			db.executeQuery("SELECT categoryId FROM indexes WHERE id = ? LIMIT 1", setInt(1, id), categoryIdExtractor);
 		} catch (SQLException e) {
-			Logger.error(this,
-					"Unable to get the category of the index because : " +
-							e.toString());
+			Logger.error(this, "Unable to get the category of the index because : " + e.toString());
 		}
-
+		if (!categoryIdExtractor.getResults().isEmpty() && (categoryIdExtractor.getResults().get(0) != null)) {
+			return categoryIdExtractor.getResults().get(0);
+		}
 		return -1;
 	}
 
