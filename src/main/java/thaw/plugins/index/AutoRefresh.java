@@ -151,7 +151,7 @@ public class AutoRefresh implements ThawRunnable, Observer {
 
 	public void update(Observable o, Object param) {
 
-		browserPanel.getIndexTree().redraw(((Index) o).getTreePath(browserPanel.getIndexTree()));
+		browserPanel.getIndexTree().redraw(((Index) o).getTreePath());
 
 		if (o.equals(browserPanel.getTables().getFileTable().getFileList())) {
 			browserPanel.getTables().getFileTable().refresh();

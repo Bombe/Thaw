@@ -1298,7 +1298,7 @@ public class Index extends Observable implements MutableTreeNode,
 	 */
 	public final static int MAX_DEPTH = 128;
 
-	public TreePath getTreePath(IndexTree tree) {
+	public TreePath getTreePath() {
 
 		int[] folderIds = new int[MAX_DEPTH];
 
