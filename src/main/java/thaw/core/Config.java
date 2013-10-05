@@ -19,6 +19,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import thaw.utils.Xml;
 import thaw.utils.Xml.Creator;
+import thaw.utils.Xml.XmlError;
 
 /**
  * This class manages the thaw config.
@@ -184,9 +185,12 @@ public class Config {
 	/**
 	 * Save the configuration.
 	 *
-	 * @return true if success, else false.
+	 * @throws ConfigFileNotWritable
+	 * 		if the configuration file is not writable
+	 * @throws XmlError
+	 * 		if the XML structure can not be created
 	 */
-	public void saveConfig() {
+	public void saveConfig() throws ConfigFileNotWritable, XmlError {
 		if (configFileIsNotWritable()) {
 			Logger.warning(this, "Unable to write config file '" + configFile.getPath() + "' (can't write)");
 			throw new ConfigFileNotWritable();
