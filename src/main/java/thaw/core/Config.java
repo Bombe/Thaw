@@ -148,14 +148,8 @@ public class Config {
 			return false;
 		}
 
-		Document xmlDoc = null;
-		DocumentBuilderFactory xmlFactory = null;
-		DocumentBuilder xmlBuilder = null;
-
-		Element rootEl = null;
-
-		xmlFactory = DocumentBuilderFactory.newInstance();
-
+		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder xmlBuilder;
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
 		} catch (final ParserConfigurationException e) {
@@ -163,6 +157,7 @@ public class Config {
 			return false;
 		}
 
+		Document xmlDoc;
 		try {
 			xmlDoc = xmlBuilder.parse(configFile);
 		} catch (final SAXException e) {
@@ -173,16 +168,15 @@ public class Config {
 			return false;
 		}
 
-		rootEl = xmlDoc.getDocumentElement();
+		Element rootEl = xmlDoc.getDocumentElement();
 
 		final NodeList params = rootEl.getElementsByTagName("param");
 
 		for (int i = 0; i < params.getLength(); i++) {
-			Element paramEl;
 			final Node paramNode = params.item(i);
 
 			if (paramNode.getNodeType() == Node.ELEMENT_NODE) {
-				paramEl = (Element) paramNode;
+				Element paramEl = (Element) paramNode;
 				parameters.put(paramEl.getAttribute("name"), paramEl.getAttribute("value"));
 			}
 		}
@@ -190,12 +184,10 @@ public class Config {
 		final NodeList plugins = rootEl.getElementsByTagName("plugin");
 
 		for (int i = 0; i < plugins.getLength(); i++) {
-
-			Element pluginEl;
 			final Node pluginNode = plugins.item(i);
 
 			if (pluginNode.getNodeType() == Node.ELEMENT_NODE) {
-				pluginEl = (Element) pluginNode;
+				Element pluginEl = (Element) pluginNode;
 				pluginNames.add(pluginEl.getAttribute("name"));
 			}
 		}
@@ -209,8 +201,6 @@ public class Config {
 	 * @return true if success, else false.
 	 */
 	public boolean saveConfig() {
-		StreamResult configOut;
-
 		try {
 			if ((!configFile.exists() && !configFile.createNewFile())
 					|| !configFile.canWrite()) {
@@ -221,17 +211,8 @@ public class Config {
 			Logger.warning(this, "Error while checking perms to save config: " + e);
 		}
 
-		configOut = new StreamResult(configFile);
-
-		Document xmlDoc = null;
-		DocumentBuilderFactory xmlFactory = null;
-		DocumentBuilder xmlBuilder = null;
-		DOMImplementation impl = null;
-
-		Element rootEl = null;
-
-		xmlFactory = DocumentBuilderFactory.newInstance();
-
+		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder xmlBuilder;
 		try {
 			xmlBuilder = xmlFactory.newDocumentBuilder();
 		} catch (final ParserConfigurationException e) {
@@ -239,11 +220,9 @@ public class Config {
 			return false;
 		}
 
-		impl = xmlBuilder.getDOMImplementation();
-
-		xmlDoc = impl.createDocument(null, "config", null);
-
-		rootEl = xmlDoc.getDocumentElement();
+		DOMImplementation impl = xmlBuilder.getDOMImplementation();
+		Document xmlDoc = impl.createDocument(null, "config", null);
+		Element rootEl = xmlDoc.getDocumentElement();
 
 		final Set<String> parameterKeySet = parameters.keySet();
 		for (String entry : parameterKeySet) {
@@ -264,13 +243,11 @@ public class Config {
 			rootEl.appendChild(pluginEl);
 		}
 
-
 		/* Serialization */
 		final DOMSource domSource = new DOMSource(xmlDoc);
 		final TransformerFactory transformFactory = TransformerFactory.newInstance();
 
 		Transformer serializer;
-
 		try {
 			serializer = transformFactory.newTransformer();
 		} catch (final TransformerConfigurationException e) {
@@ -282,6 +259,7 @@ public class Config {
 		serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 
 		/* final step */
+		StreamResult configOut = new StreamResult(configFile);
 		try {
 			serializer.transform(domSource, configOut);
 		} catch (final TransformerException e) {
