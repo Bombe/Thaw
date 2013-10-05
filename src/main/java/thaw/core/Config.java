@@ -134,12 +134,7 @@ public class Config {
 
 	/** Remove the given plugin. */
 	public void removePlugin(final String name) {
-		for (int i = 0; i < pluginNames.size(); i++) {
-			final String currentPlugin = pluginNames.get(i);
-
-			if (currentPlugin.equals(name))
-				pluginNames.remove(i);
-		}
+		pluginNames.remove(name);
 	}
 
 	/**
