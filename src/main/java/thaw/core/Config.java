@@ -192,33 +192,7 @@ public class Config {
 			throw new ConfigFileNotWritable();
 		}
 
-		Creator creator = new Creator() {
-			@Override
-			public void create(Document document) {
-				Element rootElement = document.getDocumentElement();
-				createParameterElements(document, rootElement);
-				createPluginElements(document, rootElement);
-			}
-
-			private void createPluginElements(Document document, Element rootElement) {
-				for (String pluginName : pluginNames) {
-					final Element pluginEl = document.createElement("plugin");
-					pluginEl.setAttribute("name", pluginName);
-					rootElement.appendChild(pluginEl);
-				}
-			}
-
-			private void createParameterElements(Document document, Element rootElement) {
-				for (Entry<String, String> parameter : parameters.entrySet()) {
-					final Element paramEl = document.createElement("param");
-					paramEl.setAttribute("name", parameter.getKey());
-					paramEl.setAttribute("value", parameter.getValue());
-					rootElement.appendChild(paramEl);
-				}
-			}
-		};
-
-		Xml.createXmlFile(configFile, "config", creator);
+		Xml.createXmlFile(configFile, "config", new ConfigFileCreator());
 	}
 
 	private boolean configFileIsNotWritable() {
@@ -260,6 +234,40 @@ public class Config {
 	}
 
 	public static class ConfigFileNotWritable extends RuntimeException {
+
+	}
+
+	/**
+	 * {@link Creator} implementation that stores the configuration into a {@link
+	 * Document}.
+	 *
+	 * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
+	 */
+	private class ConfigFileCreator implements Creator {
+
+		@Override
+		public void create(Document document) {
+			Element rootElement = document.getDocumentElement();
+			createParameterElements(document, rootElement);
+			createPluginElements(document, rootElement);
+		}
+
+		private void createPluginElements(Document document, Element rootElement) {
+			for (String pluginName : pluginNames) {
+				final Element pluginEl = document.createElement("plugin");
+				pluginEl.setAttribute("name", pluginName);
+				rootElement.appendChild(pluginEl);
+			}
+		}
+
+		private void createParameterElements(Document document, Element rootElement) {
+			for (Entry<String, String> parameter : parameters.entrySet()) {
+				final Element paramEl = document.createElement("param");
+				paramEl.setAttribute("name", parameter.getKey());
+				paramEl.setAttribute("value", parameter.getValue());
+				rootElement.appendChild(paramEl);
+			}
+		}
 
 	}
 
