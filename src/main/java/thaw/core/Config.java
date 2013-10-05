@@ -127,14 +127,6 @@ public class Config {
 		pluginNames.add(name);
 	}
 
-	/**
-	 * Add the plugin at the end of the given position (shifting already
-	 * existing).
-	 */
-	public void addPlugin(final String name, final int position) {
-		pluginNames.add(position, name);
-	}
-
 	/** Give a vector containing the whole list of plugins. */
 	public List<String> getPluginNames() {
 		return new ArrayList<String>(pluginNames);
