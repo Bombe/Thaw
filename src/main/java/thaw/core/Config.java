@@ -6,28 +6,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Set;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import thaw.utils.Xml;
+import thaw.utils.Xml.Creator;
 
 /**
  * This class manages the thaw config.
@@ -76,24 +67,28 @@ public class Config {
 
 		if (!Objects.equal(getValue(key), value)) {
 
-			if (listenChanges) {
-				for (Plugin plugin : listeners.get(key)) {
-					/* if the plugin is not already in the plugin list to
-					 * reload, we add it */
-					if (!pluginsToReload.contains(plugin)) {
-						Logger.notice(this, "Will have to reload '" + plugin.getClass().getName() + "' " +
-								"because '" + key + "' was changed from '" + getValue(key) + "' to '" + value + "'");
-						pluginsToReload.add(plugin);
-					}
-
-				}
-			}
+			checkForPluginsToReload(key, value);
 
 			/* and to finish, we set the value */
 			if (value != null)
 				parameters.put(key, value);
 			else
 				parameters.remove(key);
+		}
+	}
+
+	private void checkForPluginsToReload(String key, String value) {
+		if (listenChanges) {
+			for (Plugin plugin : listeners.get(key)) {
+				/* if the plugin is not already in the plugin list to
+				 * reload, we add it */
+				if (!pluginsToReload.contains(plugin)) {
+					Logger.notice(this, "Will have to reload '" + plugin.getClass().getName() + "' " +
+							"because '" + key + "' was changed from '" + getValue(key) + "' to '" + value + "'");
+					pluginsToReload.add(plugin);
+				}
+
+			}
 		}
 	}
 
@@ -107,7 +102,8 @@ public class Config {
 			core.getPluginManager().runPlugin(plugin.getClass().getName());
 		}
 
-		cancelChanges();
+		listenChanges = false;
+		pluginsToReload.clear();
 	}
 
 	/**
@@ -139,34 +135,27 @@ public class Config {
 	 *
 	 * @return true if success, else false.
 	 */
-	public boolean loadConfig() {
+	public void loadConfig() {
 		if (!configFile.exists() || !configFile.canRead()) {
 			Logger.notice(this, "Unable to read config file '" + configFile.getPath() + "'");
-			return false;
+			return;
 		}
 
-		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder xmlBuilder;
-		try {
-			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch (final ParserConfigurationException e) {
-			Logger.warning(this, "Unable to load config because: " + e);
-			return false;
+		loadXmlConfig();
+	}
+
+	private void loadXmlConfig() {
+		Optional<Document> xmlDoc = Xml.parseFile(configFile);
+		if (!xmlDoc.isPresent()) {
+			return;
 		}
 
-		Document xmlDoc;
-		try {
-			xmlDoc = xmlBuilder.parse(configFile);
-		} catch (final SAXException e) {
-			Logger.warning(this, "Unable to load config because: " + e);
-			return false;
-		} catch (final IOException e) {
-			Logger.warning(this, "Unable to load config because: " + e);
-			return false;
-		}
+		Element rootEl = xmlDoc.get().getDocumentElement();
+		loadParameters(rootEl);
+		loadPlugins(rootEl);
+	}
 
-		Element rootEl = xmlDoc.getDocumentElement();
-
+	private void loadParameters(Element rootEl) {
 		final NodeList params = rootEl.getElementsByTagName("param");
 
 		for (int i = 0; i < params.getLength(); i++) {
@@ -177,7 +166,9 @@ public class Config {
 				parameters.put(paramEl.getAttribute("name"), paramEl.getAttribute("value"));
 			}
 		}
+	}
 
+	private void loadPlugins(Element rootEl) {
 		final NodeList plugins = rootEl.getElementsByTagName("plugin");
 
 		for (int i = 0; i < plugins.getLength(); i++) {
@@ -188,8 +179,6 @@ public class Config {
 				pluginNames.add(pluginEl.getAttribute("name"));
 			}
 		}
-
-		return true;
 	}
 
 	/**
@@ -197,74 +186,48 @@ public class Config {
 	 *
 	 * @return true if success, else false.
 	 */
-	public boolean saveConfig() {
-		try {
-			if ((!configFile.exists() && !configFile.createNewFile())
-					|| !configFile.canWrite()) {
-				Logger.warning(this, "Unable to write config file '" + configFile.getPath() + "' (can't write)");
-				return false;
+	public void saveConfig() {
+		if (configFileIsNotWritable()) {
+			Logger.warning(this, "Unable to write config file '" + configFile.getPath() + "' (can't write)");
+			throw new ConfigFileNotWritable();
+		}
+
+		Creator creator = new Creator() {
+			@Override
+			public void create(Document document) {
+				Element rootElement = document.getDocumentElement();
+				createParameterElements(document, rootElement);
+				createPluginElements(document, rootElement);
 			}
-		} catch (final IOException e) {
+
+			private void createPluginElements(Document document, Element rootElement) {
+				for (String pluginName : pluginNames) {
+					final Element pluginEl = document.createElement("plugin");
+					pluginEl.setAttribute("name", pluginName);
+					rootElement.appendChild(pluginEl);
+				}
+			}
+
+			private void createParameterElements(Document document, Element rootElement) {
+				for (Entry<String, String> parameter : parameters.entrySet()) {
+					final Element paramEl = document.createElement("param");
+					paramEl.setAttribute("name", parameter.getKey());
+					paramEl.setAttribute("value", parameter.getValue());
+					rootElement.appendChild(paramEl);
+				}
+			}
+		};
+
+		Xml.createXmlFile(configFile, "config", creator);
+	}
+
+	private boolean configFileIsNotWritable() {
+		try {
+			return (!configFile.exists() && !configFile.createNewFile()) || !configFile.canWrite();
+		} catch (IOException e) {
 			Logger.warning(this, "Error while checking perms to save config: " + e);
-		}
-
-		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder xmlBuilder;
-		try {
-			xmlBuilder = xmlFactory.newDocumentBuilder();
-		} catch (final ParserConfigurationException e) {
-			Logger.error(this, "Unable to save configuration because: " + e.toString());
 			return false;
 		}
-
-		DOMImplementation impl = xmlBuilder.getDOMImplementation();
-		Document xmlDoc = impl.createDocument(null, "config", null);
-		Element rootEl = xmlDoc.getDocumentElement();
-
-		final Set<String> parameterKeySet = parameters.keySet();
-		for (String entry : parameterKeySet) {
-			final String value = parameters.get(entry);
-
-			final Element paramEl = xmlDoc.createElement("param");
-			paramEl.setAttribute("name", entry);
-			paramEl.setAttribute("value", value);
-
-			rootEl.appendChild(paramEl);
-		}
-
-		for (String pluginName : pluginNames) {
-			final Element pluginEl = xmlDoc.createElement("plugin");
-
-			pluginEl.setAttribute("name", pluginName);
-
-			rootEl.appendChild(pluginEl);
-		}
-
-		/* Serialization */
-		final DOMSource domSource = new DOMSource(xmlDoc);
-		final TransformerFactory transformFactory = TransformerFactory.newInstance();
-
-		Transformer serializer;
-		try {
-			serializer = transformFactory.newTransformer();
-		} catch (final TransformerConfigurationException e) {
-			Logger.error(this, "Unable to save configuration because: " + e.toString());
-			return false;
-		}
-
-		serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-		serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-		/* final step */
-		StreamResult configOut = new StreamResult(configFile);
-		try {
-			serializer.transform(domSource, configOut);
-		} catch (final TransformerException e) {
-			Logger.error(this, "Unable to save configuration because: " + e.toString());
-			return false;
-		}
-
-		return true;
 	}
 
 	public boolean isEmpty() {
@@ -294,6 +257,10 @@ public class Config {
 
 	public void addListener(String name, Plugin plugin) {
 		listeners.put(name, plugin);
+	}
+
+	public static class ConfigFileNotWritable extends RuntimeException {
+
 	}
 
 }

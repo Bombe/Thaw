@@ -537,7 +537,9 @@ public class Core implements Observer {
 		disconnect();
 
 		Logger.info(this, "Saving configuration ...");
-		if (!config.saveConfig()) {
+		try {
+			config.saveConfig();
+		} catch (RuntimeException re1) {
 			Logger.error(this, "Config was not saved correctly !");
 		}
 
