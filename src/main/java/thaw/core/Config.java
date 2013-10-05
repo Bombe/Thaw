@@ -19,6 +19,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,7 +42,7 @@ public class Config {
 
 	private final Map<String, String> parameters = new HashMap<String, String>();
 
-	private final Map<String, List<Plugin>> listeners = new HashMap<String, List<Plugin>>();
+	private final Multimap<String, Plugin> listeners = LinkedHashMultimap.create();
 
 	private final List<String> pluginNames = new ArrayList<String>();
 
@@ -71,21 +74,15 @@ public class Config {
 	public void setValue(final String key, final String value) {
 		Logger.debug(this, "Setting value '" + key + "' to '" + value + "'");
 
-		String currentValue = getValue(key);
+		if (!Objects.equal(getValue(key), value)) {
 
-		if ((currentValue != null && !currentValue.equals(value))
-				|| (currentValue == null && value != null)) {
-
-			/* we get the plugin list to reload */
-			List<Plugin> pluginList = listeners.get(key);
-
-			if (listenChanges && pluginList != null) {
-				for (Plugin plugin : pluginList) {
+			if (listenChanges) {
+				for (Plugin plugin : listeners.get(key)) {
 					/* if the plugin is not already in the plugin list to
 					 * reload, we add it */
 					if (!pluginsToReload.contains(plugin)) {
 						Logger.notice(this, "Will have to reload '" + plugin.getClass().getName() + "' " +
-								"because '" + key + "' was changed from '" + currentValue + "' to '" + value + "'");
+								"because '" + key + "' was changed from '" + getValue(key) + "' to '" + value + "'");
 						pluginsToReload.add(plugin);
 					}
 
@@ -296,16 +293,7 @@ public class Config {
 	}
 
 	public void addListener(String name, Plugin plugin) {
-
-		List<Plugin> pluginList = listeners.get(name);
-
-		if (pluginList == null) {
-			pluginList = new ArrayList<Plugin>();
-			listeners.put(name, pluginList);
-		}
-
-		if (pluginList.indexOf(plugin) < 0)
-			pluginList.add(plugin);
+		listeners.put(name, plugin);
 	}
 
 }
