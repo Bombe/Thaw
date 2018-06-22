@@ -1,5 +1,7 @@
 package thaw.gui;
 
+import static javax.swing.BorderFactory.createEmptyBorder;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -81,6 +83,7 @@ public class ConfigWindow extends Observable implements ActionListener, WindowLi
 		borderLayout.setVgap(20);
 
 		configWin.getContentPane().setLayout(borderLayout);
+		((JPanel) configWin.getContentPane()).setBorder(createEmptyBorder(6, 6, 6, 6));
 
 		configWin.getContentPane().add(tabs, BorderLayout.CENTER);
 		configWin.getContentPane().add(buttons, BorderLayout.SOUTH);

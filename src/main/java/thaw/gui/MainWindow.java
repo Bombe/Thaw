@@ -1,5 +1,7 @@
 package thaw.gui;
 
+import static javax.swing.BorderFactory.createEmptyBorder;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -15,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
 
@@ -103,6 +106,7 @@ public class MainWindow implements WindowListener, Observer {
 		statusBar.setSize(500, 30);
 
 		mainWindow.getContentPane().setLayout(new BorderLayout(5, 5));
+		((JPanel) mainWindow.getContentPane()).setBorder(createEmptyBorder(6, 6, 6, 6));
 
 		mainWindow.setJMenuBar(menuBar.getMenuBar());
 
